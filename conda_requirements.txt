@@ -1,0 +1,14 @@
+wheel
+Pillow
+numpy
+umsgpack
+Cython
+tqdm
+scikit-image
+scikit-learn 
+pyyaml
+flake8
+setuptools
+tensorboardX
+einops
+timm
