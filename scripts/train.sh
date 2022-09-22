@@ -6,7 +6,7 @@ clear
 N_GPUS=1
 
 DATA_DIR='/media/dl/Data/datasets/'
-DATA_DIR='/media/loc/ssd_5126/data'
+# DATA_DIR='/media/loc/ssd_5126/data'
 
 EXPERIMENT='./experiments/'
 

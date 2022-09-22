@@ -1,9 +1,7 @@
 import torch
 from os import path
 
-from core.utils.parallel import PackedSequence
 from torch.utils.data import DataLoader, default_collate
-import itertools
 
 
 def collate_tuples(batch):
@@ -39,15 +37,7 @@ def collate_fn(batch):
     return tuple, target
     
     
-def iss_collate_fn(items):
-    """Collate function for ISS batches"""
-    out = {}
-    if len(items) > 0:
-        for key in items[0]:
-            out[key] = [item[key] for item in items]
-            if isinstance(items[0][key], torch.Tensor):
-                out[key] = PackedSequence(out[key])
-    return out
+
 
 
 def cid2filename(cid, prefix):

@@ -3,14 +3,13 @@ import argparse
 from os import makedirs, path
 import numpy as np
 import torch 
-# Core
-from core.utils.configurations  import make_config
 
 # Image Retrieval
 from image_retrieval.tools import  ImageRetrievalTrainer
 from image_retrieval.configuration import DEFAULTS as DEFAULT_CONFIG
+from image_retrieval.utils.configurations  import make_config
 
-from core.utils.logging import setup_logger
+from image_retrieval.utils.logging import setup_logger
 
 
 def make_parser():
@@ -81,7 +80,6 @@ def make_dir(cfg, directory):
         makedirs(directory)
         
     return directory
-
 
 def main(args):
     

@@ -2,9 +2,7 @@ from functools import partial
 
 import torch
 import torch.nn as nn
-import torch.nn.functional as functional
 
-from core.utils.misc import ABN, ALN
 
 from image_retrieval.modules.pools import POOLING_LAYERS
 
@@ -31,8 +29,7 @@ class _RetrievalHead(nn.Module):
                  inp_dim, 
                  out_dim,
                  pooling=None,
-                 layer="linear",
-                 norm_act=ABN):
+                 layer="linear"):
 
         super(RetrievalHead, self).__init__()
 

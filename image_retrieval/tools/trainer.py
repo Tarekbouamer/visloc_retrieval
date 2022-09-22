@@ -17,8 +17,8 @@ from .events            import EventWriter
 from .evaluation        import DatasetEvaluator
 
 
-from core.utils.logging                 import  _log_api_usage, setup_logger
-from core.utils.configurations          import make_config, config_to_string
+from image_retrieval.utils.logging                 import  _log_api_usage, setup_logger
+from image_retrieval.utils.configurations          import make_config, config_to_string
 from image_retrieval.utils.snapshot     import save_snapshot, resume_from_snapshot, pre_train_from_snapshots
 
 

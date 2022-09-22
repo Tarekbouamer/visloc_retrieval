@@ -8,13 +8,10 @@ import numpy as np
 import torch
 import torch.utils.data as data
 
-# core
-from core.utils.evaluation.ParisOxfordEval import compute_map_revisited, compute_map
-import  core.utils.evaluation.asmk as eval_asmk
+import  image_retrieval.utils.evaluation.asmk as eval_asmk
+from image_retrieval.utils.general     import htime
+from image_retrieval.utils.evaluation.ParisOxfordEval import compute_map_revisited, compute_map
 
-from core.utils.general     import htime
-
-# image_retrieval
 from image_retrieval.datasets.benchmark         import ParisOxfordTestDataset
 from image_retrieval.datasets.generic import ImagesFromList, ImagesTransform, INPUTS
 

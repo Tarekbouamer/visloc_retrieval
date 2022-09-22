@@ -10,6 +10,7 @@ from PIL import Image
 from    torchvision.transforms import functional as tfn
 import  torchvision.transforms as transforms
 
+from  timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, DEFAULT_CROP_PCT
 
 class ImagesTransform:
 
@@ -18,8 +19,8 @@ class ImagesTransform:
                  preprocessing=None,
                  augmentation=None,
                  postprocessing=None,
-                 mean=None,
-                 std=None,
+                 mean=IMAGENET_DEFAULT_MEAN,
+                 std=IMAGENET_DEFAULT_STD,
                  is_aug=False
                  ):
         

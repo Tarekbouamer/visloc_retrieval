@@ -1,8 +1,8 @@
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Type, Union
 
 # core
-from core.utils.misc        import OTHER_LAYERS, NORM_LAYERS
-from core.utils.misc        import scheduler_from_config
+from image_retrieval.utils.misc        import OTHER_LAYERS, NORM_LAYERS
+from image_retrieval.utils.misc        import scheduler_from_config
 
 from image_retrieval.modules.pools import RET_LAYERS
 # 

@@ -12,22 +12,15 @@ import  torch.nn as nn
 import timm
 from timm.utils.model import freeze, unfreeze
 
-# core
-import core.backbones   as models
-from core.backbones.url     import model_urls, model_urls_cvut
-from core.backbones.util    import load_state_dict_from_url, init_weights
-from core.utils.PCA         import PCA, PCA_whitenlearn_shrinkage
-
 # image retrieval
 from image_retrieval.datasets.generic import ImagesFromList, ImagesTransform, INPUTS
 from image_retrieval.modules.heads.head         import RetrievalHead
 
-import image_retrieval.modules.necks   as necks
 
-from image_retrieval.algos.algo                 import globalLoss
 from image_retrieval.models.GF_net              import ImageRetrievalNet
 
 from image_retrieval.utils.io   import create_withen_file_from_cfg
+from image_retrieval.utils.pca   import PCA_whitenlearn_shrinkage
 
 # logger
 import logging

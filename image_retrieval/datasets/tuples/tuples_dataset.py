@@ -186,9 +186,7 @@ class TuplesDataset(data.Dataset):
             # Prepare query loader
             logger.debug('extracting descriptors for query images :')
 
-            tf = ImagesTransform(  max_size=data_cfg.getint("max_size"),
-                                    mean=aug_cfg.getstruct("mean"),     std=aug_cfg.getstruct("std")
-                                    )
+            tf = ImagesTransform( max_size=data_cfg.getint("max_size"))
             
             query_data = ImagesFromList(root='', 
                                         images=[self.images[i] for i in self.query_indices], 

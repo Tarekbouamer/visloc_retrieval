@@ -5,12 +5,12 @@ from torch import nn
 
 import os
 from .test import  build_paris_oxford_dataset, test_asmk, test_global_descriptor
-import core.utils.evaluation.asmk as eval_asmk
+import image_retrieval.utils.evaluation.asmk as eval_asmk
+
 
 # logger
 import logging
 logger = logging.getLogger("retrieval")
-
 
 class DatasetEvaluator:
     """

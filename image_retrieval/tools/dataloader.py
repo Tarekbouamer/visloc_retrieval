@@ -1,20 +1,17 @@
 import numpy as np
 import logging
 
-from  torch.utils.data import DataLoader, SubsetRandomSampler, default_collate
+from  torch.utils.data import DataLoader, SubsetRandomSampler
 from  timm.data import create_transform
-from  timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, DEFAULT_CROP_PCT
+from  timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
-# core 
-from core.utils.options     import test_datasets_names
-from core.utils.download    import download_train, download_test
 
 # image_retrieval
-from image_retrieval.datasets.tuples            import TuplesDataset
-from image_retrieval.datasets.generic import ImagesFromList, ImagesTransform, INPUTS
+from image_retrieval.datasets.tuples import TuplesDataset
+from image_retrieval.datasets.generic import ImagesFromList, ImagesTransform 
 
 
-from image_retrieval.datasets.misc              import iss_collate_fn, collate_fn, collate_tuples
+from image_retrieval.datasets.misc  import collate_tuples
 
 # logger
 import logging
