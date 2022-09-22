@@ -10,7 +10,7 @@ import os
 # 
 from .model             import build_model, run_pca
 from .optimizer         import build_optimizer, build_lr_scheduler
-from .dataloader        import build_train_dataloader, build_sample_dataloader
+from .dataloader        import build_train_dataloader, build_val_dataloader, build_sample_dataloader
 from .loss              import build_loss
 
 from .events            import EventWriter
@@ -62,8 +62,6 @@ class TrainerBase:
               start_epoch, max_epochs (int): See docs above
         """
 
-        logger.info(f"starting training {start_epoch}")
-
         self.epoch = self.start_epoch = start_epoch
         self.max_epochs = max_epochs
 
@@ -73,7 +71,7 @@ class TrainerBase:
             for self.epoch in range(start_epoch, max_epochs):
                     
                 self.before_epoch()
-                self.run_epoch()
+                self.train_epoch()
                 self.after_epoch()
                 self.val_epoch()
                 self.test_epoch()
@@ -102,7 +100,7 @@ class TrainerBase:
     def test_epoch(self):
         pass
     
-    def run_epoch(self):
+    def train_epoch(self):
         """
             Implement the standard training logic described above.
         """
@@ -110,9 +108,10 @@ class TrainerBase:
         # set to training 
         if not self.model.training:
             self.model.train()
+            self.model.apply(set_batchnorm_eval)
+        # 
+        self.refresh_train_data()
         
-        self.model.apply(set_batchnorm_eval)
-
         # zero grad
         self.optimizer.zero_grad()
         
@@ -174,6 +173,70 @@ class TrainerBase:
             #
             data_time = time.time()
 
+    def val_epoch(self):
+        """
+            Implement the standard training logic described above.
+        """
+        
+        # set to training 
+        if self.model.training:
+            self.model.eval()
+            
+        # 
+        self.refresh_val_data()
+   
+        # timer
+        data_time = time.time()
+        
+        # 
+        for step, (tuples, target) in enumerate(self.val_dl):
+            
+            with torch.no_grad():        
+                
+                # global step
+                self.global_step += 1
+                
+                # data_time
+                data_time = torch.as_tensor(time.time() - data_time)
+
+                # 
+                num_imgs  = len(tuples[0])
+                
+                # batch time
+                batch_time = time.time()
+                
+                # run
+                for tuple_i, target_i in zip(tuples, target):
+                    
+                    vecs = torch.zeros(num_imgs, self.cfg["global"].getint("global_dim")).cuda()
+                    
+                    # extract vectors
+                    for n in range(len(tuple_i)):
+                        pred = self.model(tuple_i[n].cuda(), do_whitening=True)
+                        vecs[n, :]  = pred
+        
+                    # compute loss 
+                    loss = self.loss(vecs, target_i.cuda())
+                        
+                # batch time
+                batch_time = torch.as_tensor(time.time() - batch_time)
+                
+                # metrics
+                with torch.no_grad():
+                    if isinstance(loss, torch.Tensor):
+                        metrics = {
+                            "loss":         loss, 
+                            "total_loss":   loss,
+                            "data_time":    data_time, 
+                            "batch_time":   batch_time
+                            }  
+                    
+                    # write 
+                    self.write_metrics(metrics, step)
+                
+                #
+                data_time = time.time()
+                
     def state_dict(self):
         ret = {"iteration": self.epoch}
         hooks_state = {}
@@ -225,8 +288,8 @@ class ImageRetrievalTrainer(TrainerBase):
         self.optimizer          = self.build_optimizer(cfg, self.model)
         self.train_dl           = self.build_train_loader(args, cfg)       
         self.val_dl             = self.build_val_loader(args, cfg)       
-        self.loss               = self.build_loss(cfg)                
-         
+        self.loss               = self.build_loss(cfg)     
+                 
         # scheduler
         self.scheduler = self.build_lr_scheduler(cfg, self.optimizer)
 
@@ -293,7 +356,6 @@ class ImageRetrievalTrainer(TrainerBase):
         del snapshot
             
     def before_epoch(self):
-        self.refresh_data()
         logger.info(f"learning rates {self.scheduler.get_last_lr()}")
     
     def after_epoch(self):
@@ -318,13 +380,18 @@ class ImageRetrievalTrainer(TrainerBase):
         self.scheduler.step()
 
     def val_epoch(self):
-        pass
+        if (self.epoch % self.cfg["general"].getint("val_interval")) != 0:
+            return
+
+        logger.info(f"val epoch {self.epoch}")
+        super().val_epoch()
         
     def test_epoch(self):
         
         if (self.epoch % self.cfg["general"].getint("test_interval")) != 0:
             return
         
+        logger.info(f"test epoch {self.epoch}")
         snapshot_last = os.path.join(self.args.directory, "last_model_.pth.tar")
 
         # test
@@ -375,9 +442,9 @@ class ImageRetrievalTrainer(TrainerBase):
         logger.info("start training")
         super().train(self.start_epoch, self.max_epochs)
         
-    def run_epoch(self):
-        logger.info("run step")
-        super().run_epoch()
+    def train_epoch(self):
+        logger.info(f"train epoch {self.epoch}")
+        super().train_epoch()
 
     def state_dict(self):
         ret             = super().state_dict()
@@ -388,10 +455,14 @@ class ImageRetrievalTrainer(TrainerBase):
         super().load_state_dict(state_dict)
         self._trainer.load_state_dict(state_dict["_trainer"])
     
-    def refresh_data(self):
-        logger.info(f"refresh dataset {self.epoch}")
+    def refresh_train_data(self):
+        logger.info(f"refresh train dataset")
         self.train_dl.dataset.create_epoch_tuples(self.cfg, self.model) 
     
+    def refresh_val_data(self):
+        logger.info(f"refresh val dataset")
+        self.val_dl.dataset.create_epoch_tuples(self.cfg, self.model)
+            
     def write_metrics(self, metrics, step, prefix=""):
         """
         Args:
@@ -453,7 +524,13 @@ class ImageRetrievalTrainer(TrainerBase):
         Returns:
         """
         return build_train_dataloader(args, cfg)
-    
+
+    @classmethod
+    def build_val_loader(self, args, cfg):
+        """
+        Returns:
+        """
+        return build_val_dataloader(args, cfg)    
     @classmethod
     def build_loss(self, cfg):
         """

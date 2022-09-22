@@ -159,7 +159,7 @@ class TuplesDataset(data.Dataset):
     
     def create_epoch_tuples(self, cfg, model):
 
-        logger.debug('Creating tuples for an epoch of {%s}--{%s}', self.name, self.mode)
+        logger.debug(f'creating tuples ({self.name}) for mode ({self.mode})')
         
         global_cfg  = cfg["global"]
         data_cfg    = cfg["dataloader"]
@@ -184,7 +184,7 @@ class TuplesDataset(data.Dataset):
         with torch.no_grad():
             
             # Prepare query loader
-            logger.debug('Extracting descriptors for query images :')
+            logger.debug('extracting descriptors for query images :')
 
             tf = ImagesTransform(  max_size=data_cfg.getint("max_size"),
                                     mean=aug_cfg.getstruct("mean"),     std=aug_cfg.getstruct("std")
@@ -218,7 +218,7 @@ class TuplesDataset(data.Dataset):
 
             
             # Prepare negative pool data loader
-            logger.debug('Extracting descriptors for negative pool :')
+            logger.debug('extracting descriptors for negative pool :')
             
             pool_data = ImagesFromList(root='', 
                                        images=[self.images[i] for i in idxs2images], 
@@ -247,7 +247,7 @@ class TuplesDataset(data.Dataset):
                 del pred
 
             
-            logger.debug('Searching for hard negatives :')
+            logger.debug('searching for hard negatives :')
             # Compute dot product scores and ranks on GPU
             scores = torch.mm(poolvecs, qvecs.t())
             scores, scores_indices = torch.sort(scores, dim=0, descending=True)
@@ -279,6 +279,6 @@ class TuplesDataset(data.Dataset):
                 self.negative_indices.append(nidxs)
 
             del scores
-            logger.info('Average negative l2-distance = %f', average_negative_distance/negative_distance)
+            logger.info('average negative l2-distance = %f', average_negative_distance/negative_distance)
 
         return (average_negative_distance/negative_distance).item()  # return average negative l2-distance
