@@ -1,6 +1,7 @@
 ## Image-Retrieval-for-Image-Based-Localization
 
 ### TO DO?
+* add timm EMA and more event logginh add image add tensor and 
 * Add results on roxford5k rparis6k.
 * Add unsupervised local features descriptor head.
 

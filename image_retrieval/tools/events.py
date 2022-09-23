@@ -6,7 +6,7 @@ from collections import defaultdict, OrderedDict
 
 import torch
 import tensorboardX as tensorboard
-
+from torchvision.utils import make_grid
 # logger
 import logging
 logger = logging.getLogger("retrieval")
@@ -74,7 +74,7 @@ class AverageMeter(ConstantMeter):
         super(AverageMeter, self).update(value)
         self.sum.mul_(self.momentum).add_(value)
         self.count.mul_(self.momentum).add_(1.)
-
+  
     @property
     def mean(self):
         if self.count.item() == 0:
@@ -132,7 +132,7 @@ class EventWriter(Writer):
         self.is_training = False
         
         self.history = self.histories["test"]
-                
+
     def add_scalar(self, name, value, iter):
         # summary board
         self.summray.add_scalar(name, value, iter)
@@ -141,6 +141,14 @@ class EventWriter(Writer):
         for k , v in data.items():
             self.add_scalar(self.mode + "/" + k, v, iter)
 
+    def add_images(self, images, iter):
+        for id , im in enumerate(images):
+            self.summray.add_images(f'tuple/{id}', im, iter)
+
+    def add_graph(self, model, images=None):
+        images = images[0].cuda()
+        self.summray.add_graph(model, images)
+        
     def put(self, name, value):
         # update history
         history = self.history[name]

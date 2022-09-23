@@ -130,8 +130,12 @@ def compute_map(ranks, gnd, kappas=[1, 5, 10]):
         msg += " k@{}: {:.4f}".format(kappas[k], prk[k]*100)
     
     logger.info(msg)
+    
+    score = {
+        "map": map_score
+        }
      
-    return map_score
+    return score
 
 
 def compute_map_revisited(ranks, gnd, kappas=[1, 5, 10]):
@@ -176,7 +180,12 @@ def compute_map_revisited(ranks, gnd, kappas=[1, 5, 10]):
     for k in range(len(kappas)):
         logger.info(f"mP@k{kappas[k]}   E: {mprE[k]*100:.4f}  M: {mprM[k]*100:.4f}   H: {mprH[k]*100:.4f}")
 
-    # score
-    score = (mapE + mapM + mapH) / 3.0
+    # score 
+    score = {
+        "Easy":     mapE,
+        "Medium":   mapM,
+        "Hard":     mapH,
+        "map": (mapE + mapM + mapH) / 3.0
+        }
     
     return score

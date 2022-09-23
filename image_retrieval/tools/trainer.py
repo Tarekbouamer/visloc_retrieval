@@ -4,7 +4,7 @@ import shutil
 import torch
 
 import tensorboardX as tensorboard
-
+import torchvision as torchvision
 import os
 
 # 
@@ -50,7 +50,7 @@ class TrainerBase:
           storage(EventStorage): An EventStorage that's opened during the course of training.
     """
 
-    def __init__(self, epoch=-1, start_epoch=1, max_epochs=0):
+    def __init__(self, epoch=0, start_epoch=1, max_epochs=0):
         
         self.epoch          = epoch
         self.start_epoch    = start_epoch
@@ -109,7 +109,8 @@ class TrainerBase:
         if not self.model.training:
             self.model.train()
             self.model.apply(set_batchnorm_eval)
-            self.writer.train()
+        
+        self.writer.train()
         # 
         self.refresh_train_data()
         
@@ -136,6 +137,8 @@ class TrainerBase:
             
             # run
             for tuple_i, target_i in zip(tuples, target):
+                
+                # torchvision.utils.make_grid()
                 
                 vecs = torch.zeros(num_imgs, self.cfg["global"].getint("global_dim")).cuda()
                 
@@ -169,8 +172,12 @@ class TrainerBase:
                         }  
                 
                 # write 
-                self.write_metrics(metrics, step)
-            
+                self.write_metrics(metrics, step, len(self.train_dl), global_step=self.global_step)
+                
+                # 
+                self.writer.add_images(tuple_i, step)
+                self.writer.add_graph(self.model, tuple_i)
+
             #
             data_time = time.time()
 
@@ -179,13 +186,14 @@ class TrainerBase:
             Implement the standard training logic described above.
         """
         
-        # set to training 
+        # set to eval 
         if self.model.training:
             self.model.eval()
-        #
+        
+        # eval
         self.writer.eval()
 
-        # 
+        # hard mine
         self.refresh_val_data()
    
         # timer
@@ -195,10 +203,7 @@ class TrainerBase:
         for step, (tuples, target) in enumerate(self.val_dl):
             
             with torch.no_grad():        
-                
-                # global step
-                self.global_step += 1
-                
+        
                 # data_time
                 data_time = torch.as_tensor(time.time() - data_time)
 
@@ -235,7 +240,7 @@ class TrainerBase:
                             }  
                     
                     # write 
-                    self.write_metrics(metrics, step)
+                    self.write_metrics(metrics, step, len(self.val_dl) )
                 
                 #
                 data_time = time.time()
@@ -466,7 +471,7 @@ class ImageRetrievalTrainer(TrainerBase):
         logger.info(f"refresh val dataset")
         self.val_dl.dataset.create_epoch_tuples(self.cfg, self.model)
             
-    def write_metrics(self, metrics, step, prefix=""):
+    def write_metrics(self, metrics, step, max_steps, global_step=None, prefix=""):
         """
         Args:
             loss_dict (dict): dict of scalar losses
@@ -483,11 +488,11 @@ class ImageRetrievalTrainer(TrainerBase):
                     self.writer.put(k, v)
                     
         # write to board
-        self.writer.write(self.global_step)
+        self.writer.write(global_step if global_step else step)
         
         # logger iteration
         if step % self.writer.print_freq == 0:       
-            self.writer.log(self.epoch, self.max_epochs,  step, len(self.train_dl))
+            self.writer.log(self.epoch, self.max_epochs,  step, max_steps)
 
     @classmethod
     def build_model(cls, cfg):
@@ -562,11 +567,13 @@ class ImageRetrievalTrainer(TrainerBase):
         logger.info(f"evaluate epoch {self.epoch}")
               
         # test
-        results_dict = self.evaluator.evaluate()
+        results_dict = self.evaluator.evaluate(self.epoch)
             
         # overall score
         scores = [v for k, v in  results_dict.items()]
         score = sum(scores)/len(scores)
+        
+        logger.info(f"score: {score}")
             
         #   
         return score

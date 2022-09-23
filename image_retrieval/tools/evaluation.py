@@ -128,8 +128,22 @@ class DatasetEvaluator(DatasetEvaluator):
             query_dl, database_dl, ground_truth = build_paris_oxford_dataset(data_path, dataset, self.cfg)
             
         return query_dl, database_dl, ground_truth
+    
+    def write_metrics(self, metrics, datatset, step, scale=1):
 
-    def evaluate(self):
+        # push metrics to history
+        if len(metrics) > 1:
+            for k, v in metrics.items():
+                if isinstance(v, torch.Tensor):
+                    self.writer.put(datatset +"/"+ k, v * scale)
+                else:
+                    self.writer.put(datatset +"/"+ k, torch.as_tensor(v * scale))
+                    
+        # write to board
+        self.writer.write(step)
+        
+
+    def evaluate(self, epoch):
         
         # eval mode
         if self.model.training:
@@ -154,13 +168,19 @@ class DatasetEvaluator(DatasetEvaluator):
             
             # test
             if self.test_mode == "global":
-                results[dataset] = test_global_descriptor(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth)
+                metrics = test_global_descriptor(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth)
             
             elif self.test_mode == "asmk":
-                results[dataset] = test_asmk(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth, self.asmk)
+                metrics = test_asmk(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth, self.asmk)
             
             else:
                 logger.error(f"{self.test_mode} is not implemented yet")
                 
-        
+            # write
+            self.write_metrics(metrics, dataset, epoch, scale=100)
+            
+            # map
+            results[dataset] = metrics["map"]
+
+       
         return results
