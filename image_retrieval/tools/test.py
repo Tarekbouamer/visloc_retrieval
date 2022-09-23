@@ -32,9 +32,7 @@ def build_paris_oxford_dataset(data_path, name_dataset, cfg):
     db = ParisOxfordTestDataset(root_dir=data_path, name=name_dataset)
     
     # options 
-    trans_opt = {   "max_size":     cfg["test"].getint("max_size"),
-                    "mean":         cfg["augmentaion"].getstruct("mean"), 
-                    "std":          cfg["augmentaion"].getstruct("std")}
+    trans_opt = {   "max_size":     cfg["test"].getint("max_size")}
             
     dl_opt = {  "batch_size":   1, 
                 "shuffle":      False, 

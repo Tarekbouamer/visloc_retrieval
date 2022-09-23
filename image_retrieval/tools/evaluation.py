@@ -61,7 +61,7 @@ class DatasetEvaluator(DatasetEvaluator):
     all of its :class:`DatasetEvaluator`.
     """
 
-    def __init__(self, args, cfg, model, train_dataset):
+    def __init__(self, args, cfg, model, train_dataset, writer):
         """
         Args:
             evaluators (list): the evaluators to combine.
@@ -71,6 +71,8 @@ class DatasetEvaluator(DatasetEvaluator):
         #  model
         self.model = model
         self.train_dataset = train_dataset
+        
+        self.writer = writer
         
         #  
         self.test_mode      = cfg["test"].get("mode")
@@ -132,6 +134,8 @@ class DatasetEvaluator(DatasetEvaluator):
         # eval mode
         if self.model.training:
             self.model.eval()
+        #
+        self.writer.test()
         
         # data path
         if not os.path.exists(self.args.data):

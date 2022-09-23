@@ -109,6 +109,7 @@ class TrainerBase:
         if not self.model.training:
             self.model.train()
             self.model.apply(set_batchnorm_eval)
+            self.writer.train()
         # 
         self.refresh_train_data()
         
@@ -181,7 +182,9 @@ class TrainerBase:
         # set to training 
         if self.model.training:
             self.model.eval()
-            
+        #
+        self.writer.eval()
+
         # 
         self.refresh_val_data()
    
@@ -281,7 +284,7 @@ class ImageRetrievalTrainer(TrainerBase):
         self.args         = args
         
         # writer
-        self.writer     = EventWriter(args.directory)
+        self.writer = self.build_writers(args)
         
         # build        
         self.model              = self.build_model(cfg)
@@ -304,7 +307,7 @@ class ImageRetrievalTrainer(TrainerBase):
         # evaluation
         self.last_score = None 
         self.best_score = None 
-        self.evaluator  = DatasetEvaluator(args, cfg, self.model, self.get_dataset())
+        self.evaluator  = DatasetEvaluator(args, cfg, self.model, self.get_dataset(), self.writer)
         
         # resume 
         if args.resume:
@@ -531,6 +534,7 @@ class ImageRetrievalTrainer(TrainerBase):
         Returns:
         """
         return build_val_dataloader(args, cfg)    
+    
     @classmethod
     def build_loss(self, cfg):
         """
@@ -550,19 +554,9 @@ class ImageRetrievalTrainer(TrainerBase):
         pass
 
     @classmethod
-    def build_evaluator(cls, cfg, dataset_name):
-        """
-        Returns:
-            DatasetEvaluator or None
-        """
-        raise NotImplementedError(
-            """
-            If you want DefaultTrainer to automatically run evaluation,
-            please implement `build_evaluator()` in subclasses (see train_net.py for example).
-            Alternatively, you can call evaluation functions yourself (see Colab balloon tutorial for example).
-            """
-            )
-
+    def build_writers(self, args):        
+        return EventWriter(args.directory)
+        
     def test(self):
                 
         logger.info(f"evaluate epoch {self.epoch}")

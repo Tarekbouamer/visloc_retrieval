@@ -58,9 +58,7 @@ def build_train_dataloader(args, cfg):
     
 
     # transforms
-    transform = build_transforms(cfg)["train"]
     transform = build_transforms(cfg)["train_aug"]
-
     
     # dataset
     train_db = TuplesDataset(root_dir=args.data,
@@ -107,6 +105,7 @@ def build_val_dataloader(args, cfg):
     val_dl = DataLoader(val_db, **dl_opt)
     
     return val_dl
+    
     
 def build_transforms(cfg):
     data_cfg    = cfg["dataloader"]
