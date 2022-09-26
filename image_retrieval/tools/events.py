@@ -7,7 +7,8 @@ from collections import defaultdict, OrderedDict
 import torch
 import tensorboardX as tensorboard
 from torchvision.utils import make_grid
-# logger
+import  torchvision.transforms as transforms
+# logger 
 import logging
 logger = logging.getLogger("retrieval")
 
@@ -99,9 +100,8 @@ class EventWriter(Writer):
     """
 
     def __init__(self, directory, print_freq=10):
-
         
-        self.summray    = tensorboard.SummaryWriter(directory)
+        self.summray    = tensorboard.SummaryWriter(directory, max_queue=5, flush_secs=10)
         self.logger     = logging.getLogger(__name__)
         
         # 
@@ -115,6 +115,9 @@ class EventWriter(Writer):
         # 
         self.is_training = True
         
+        self.inv_transform = transforms.Normalize( 
+                                    mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
+                                    std=[  1/0.229,       1/0.224,       1/0.225])
     def train(self):
         self.mode = "train"
         self.is_training = True
@@ -138,12 +141,15 @@ class EventWriter(Writer):
         self.summray.add_scalar(name, value, iter)
   
     def add_scalars(self, data, iter):
+        print(data)
         for k , v in data.items():
             self.add_scalar(self.mode + "/" + k, v, iter)
 
     def add_images(self, images, iter):
-        for id , im in enumerate(images):
-            self.summray.add_images(f'tuple/{id}', im, iter)
+        if iter % 100 == 0:
+            for id , im in enumerate(images):
+                im = self.inv_transform(im)
+                self.summray.add_images(f'tuple/{id}', im, iter)
 
     def add_graph(self, model, images=None):
         images = images[0].cuda()
@@ -158,9 +164,11 @@ class EventWriter(Writer):
         return dict(self.history)
     
     def set(self, state_dicts):
-        # for name, meter in meters.items():
-        #     meter.load_state_dict(snapshot["state_dict"][name + "_meter"])
-        NotImplementedError
+        
+        self.train()
+        
+        for key in ['loss', 'total_loss', 'data_time', 'batch_time']:
+            self.history[key].load_state_dict(state_dicts[key])
         
     def write(self, global_step):
         for k, v in self.history.items():

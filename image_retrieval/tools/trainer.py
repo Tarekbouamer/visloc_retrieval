@@ -1,3 +1,4 @@
+from ast import arg
 import numpy as np
 import time
 import shutil
@@ -6,6 +7,8 @@ import torch
 import tensorboardX as tensorboard
 import torchvision as torchvision
 import os
+
+from timm import utils
 
 # 
 from .model             import build_model, run_pca
@@ -156,6 +159,12 @@ class TrainerBase:
             
             # optimize 
             self.optimizer.step()
+            
+            # ema update
+            if self.model_ema is not None:
+                self.model_ema.update(self.model)
+            
+            # zero grads    
             self.optimizer.zero_grad()
             
             # batch time
@@ -176,7 +185,7 @@ class TrainerBase:
                 
                 # 
                 self.writer.add_images(tuple_i, step)
-                self.writer.add_graph(self.model, tuple_i)
+                # self.writer.add_graph(self.model, tuple_i)
 
             #
             data_time = time.time()
@@ -289,7 +298,7 @@ class ImageRetrievalTrainer(TrainerBase):
         self.args         = args
         
         # writer
-        self.writer = self.build_writers(args)
+        self.writer = self.build_writers(args, cfg)
         
         # build        
         self.model              = self.build_model(cfg)
@@ -297,33 +306,34 @@ class ImageRetrievalTrainer(TrainerBase):
         self.train_dl           = self.build_train_loader(args, cfg)       
         self.val_dl             = self.build_val_loader(args, cfg)       
         self.loss               = self.build_loss(cfg)     
-                 
-        # scheduler
-        self.scheduler = self.build_lr_scheduler(cfg, self.optimizer)
 
-        #  
+        # params 
         self.start_epoch  = 1
         self.global_step  = 0
         self.max_epochs   = cfg["scheduler"].getint("epochs")
-        
-        #
-        self.compute_pca  = cfg["global"].getboolean("update")
-        
-        # evaluation
         self.last_score = None 
         self.best_score = None 
-        self.evaluator  = DatasetEvaluator(args, cfg, self.model, self.get_dataset(), self.writer)
         
-        # resume 
+        # resume
         if args.resume:
             self.resume_or_load()
-            self.compute_pca = False 
+        
+        # init pca
+        elif cfg["global"].getboolean("update"):
+            self.init_model()
+            
+        # ema
+        self.model_ema = self.build_ema_model(args, cfg)
+        
+        # scheduler
+        self.scheduler = self.build_lr_scheduler(cfg, self.optimizer)
+
+        # evaluation
+        self.evaluator  = DatasetEvaluator(args, cfg, self.model, self.model_ema, self.get_dataset(), self.writer)
             
         # evaluate starting epoch
         if args.eval:
-            self.before_train()
             self.test()
-            self.compute_pca = False
             
         logger.info("init trainer")
         
@@ -343,32 +353,36 @@ class ImageRetrievalTrainer(TrainerBase):
             Args:
                 resume (bool): whether to do resume or not
         """
-        logger.info(f"resume: {self.args.resume}")
         
         # model
-        snapshot = resume_from_snapshot(self.model, 
-                                        self.args.resume, 
-                                        ["body", "ret_head"])
+        snapshot_last_path = os.path.join(self.args.directory, "last_model.pth.tar")
+        logger.info(f"resume load model {snapshot_last_path}")
 
-        # optimizer
-        self.optimizer.load_state_dict(snapshot["state_dict"]["optimizer"], strict=True)
+        # load
+        snapshot_last = resume_from_snapshot(self.model, snapshot_last_path, ["body", "head"])
         
+        # optimizer
+        self.optimizer.load_state_dict(snapshot_last["state_dict"]["optimizer"])
+        # print(snapshot_last["state_dict"]["optimizer"])
+        # input()
         # scores
-        self.start_epoch    = snapshot["training_meta"]["epoch"] + 1
-        self.best_score     = snapshot["training_meta"]["best_score"]
-        self.global_step    = snapshot["training_meta"]["global_step"]
+        self.start_epoch    = snapshot_last["training_meta"]["epoch"] + 1
+        self.best_score     = snapshot_last["training_meta"]["best_score"]
+        self.global_step    = snapshot_last["training_meta"]["global_step"]
 
         # set metrics 
-        self.writer.set(snapshot["state_dict"])
+        self.writer.set(snapshot_last["state_dict"])
 
-        del snapshot
+        del snapshot_last
             
     def before_epoch(self):
-        logger.info(f"learning rates {self.scheduler.get_last_lr()}")
+        logger.info(f"learning rates {self.scheduler.get_lr()}")
+        for it, lr_i in enumerate(self.scheduler.get_lr()):
+            self.writer.add_scalar(f'lr/{it}', lr_i, self.epoch)
     
     def after_epoch(self):
         
-        snapshot_last = os.path.join(self.args.directory, "last_model_.pth.tar".format(self.epoch))
+        snapshot_last = os.path.join(self.args.directory, "last_model.pth.tar".format(self.epoch))
         
         logger.info(f"save snapshot:    {snapshot_last}")
         
@@ -376,13 +390,26 @@ class ImageRetrievalTrainer(TrainerBase):
         metrics = self.writer.get()
         meters_out = {k : v.state_dict() for k, v in metrics.items()}
 
-        # save last
+        # save model last
         save_snapshot(snapshot_last, self.cfg, self.epoch, self.last_score, self.best_score, self.global_step,
                         body=self.model.body.state_dict(),
                         head=self.model.head.state_dict(),
                         optimizer=self.optimizer.state_dict(),
                         **meters_out
                         )
+        
+        # save model ema 
+        if self.model_ema is not None:
+            snapshot_ema = os.path.join(self.args.directory, "ema_model.pth.tar".format(self.epoch))
+            
+            logger.info(f"save ema snapshot:    {snapshot_ema}")
+            
+            save_snapshot(snapshot_ema, self.cfg, self.epoch, self.last_score, self.best_score, self.global_step,
+                            body=self.model_ema.module.body.state_dict(),
+                            head=self.model_ema.module.head.state_dict(),
+                            optimizer=self.optimizer.state_dict(),
+                            **meters_out
+                            )
         
         # update learning rate 
         self.scheduler.step()
@@ -400,46 +427,54 @@ class ImageRetrievalTrainer(TrainerBase):
             return
         
         logger.info(f"test epoch {self.epoch}")
-        snapshot_last = os.path.join(self.args.directory, "last_model_.pth.tar")
 
         # test
         if self.evaluator is not None:
             self.last_score = self.test()
             
-        #
-        snapshot = torch.load(snapshot_last, map_location="cpu")
+        # load snapshot
+        if self.model_ema is not None:
+            snapshot_path   = os.path.join(self.args.directory, "ema_model.pth.tar")
+            snapshot        = torch.load(snapshot_path, map_location="cpu")
+        else:
+            snapshot_path   = os.path.join(self.args.directory, "last_model.pth.tar")
+            snapshot        = torch.load(snapshot_path, map_location="cpu")
+
+        # update score
         snapshot["training_meta"]["last_score"] = self.last_score
-        torch.save(snapshot, snapshot_last)
-            
+        torch.save(snapshot, snapshot_path)
+ 
         # save best
         if (self.best_score is None) or \
             (self.last_score >= self.best_score):
                 
-            best_snapshot = os.path.join(self.args.directory, "best_model.pth.tar")
+            best_snapshot_path = os.path.join(self.args.directory, "best_model.pth.tar")
             
             self.best_score = self.last_score
-            shutil.copy(snapshot_last, best_snapshot)
-            logger.info(f"save best snapshot:   {best_snapshot}")
-
+            shutil.copy(snapshot_path, best_snapshot_path)
+            logger.info(f"save best snapshot:   {best_snapshot_path}")
+    
+    def init_model(self):
+            
+        logger.info("run init pca")
+            
+        sample_dl = build_sample_dataloader(self.cfg, self.get_dataset())
+            
+        layer = run_pca(self.args, self.cfg,  self.model, sample_dl)
+            
+        # save layer to whithen_path
+        layer_path = os.path.join(self.args.directory, "whiten.pth")
+        logger.info(f"save whiten layer: {layer_path}")
+        torch.save(layer.state_dict(), layer_path)
+            
+        # init
+        self.model.head.whiten.load_state_dict(layer.state_dict())
+            
+        logger.info("pca done")
+        
     def before_train(self):
         
-        if self.compute_pca:
-            
-            logger.info("run PCA")
-            
-            sample_dl = build_sample_dataloader(self.cfg, self.get_dataset())
-            
-            layer = run_pca(self.args, self.cfg,  self.model, sample_dl)
-            
-            # save layer to whithen_path
-            layer_path = os.path.join(self.args.directory, "whiten.pth")
-            logger.info(f"save whiten layer: {layer_path}")
-            torch.save(layer.state_dict(), layer_path)
-            
-            # init
-            self.model.head.whiten.load_state_dict(layer.state_dict())
-            
-            logger.info("PCA Done")
+        pass
                     
     def train(self):
         """
@@ -465,12 +500,26 @@ class ImageRetrievalTrainer(TrainerBase):
     
     def refresh_train_data(self):
         logger.info(f"refresh train dataset")
-        self.train_dl.dataset.create_epoch_tuples(self.cfg, self.model) 
+        stats = self.train_dl.dataset.create_epoch_tuples(self.cfg, self.model) 
+        
+        if len(stats) > 0:
+            for k, v in stats.items():
+                if isinstance(v, torch.Tensor):
+                    self.writer.add_scalar(k, v, self.epoch)
+                else:
+                    self.writer.add_scalar(k, torch.as_tensor(v), self.epoch)
     
     def refresh_val_data(self):
         logger.info(f"refresh val dataset")
-        self.val_dl.dataset.create_epoch_tuples(self.cfg, self.model)
-            
+        stats = self.val_dl.dataset.create_epoch_tuples(self.cfg, self.model)
+        
+        if len(stats) > 0:
+            for k, v in stats.items():
+                if isinstance(v, torch.Tensor):
+                    self.writer.add_scalar(k, v, self.epoch)
+                else:
+                    self.writer.add_scalar(k, torch.as_tensor(v), self.epoch)
+                
     def write_metrics(self, metrics, step, max_steps, global_step=None, prefix=""):
         """
         Args:
@@ -482,7 +531,7 @@ class ImageRetrievalTrainer(TrainerBase):
         metrics_dict = {k: v.detach().cpu() for k, v in metrics.items()}
 
         # push metrics to history
-        if len(metrics_dict) > 1:
+        if len(metrics_dict) > 0:
             for k, v in metrics_dict.items():
                 if isinstance(v, torch.Tensor):
                     self.writer.put(k, v)
@@ -511,6 +560,26 @@ class ImageRetrievalTrainer(TrainerBase):
         
         logger.info(f"model:\n {model}")
         return model
+    
+    def build_ema_model(self, args, cfg):
+
+        ema_model = utils.ModelEmaV2(self.model, decay=cfg["body"].getfloat("ema_decay"))
+        
+        logger.info(f"ema_model:\n {ema_model}")
+        
+        if args.resume:
+            # model
+            snapshot_ema_path = os.path.join(self.args.directory, "ema_model.pth.tar")
+            logger.info(f"resume load ema model {snapshot_ema_path}")
+
+            # load
+            snapshot_last = resume_from_snapshot(ema_model.module, snapshot_ema_path, ["body", "head"])
+        
+            self.best_score = snapshot_last["training_meta"]["best_score"]
+
+            del snapshot_last
+
+        return ema_model
 
     @classmethod
     def build_optimizer(cls, cfg, model):
@@ -559,8 +628,9 @@ class ImageRetrievalTrainer(TrainerBase):
         pass
 
     @classmethod
-    def build_writers(self, args):        
-        return EventWriter(args.directory)
+    def build_writers(self, args, cfg):        
+        return EventWriter(args.directory, 
+                           cfg["general"].getint("log_interval"))
         
     def test(self):
                 

@@ -277,6 +277,11 @@ class TuplesDataset(data.Dataset):
                 self.negative_indices.append(nidxs)
 
             del scores
-            logger.info('average negative l2-distance = %f', average_negative_distance/negative_distance)
-
-        return (average_negative_distance/negative_distance).item()  # return average negative l2-distance
+            avg_negative_l2 = (average_negative_distance/negative_distance).item()
+            logger.info('average negative l2-distance = %f', avg_negative_l2)
+        
+        # stats
+        stats = {
+            "avg_negative_l2": avg_negative_l2
+        }
+        return   stats

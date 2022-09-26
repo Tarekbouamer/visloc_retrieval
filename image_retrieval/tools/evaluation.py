@@ -61,7 +61,7 @@ class DatasetEvaluator(DatasetEvaluator):
     all of its :class:`DatasetEvaluator`.
     """
 
-    def __init__(self, args, cfg, model, train_dataset, writer):
+    def __init__(self, args, cfg, model, model_ema=None, train_dataset=None, writer=None):
         """
         Args:
             evaluators (list): the evaluators to combine.
@@ -69,7 +69,7 @@ class DatasetEvaluator(DatasetEvaluator):
         super().__init__()
         
         #  model
-        self.model = model
+        self.model = model if model_ema is None else model_ema.module
         self.train_dataset = train_dataset
         
         self.writer = writer
@@ -132,7 +132,7 @@ class DatasetEvaluator(DatasetEvaluator):
     def write_metrics(self, metrics, datatset, step, scale=1):
 
         # push metrics to history
-        if len(metrics) > 1:
+        if len(metrics) > 0:
             for k, v in metrics.items():
                 if isinstance(v, torch.Tensor):
                     self.writer.put(datatset +"/"+ k, v * scale)

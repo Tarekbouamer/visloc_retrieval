@@ -31,7 +31,7 @@ def make_parser():
 
     parser.add_argument("--eval", action="store_true", help="Do a single validation run")
 
-    parser.add_argument('--resume', metavar='FILENAME', type=str,
+    parser.add_argument('--resume', action="store_true",
                         help='name of the latest checkpoint (default: None)')
 
     parser.add_argument("--pre_train", metavar="FILE", type=str, nargs="*",

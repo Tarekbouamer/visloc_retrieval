@@ -131,7 +131,7 @@ def build_transforms(cfg):
     tf_pre, tf_aug, tf_post = create_transform( input_size=data_cfg.getint("max_size"),
                                                 is_training=True,
                                                 auto_augment=aug_cfg.get("auto_augment"),
-                                                interpolation="bilinear",         
+                                                interpolation="random", 
                                                 re_prob=0.25,
                                                 re_mode="pixel",
                                                 re_count=2,
