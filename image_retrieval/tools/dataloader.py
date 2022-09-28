@@ -7,8 +7,7 @@ from  timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
 # image_retrieval
-from image_retrieval.datasets.tuples import TuplesDataset
-from image_retrieval.datasets.generic import ImagesFromList, ImagesTransform 
+from image_retrieval.datasets.tuples import TuplesDataset, ImagesFromList, ImagesTransform 
 
 
 from image_retrieval.datasets.misc  import collate_tuples
@@ -58,7 +57,8 @@ def build_train_dataloader(args, cfg):
     
 
     # transforms
-    transform = build_transforms(cfg)["train_aug"]
+    # transform = build_transforms(cfg)["train_aug"]
+    transform = build_transforms(cfg)["train"]
     
     # dataset
     train_db = TuplesDataset(root_dir=args.data,

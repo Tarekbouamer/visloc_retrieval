@@ -1,11 +1,8 @@
-from ast import arg
 import numpy as np
 import time
 import shutil
 import torch
 
-import tensorboardX as tensorboard
-import torchvision as torchvision
 import os
 
 from timm import utils
@@ -20,9 +17,9 @@ from .events            import EventWriter
 from .evaluation        import DatasetEvaluator
 
 
-from image_retrieval.utils.logging                 import  _log_api_usage, setup_logger
-from image_retrieval.utils.configurations          import make_config, config_to_string
-from image_retrieval.utils.snapshot     import save_snapshot, resume_from_snapshot, pre_train_from_snapshots
+from image_retrieval.utils.logging                 import  _log_api_usage
+from image_retrieval.utils.configurations          import config_to_string
+from image_retrieval.utils.snapshot     import save_snapshot, resume_from_snapshot
 
 
 # logger

@@ -13,7 +13,7 @@ from image_retrieval.utils.general     import htime
 from image_retrieval.utils.evaluation.ParisOxfordEval import compute_map_revisited, compute_map
 
 from image_retrieval.datasets.benchmark         import ParisOxfordTestDataset
-from image_retrieval.datasets.generic import ImagesFromList, ImagesTransform, INPUTS
+from image_retrieval.datasets.tuples import ImagesFromList, ImagesTransform, INPUTS
 
 
 TEST_MODES = ["global_descriptor", "ASMK", "All"]

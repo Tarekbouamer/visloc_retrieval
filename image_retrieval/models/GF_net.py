@@ -9,7 +9,7 @@ from  tqdm import tqdm
 import numpy as np
 from collections import OrderedDict
 
-from image_retrieval.datasets.generic import ImagesFromList, ImagesTransform, INPUTS
+from image_retrieval.datasets.tuples import ImagesFromList, ImagesTransform, INPUTS
 
     
 

@@ -9,7 +9,7 @@ import torch.utils.data as data
 from asmk import asmk_method, io_helpers, ASMKMethod, kernel as kern_pkg
 
 
-from image_retrieval.datasets.generic import ImagesFromList, ImagesTransform, INPUTS
+from image_retrieval.datasets.tuples import ImagesFromList, ImagesTransform, INPUTS
 
 from image_retrieval.utils.evaluation.ParisOxfordEval import compute_map
 
