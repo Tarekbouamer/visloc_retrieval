@@ -326,7 +326,8 @@ class ImageRetrievalTrainer(TrainerBase):
         self.scheduler = self.build_lr_scheduler(cfg, self.optimizer)
 
         # evaluation
-        self.evaluator  = DatasetEvaluator(args, cfg, self.model, self.model_ema, self.get_dataset(), self.writer)
+        if args.eval:
+            self.evaluator  = DatasetEvaluator(args, cfg, self.model, self.model_ema, self.get_dataset(), self.writer)
             
         # evaluate starting epoch
         if args.eval:

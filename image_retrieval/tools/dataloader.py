@@ -1,3 +1,4 @@
+from distutils.command.build import build
 import numpy as np
 import logging
 
@@ -8,7 +9,7 @@ from  timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 # image_retrieval
 from image_retrieval.datasets.tuples import TuplesDataset, ImagesFromList, ImagesTransform 
-
+from image_retrieval.datasets.satellite import SatDataset
 
 from image_retrieval.datasets.misc  import collate_tuples
 
@@ -16,6 +17,41 @@ from image_retrieval.datasets.misc  import collate_tuples
 import logging
 logger = logging.getLogger("retrieval")  
 
+def build_dataset(args, cfg, transform, mode='train'):
+    data_cfg    = cfg["dataloader"]
+    test_cfg    = cfg["test"]
+    
+    data_opt = {    "neg_num": data_cfg.getint("neg_num"),
+                    "batch_size": data_cfg.getint("batch_size"),
+                    "num_workers": data_cfg.getint("num_workers")
+                }
+    # sfm
+    if data_cfg.get("dataset") == "retrieval-SfM-120k" :
+        query_size = data_cfg.getint("query_size")  if mode == 'train'  else float('inf')
+        pool_size = data_cfg.getint("pool_size")    if mode == 'val'    else float('inf')
+
+        train_db = TuplesDataset(root_dir=args.data,
+                                name=data_cfg.get("dataset"),
+                                mode=mode,
+                                query_size=query_size,
+                                pool_size=pool_size,
+                                transform=transform,
+                                **data_opt) 
+        
+    
+    elif  data_cfg.get("dataset") == "SAT" :
+        
+        train_db = SatDataset(root_dir=args.data,
+                                name=data_cfg.get("dataset"),
+                                mode=mode,
+                                query_size=data_cfg.getint("query_size"),
+                                pool_size=data_cfg.getint("pool_size"),
+                                transform=transform,
+                                **data_opt)
+        
+    
+    return train_db  
+    
 def build_sample_dataloader(cfg, images):
 
     #
@@ -46,11 +82,6 @@ def build_train_dataloader(args, cfg):
     logger.info("build train dataloader")
     
     # Options
-    data_opt = {    "neg_num": data_cfg.getint("neg_num"),
-                    "batch_size": data_cfg.getint("batch_size"),
-                    "num_workers": data_cfg.getint("num_workers")
-                }
-    
     dl_opt = {  "batch_sampler": None,          "batch_size":data_cfg.getint("batch_size"),
                 "collate_fn":collate_tuples,    "pin_memory":True,
                 "num_workers":data_cfg.getint("num_workers"), "shuffle":True, "drop_last":True}
@@ -61,13 +92,8 @@ def build_train_dataloader(args, cfg):
     transform = build_transforms(cfg)["train"]
     
     # dataset
-    train_db = TuplesDataset(root_dir=args.data,
-                             name=data_cfg.get("dataset"),
-                             mode='train',
-                             query_size=data_cfg.getint("query_size"),
-                             pool_size=data_cfg.getint("pool_size"),
-                             transform=transform,
-                             **data_opt)
+    train_db = build_dataset(args, cfg, transform, mode='train')
+
     
     # loader
     train_dl = DataLoader(train_db, **dl_opt)
@@ -92,15 +118,9 @@ def build_val_dataloader(args, cfg):
     # transform
     transform = build_transforms(cfg)["test"]
 
-    # val 
-    val_db = TuplesDataset(root_dir=args.data,
-                           name=data_cfg.get("dataset"),
-                           mode='val',
-                           query_size=float('inf'),
-                           pool_size=float('inf'),
-                           transform=transform,
-                           **data_opt)
-    
+    # dataset
+    val_db = build_dataset(args, cfg, transform, mode='val')
+
     # loader
     val_dl = DataLoader(val_db, **dl_opt)
     

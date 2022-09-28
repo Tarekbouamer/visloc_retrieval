@@ -146,7 +146,7 @@ class EventWriter(Writer):
             self.add_scalar(self.mode + "/" + k, v, iter)
 
     def add_images(self, images, iter):
-        if iter % 100 == 0:
+        if iter % self.print_freq == 0:
             for id , im in enumerate(images):
                 im = self.inv_transform(im)
                 self.summray.add_images(f'tuple/{id}', im, iter)
