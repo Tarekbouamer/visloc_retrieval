@@ -205,7 +205,7 @@ def build_model(cfg):
     timm_model_list = timm.list_models(pretrained=True)
     
     # assert
-    assert body_arch in timm_model_list, logger.error("model: %s  not implemented timm models yet!",   body_arch)
+    assert body_arch in timm_model_list, (f"model: {body_arch}  not implemented timm models yet!")
 
     # load model state dictionary
     body = timm.create_model(body_arch, 

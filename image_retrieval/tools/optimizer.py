@@ -154,8 +154,7 @@ def build_optimizer(cfg, model):
         if k.find("pool") != -1:
             pool_params += [p for p in v.parameters() if p.requires_grad]
         elif k.find("whiten")!= -1:
-            whiten_params += [p for p in v.parameters() if p.requires_grad]
-            
+            whiten_params += [p for p in v.parameters() if p.requires_grad] 
     assert len(body_norm_params) + len(body_other_params) + len(pool_params) + len(whiten_params)== \
         len([p for p in model.parameters() if p.requires_grad]), \
           "not all parameters that require grad are accounted for in the optimizer"
