@@ -88,7 +88,7 @@ class SatDataset(data.Dataset):
                 db_offset = len(self.images)
                 
                 # Read pkl file of each scene 
-                pkl_path = path.join(root_dir, city, "meta.pkl") 
+                pkl_path = path.join(root_dir, city, "meta_aug.pkl") 
                     
                 if not path.exists(pkl_path):
                     print("Path not found", pkl_path)
@@ -100,32 +100,30 @@ class SatDataset(data.Dataset):
                     
                 # when GPS is available
                 if mode in ['train', 'val']:
-                
+
                     # concatenate images from with their full path 
                     self.qImages.extend(    [ path.join(root_dir, city, ext) for ext in data["q_imgs"]  ]   )
                     self.images.extend(     [ path.join(root_dir, city, ext) for ext in data["db_imgs"] ]   )
                     
                     # 
                     self.qIdx.extend(       [     q   + q_offset    for q   in data["q_idx"]    ]   )
-                    self.pIdx.extend(       [     p   + db_offset   for p   in data["p_geo_idx"]    ]   )
+                    self.pIdx.extend(       [     p   + db_offset   for p   in data["p_geo_idx"]]   )
                     self.nonNegIdx.extend(  [     non + db_offset   for non in data["non_idx"]  ]   )
-                    
-                    #
-                    assert len(self.qIdx) == len(self.pIdx) == len(self.nonNegIdx)
 
-                elif mode in ['test']:
+                # elif mode in ['test']:
 
-                    # load images
-                    self.qImages.extend(    [ path.join(root_dir, city, ext) for ext in data["q_imgs"]  ]   )
-                    self.images.extend(   [ path.join(root_dir, city, ext) for ext in data["db_imgs"] ]   )
+                #     # load images
+                #     self.qImages.extend(    [ path.join(root_dir, city, ext) for ext in data["q_imgs"]  ]   )
+                #     self.images.extend(   [ path.join(root_dir, city, ext) for ext in data["db_imgs"] ]   )
                     
-                    # 
-                    self.qIdx.extend(       [     q   + q_offset    for q   in data["q_idx"]    ]   )
+                #     # 
+                #     self.qIdx.extend(       [     q   + q_offset    for q   in data["q_idx"]    ]   )
 
         else:
             raise(RuntimeError("Unknown dataset name!"))
+                
+        assert len(self.qIdx) == len(self.pIdx) == len(self.nonNegIdx)
         
-
         # initializing tuples dataset
         self.name = name
         self.mode = mode
@@ -223,19 +221,20 @@ class SatDataset(data.Dataset):
         aug_cfg     = cfg["augmentaion"]
 
         # Set model to eval mode
-        model.eval()
+        if model.training:
+            model.eval()
 
         # Select random indices
         indices = torch.randperm(len(self.qIdx))[ :self.query_size]
 
-        # query
+        # query set
         q_indices   = [self.qIdx[i]         for i in indices]
-        
+
         # positive set
-        p_indices   = [self.pIdx[i]         for i in indices]
+        p_indices   = [self.pIdx[i]         for i in indices] 
         p_indices   = np.unique([i for idx in p_indices for i in idx])
 
-        # negative
+        # negative set
         n_indices   = np.random.choice(len(self.images), self.pool_size, replace=False)
         non_indices = [self.nonNegIdx[i]    for i in indices]
         n_indices   = n_indices[np.in1d(n_indices, np.unique([i for idx in non_indices for i in idx]), invert=True)]
@@ -325,11 +324,11 @@ class SatDataset(data.Dataset):
 
             for q in range(len(q_indices)):
                 
-                qidx = q_indices[q]
+                qidx = indices[q]
 
                 # find positive idx for this query (cache idx domain)
-                cached_pidx = np.where(np.in1d(p_indices, self.pIdx[qidx]))
-                pidx        = np.where(np.in1d(pRanks[q, :], cached_pidx))
+                cached_p_indices = np.where(np.in1d(p_indices, self.pIdx[qidx]))
+                pidx             = np.where(np.in1d(pRanks[q, :], cached_p_indices))
  
                 # take the closest positve
                 dPos = pScores[q, pidx][0][0]
@@ -352,11 +351,11 @@ class SatDataset(data.Dataset):
                 cached_hardestNeg = nRanks[q, hardest_negIdx]
 
                 # select the closest positive (back to cache idx domain)
-                cached_pidx = pRanks[q, pidx][0][0]
+                cached_p_indices = pRanks[q, pidx][0][0]
 
                 # transform back to original index (back to original idx domain)
                 qidx        = self.qIdx[qidx]
-                pidx        = p_indices[cached_pidx]
+                pidx        = p_indices[cached_p_indices]
                 hardestNeg  = n_indices[cached_hardestNeg]
 
                 #
