@@ -27,7 +27,7 @@ def build_dataset(args, cfg, transform, mode='train'):
                     "num_workers": data_cfg.getint("num_workers")
                 }
     # sfm
-    if data_cfg.get("dataset") == "retrieval-SfM-120k" :
+    if data_cfg.get("dataset") in ["retrieval-SfM-120k", "gl18"] :
         
         query_size  = data_cfg.getint("query_size")     if mode == 'train'  else float('inf')
         pool_size   = data_cfg.getint("pool_size")      if mode == 'train'    else float('inf')

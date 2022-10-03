@@ -47,6 +47,9 @@ class TuplesDataset(data.Dataset):
 
         elif name.startswith('gl'):
             
+            root_dir = path.join(root_dir, name)
+
+            
             # setting up paths
             ims_root = path.join(root_dir, 'train')
     
@@ -72,8 +75,7 @@ class TuplesDataset(data.Dataset):
         self.clusters       = db['cluster']
         self.query_pool     = db['qidxs']
         self.positive_pool  = db['pidxs']
-        
-
+            
         # size of training subset for an epoch
         self.neg_num = neg_num
         
