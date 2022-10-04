@@ -1,0 +1,3 @@
+model,features,dimension,pooling,oxford,paris,overall
+resnet101d,"[1, 2, 3, 4]",2048,gem,9.547,,
+,"[1, 2, 3]",1024,gem,21.0682,41.6603,0.539369927006973

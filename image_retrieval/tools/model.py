@@ -134,13 +134,13 @@ def make_model(args, cfg, sample_dl, logger, **varargs):
 
     # Load model state dictionary
     body = timm.create_model(body_arch, 
-                             features_only=True, 
-                             out_indices=feature_scales, 
+                             features_only=False, 
+                            #  out_indices=feature_scales, 
                              pretrained=body_cfg.getboolean("pretrained"))
-    
-    body_channels           = body.feature_info.channels()
-    body_reductions         = body.feature_info.reduction()
-    body_module_names       = body.feature_info.module_name()
+    body = nn.Sequential(*body)
+    # body_channels           = body.feature_info.channels()
+    # body_reductions         = body.feature_info.reduction()
+    # body_module_names       = body.feature_info.module_name()
       
     logger.info("Body channels: %s    Reductions: %s      Layer_names: %s",    body_channels, 
                                                                                 body_reductions,
@@ -153,7 +153,8 @@ def make_model(args, cfg, sample_dl, logger, **varargs):
         freeze(body, frozen_layers)
     
     # Output dimension
-    body_dim = out_dim = body_channels[-1]
+    body_dim = out_dim = 2048
+    # body_channels[-1]
     
     # Reduction 
     if global_cfg.getboolean("reduction"):
@@ -220,7 +221,6 @@ def build_model(cfg):
     logger.info("body channels: %s    reductions: %s      layer_names: %s",    body_channels, 
                                                                                 body_reductions,
                                                                                 body_module_names)
-
     # freeze modules in backbone
     if len(cfg["body"].getstruct("num_frozen")) > 0:
         logger.info("frozen layers: %s ", cfg["body"].getstruct("num_frozen"))
@@ -228,7 +228,8 @@ def build_model(cfg):
         freeze(body, frozen_layers)
     
     # output dim
-    body_dim = out_dim = body_channels[-1]
+    body_dim    = body_channels[-1]
+    out_dim     = body_channels[-1]
     
     # reduction 
     if global_cfg.getboolean("reduction"):
