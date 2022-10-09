@@ -17,112 +17,112 @@ import logging
 logger = logging.getLogger("retrieval")
 
 
-def make_optimizer(model, config, epoch_length):
+# def make_optimizer(model, config, epoch_length):
   
-    body_config = config["body"]
+#     body_config = config["body"]
 
-    optim_cfg = config["optimizer"]
-    sched_cfg = config["scheduler"]
+#     optim_cfg = config["optimizer"]
+#     sched_cfg = config["scheduler"]
 
-    # Base learning rate and weight decay
-    LR              = optim_cfg.getfloat("lr")
-    WEIGHT_DECAY    = optim_cfg.getfloat("weight_decay")
+#     # Base learning rate and weight decay
+#     LR              = optim_cfg.getfloat("lr")
+#     WEIGHT_DECAY    = optim_cfg.getfloat("weight_decay")
 
-    # Tunning learning rate and weight decay
-    lr_coefs            = optim_cfg.getstruct("lr_coefs")
-    weight_decay_coefs  = optim_cfg.getstruct("weight_decay_coefs")
+#     # Tunning learning rate and weight decay
+#     lr_coefs            = optim_cfg.getstruct("lr_coefs")
+#     weight_decay_coefs  = optim_cfg.getstruct("weight_decay_coefs")
 
-    # Separate classifier parameters from all others
-    norm_params      = []
-    other_params     = []
+#     # Separate classifier parameters from all others
+#     norm_params      = []
+#     other_params     = []
        
-    # body
-    for k, m in model.body.named_modules():
-        if any(isinstance(m, layer) for layer in NORM_LAYERS):
-            norm_params  += [p for p in m.parameters() if p.requires_grad]
+#     # body
+#     for k, m in model.body.named_modules():
+#         if any(isinstance(m, layer) for layer in NORM_LAYERS):
+#             norm_params  += [p for p in m.parameters() if p.requires_grad]
             
-        elif any(isinstance(m, layer) for layer in OTHER_LAYERS):
-            other_params += [p for p in m.parameters() if p.requires_grad]
+#         elif any(isinstance(m, layer) for layer in OTHER_LAYERS):
+#             other_params += [p for p in m.parameters() if p.requires_grad]
     
 
-    # ret head
-    pool_params     = []
-    whiten_params   = []
+#     # ret head
+#     pool_params     = []
+#     whiten_params   = []
         
-    for k, v in model.ret_head.named_children():
+#     for k, v in model.ret_head.named_children():
             
-        if k.find("pool") != -1:
-            pool_params += [p for p in v.parameters() if p.requires_grad]
+#         if k.find("pool") != -1:
+#             pool_params += [p for p in v.parameters() if p.requires_grad]
         
-        elif k.find("whiten")!= -1:
-            whiten_params += [p for p in v.parameters() if p.requires_grad]
+#         elif k.find("whiten")!= -1:
+#             whiten_params += [p for p in v.parameters() if p.requires_grad]
 
-    assert len(norm_params) + len(other_params) + len(pool_params) + len(whiten_params) \
-                            == len([p for p in model.parameters() if p.requires_grad]), \
-        "Not all parameters that require grad are accounted for in the optimizer"
+#     assert len(norm_params) + len(other_params) + len(pool_params) + len(whiten_params) \
+#                             == len([p for p in model.parameters() if p.requires_grad]), \
+#         "Not all parameters that require grad are accounted for in the optimizer"
         
-    # Set-up optimizer hyper-parameters
-    parameters = [
-        # body norm 
-        {
-            "params": norm_params,
-            "lr":           LR              if not body_config.getboolean("bn_frozen") else 0.,
-            "weight_decay": WEIGHT_DECAY    if optim_cfg.getboolean("weight_decay_norm") else 0
-        },
-        # body other 
-        {
-            "params": other_params,
-            "lr":           LR        ,
-            "weight_decay": WEIGHT_DECAY 
-        }]
+#     # Set-up optimizer hyper-parameters
+#     parameters = [
+#         # body norm 
+#         {
+#             "params": norm_params,
+#             "lr":           LR              if not body_config.getboolean("bn_frozen") else 0.,
+#             "weight_decay": WEIGHT_DECAY    if optim_cfg.getboolean("weight_decay_norm") else 0
+#         },
+#         # body other 
+#         {
+#             "params": other_params,
+#             "lr":           LR        ,
+#             "weight_decay": WEIGHT_DECAY 
+#         }]
     
-    # Pool
-    if len(pool_params) > 0  and lr_coefs["pool"]:
-        parameters.append(
-        {
-            "params": pool_params,
-            "lr":           LR * lr_coefs["pool"],
-            "weight_decay": WEIGHT_DECAY * weight_decay_coefs["pool"]
-        })
-    else:
-        raise TypeError(" pool parameters not optimized ")
+#     # Pool
+#     if len(pool_params) > 0  and lr_coefs["pool"]:
+#         parameters.append(
+#         {
+#             "params": pool_params,
+#             "lr":           LR * lr_coefs["pool"],
+#             "weight_decay": WEIGHT_DECAY * weight_decay_coefs["pool"]
+#         })
+#     else:
+#         raise TypeError(" pool parameters not optimized ")
     
-    # Whiten
-    if len(whiten_params) > 0 and lr_coefs["whiten"]:
-        parameters.append(
-        {
-            "params": whiten_params,
-            "lr":           LR * lr_coefs["whiten"],
-            "weight_decay": WEIGHT_DECAY * weight_decay_coefs["whiten"]
-        })
+#     # Whiten
+#     if len(whiten_params) > 0 and lr_coefs["whiten"]:
+#         parameters.append(
+#         {
+#             "params": whiten_params,
+#             "lr":           LR * lr_coefs["whiten"],
+#             "weight_decay": WEIGHT_DECAY * weight_decay_coefs["whiten"]
+#         })
         
    
-    # Select optimizer
-    if optim_cfg.get("type") == 'SGD':
-        optimizer = optim.SGD(parameters,
-                              lr=LR,
-                              weight_decay=optim_cfg.getfloat("weight_decay"),
-                              nesterov=optim_cfg.getboolean("nesterov"))
-    elif optim_cfg.get("type") == 'Adam':
-        optimizer = optim.Adam(parameters,
-                               lr=LR, 
-                               weight_decay=WEIGHT_DECAY)
-    elif optim_cfg.get("type") == 'AdamW':
-        optimizer = optim.AdamW(parameters,
-                               lr=LR, 
-                               weight_decay=WEIGHT_DECAY)
-    else:
-        raise KeyError("unrecognized optimizer {}".format(optim_cfg["type"]))
-    print(optimizer)
+#     # Select optimizer
+#     if optim_cfg.get("type") == 'SGD':
+#         optimizer = optim.SGD(parameters,
+#                               lr=LR,
+#                               weight_decay=optim_cfg.getfloat("weight_decay"),
+#                               nesterov=optim_cfg.getboolean("nesterov"))
+#     elif optim_cfg.get("type") == 'Adam':
+#         optimizer = optim.Adam(parameters,
+#                                lr=LR, 
+#                                weight_decay=WEIGHT_DECAY)
+#     elif optim_cfg.get("type") == 'AdamW':
+#         optimizer = optim.AdamW(parameters,
+#                                lr=LR, 
+#                                weight_decay=WEIGHT_DECAY)
+#     else:
+#         raise KeyError("unrecognized optimizer {}".format(optim_cfg["type"]))
+#     print(optimizer)
 
-    # Set scheduler
-    scheduler = scheduler_from_config(sched_cfg, optimizer, epoch_length)
+#     # Set scheduler
+#     scheduler = scheduler_from_config(sched_cfg, optimizer, epoch_length)
         
-    assert sched_cfg.get("update_mode") in ("batch", "epoch")
-    batch_update = sched_cfg.get("update_mode") == "batch"
-    total_epochs = sched_cfg.getint("epochs")
+#     assert sched_cfg.get("update_mode") in ("batch", "epoch")
+#     batch_update = sched_cfg.get("update_mode") == "batch"
+#     total_epochs = sched_cfg.getint("epochs")
 
-    return optimizer, scheduler, parameters, batch_update, total_epochs
+#     return optimizer, scheduler, parameters, batch_update, total_epochs
 
 
 def build_optimizer(cfg, model):
@@ -176,7 +176,7 @@ def build_optimizer(cfg, model):
         {
             "params":       pool_params,
             "lr":           LR * 10,
-            "weight_decay": WEIGHT_DECAY * 10
+            "weight_decay": 0.
         },
         {
             "params":       whiten_params,
