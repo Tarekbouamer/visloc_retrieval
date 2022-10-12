@@ -15,41 +15,21 @@ from image_retrieval.utils.logging import setup_logger
 def make_parser():
     
     # ArgumentParser
-    parser = argparse.ArgumentParser(description='Image Retrieval Training')
+    parser = argparse.ArgumentParser(description='VISLOC:: Image Retrieval Training')
 
-    # Export directory, training and val datasets, test datasets
     parser.add_argument("--local_rank", type=int)
+    parser.add_argument('--directory',  metavar='EXPORT_DIR',   help='experiments folder')
+    parser.add_argument('--data',       metavar='EXPORT_DIR',   help='dataset folder')
+    parser.add_argument("--config",     metavar="FILE",         type=str, help="cfg file", 
+                        default='image_retrieval/configuration/defaults/default.ini')
+    parser.add_argument("--eval",       action="store_true",    help="do evaluation")
+    parser.add_argument('--resume',     action="store_true",    help='resume from experiment folder')
 
-    parser.add_argument('--directory', metavar='EXPORT_DIR',
-                        help='destination where trained network should be saved')
-
-    parser.add_argument('--data', metavar='EXPORT_DIR',
-                        help='destination where trained network should be saved')
-
-    parser.add_argument("--config", metavar="FILE", type=str, help="Path to cfguration file",
-                        default='./cirtorch/cfguration/defaults/global_cfg.ini')
-
-    parser.add_argument("--eval", action="store_true", help="Do a single validation run")
-
-    parser.add_argument('--resume', action="store_true",
-                        help='name of the latest checkpoint (default: None)')
-
-    parser.add_argument("--pre_train", metavar="FILE", type=str, nargs="*",
-                        help="Start from the given pre-trained snapshots, overwriting each with the next one in the list. "
-                             "Snapshots can be given in the format '{module_name}:{path}', where '{module_name} is one of "
-                             "'body', 'rpn_head', 'roi_head' or 'sem_head'. In that case only that part of the network "
-                             "will be loaded from the snapshot")
-
-    args = parser.parse_args()
-
-    # for arg, value in sorted(vars(args).items()):
-    #     logger.info("%s: %r", arg, value)
-
-    return parser
+    return parser.parse_args()
 
 
 def make_dir(cfg, directory):
-    # Create export dir name if it doesnt exist in your experiment folder
+
     extension = "{}".format(cfg["dataloader"].get("dataset"))
     extension += "_{}".format(cfg["body"].get("arch"))
 
@@ -75,21 +55,21 @@ def make_dir(cfg, directory):
                                             cfg["dataloader"].getint("max_size"))
 
     directory = path.join(directory, extension)
-
+    
+    # 
     if not path.exists(directory):
         makedirs(directory)
         
     return directory
 
+
 def main(args):
     
-    # initialize multi-processing
+    # initialize device
     device_id, device = args.local_rank, torch.device(args.local_rank)
-
-    # set device
     torch.cuda.set_device(device_id)
 
-    # set seed
+    # random seed
     torch.manual_seed(0)
     torch.cuda.manual_seed_all(0)
     np.random.seed(0)
@@ -97,17 +77,21 @@ def main(args):
     # load cfguration
     cfg = make_config(args.config, defauls=DEFAULT_CONFIG["default"])
 
-    # experiment path
+    # make experiment path
     args.directory = make_dir(cfg, args.directory)
     
-    # logger
+    # init retrieval logger
     logger = setup_logger(output=args.directory, name="retrieval")
     
+    # train
     trainer = ImageRetrievalTrainer(args=args, cfg=cfg)
     trainer.train()
+    
+    #
+    logger.info("Done!")
 
 if __name__ == '__main__':
 
-    parser = make_parser()
+    args = make_parser()
 
-    main(parser.parse_args())
+    main(args)
