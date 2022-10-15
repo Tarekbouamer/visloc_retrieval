@@ -2,9 +2,8 @@ import sys
 
 from collections import defaultdict
 
-# inspired from timm library, we construct and collect models achieved proposed in the context of image retrieval 
-# and load the wieghts from cloud if possible
-# if not, please train it :) 
+__all__ = ['list_models', 'is_model', 'model_entrypoint', 'list_modules', 'is_model_in_modules',
+           'is_pretrained_cfg_key', 'has_pretrained_cfg_key', 'get_pretrained_cfg_value', 'is_model_pretrained']
 
 
 _module_to_models = defaultdict(set)    # dict of sets to check membership of model in module
@@ -13,6 +12,45 @@ _model_entrypoints = {}                 # mapping of model names to entrypoint f
 _model_has_pretrained = set()           # set of model names that have pretrained weight url present
 _model_pretrained_cfgs = dict()         # central repo for model default_cfgs
 
+
+def is_model(model_name):
+    """ Check if a model name exists
+    """
+    return model_name in _model_entrypoints
+
+
+def model_entrypoint(model_name):
+    """Fetch a model entrypoint for specified model name
+    """
+    return _model_entrypoints[model_name]
+
+
+def list_modules():
+    """ Return list of module names that contain models / model entrypoints
+    """
+    modules = _module_to_models.keys()
+    return list(sorted(modules))
+
+
+def is_model_in_modules(model_name, module_names):
+    """Check if a model exists within a subset of modules
+    Args:
+        model_name (str) - name of model to check
+        module_names (tuple, list, set) - names of modules to search in
+    """
+    assert isinstance(module_names, (tuple, list, set))
+    return any(model_name in _module_to_models[n] for n in module_names)
+
+
+def is_model_pretrained(model_name):
+    return model_name in _model_has_pretrained
+
+
+def get_pretrained_cfg(model_name):
+    print(_model_pretrained_cfgs)
+    if model_name in _model_pretrained_cfgs:
+        return deepcopy(_model_pretrained_cfgs[model_name])
+    return {}
 
 def register_model(fn):
     
@@ -41,6 +79,7 @@ def register_model(fn):
     if hasattr(mod, 'default_cfgs') and model_name in mod.default_cfgs:
 
         cfg = mod.default_cfgs[model_name]
+        
         has_valid_pretrained = (
             ('url' in cfg and 'http' in cfg['url']) or
             ('file' in cfg and cfg['file']) or

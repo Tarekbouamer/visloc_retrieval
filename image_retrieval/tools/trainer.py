@@ -6,6 +6,7 @@ import torch
 import os
 
 from timm import utils
+from image_retrieval.models import  create_model
 
 # 
 from .model             import build_model, run_pca
@@ -551,7 +552,9 @@ class ImageRetrievalTrainer(TrainerBase):
         """
         meta_arch  = cfg["body"].get("arch")
         
-        model = build_model(cfg)
+        # model = build_model(cfg)
+        
+        model = create_model("resnet18_gem_512")
         
         model.to(torch.device("cuda"))
         _log_api_usage("modeling.meta_arch." + meta_arch)

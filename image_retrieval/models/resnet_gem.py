@@ -1,100 +1,156 @@
-from .registry import register_model
+from .registry import register_model, get_pretrained_cfg
+from .factory import create_model, load_pretrained
 
-def build_model_with_cfg(
-        model_cls: Callable,
-        variant: str,
-        pretrained: bool,
-        pretrained_cfg: Optional[Dict] = None,
-        model_cfg: Optional[Any] = None,
-        feature_cfg: Optional[Dict] = None,
-        pretrained_strict: bool = True,
-        pretrained_filter_fn: Optional[Callable] = None,
-        pretrained_custom_load: bool = False,
-        kwargs_filter: Optional[Tuple[str]] = None,
-        **kwargs):
-    """ Build model with specified default_cfg and optional model_cfg
-    This helper fn aids in the construction of a model including:
-      * handling default_cfg and associated pretrained weight loading
-      * passing through optional model_cfg for models with config based arch spec
-      * features_only model adaptation
-      * pruning config / model adaptation
-    Args:
-        model_cls (nn.Module): model class
-        variant (str): model variant name
-        pretrained (bool): load pretrained weights
-        pretrained_cfg (dict): model's pretrained weight/task config
-        model_cfg (Optional[Dict]): model's architecture config
-        feature_cfg (Optional[Dict]: feature extraction adapter config
-        pretrained_strict (bool): load pretrained weights strictly
-        pretrained_filter_fn (Optional[Callable]): filter callable for pretrained weights
-        pretrained_custom_load (bool): use custom load fn, to load numpy or other non PyTorch weights
-        kwargs_filter (Optional[Tuple]): kwargs to filter before passing to model
-        **kwargs: model args passed through to model __init__
-    """
-    pruned = kwargs.pop('pruned', False)
-    features = False
-    feature_cfg = feature_cfg or {}
+import timm
+from timm.utils.model import freeze, unfreeze
+from image_retrieval.modules.heads.head         import RetrievalHead
+from image_retrieval.models.GF_net              import ImageRetrievalNet
 
-    # resolve and update model pretrained config and model kwargs
-    pretrained_cfg = resolve_pretrained_cfg(variant, pretrained_cfg=pretrained_cfg)
-    update_pretrained_cfg_and_kwargs(pretrained_cfg, kwargs, kwargs_filter)
-    pretrained_cfg.setdefault('architecture', variant)
 
-    # Setup for feature extraction wrapper done at end of this fn
-    if kwargs.pop('features_only', False):
-        features = True
-        feature_cfg.setdefault('out_indices', (0, 1, 2, 3, 4))
-        if 'out_indices' in kwargs:
-            feature_cfg['out_indices'] = kwargs.pop('out_indices')
+# logger
+import logging
+logger = logging.getLogger("retrieval")
 
-    # Build the model
-    model = model_cls(**kwargs) if model_cfg is None else model_cls(cfg=model_cfg, **kwargs)
-    model.pretrained_cfg = pretrained_cfg
-    model.default_cfg = model.pretrained_cfg  # alias for backwards compat
+
+pooling = {"name": "GeM", "params": {"p":3, "eps": 1e-6}}
+
+
+def _cfg(url='', drive='', **kwargs):
+    return {
+        'url': url,
+        'drive':drive,
+        'reduction': False, 
+        'input_size': (3, 1024, 1024), 
+        'pooling': pooling,
+        **kwargs
+    }
+ 
+ 
+default_cfgs = {
+    'resnet50_c4_gem': _cfg(
+        drive='https://drive.google.com/uc?id=1ra74D2Tr9CpnXu_uTXCGkHqfomp2jmKT') 
+}
+ 
+ 
+def _create_model(variant, body_name, pretrained=True, feature_scales=[1, 2, 3, 4], **kwargs):
     
-    if pruned:
-        model = adapt_model_from_file(model, variant)
+    # assert
+    assert body_name in timm.list_models(pretrained=True), f"model: {body_name}  not implemented timm models yet!"
 
-    # For classification models, check class attr, then kwargs, then default to 1k, otherwise 0 for feats
-    num_classes_pretrained = 0 if features else getattr(model, 'num_classes', kwargs.get('num_classes', 1000))
+    # get flags
+    reduction   = kwargs.pop("reduction", False)
+    pooling     = kwargs.pop("pooling", {})
+    frozen      = kwargs.pop("frozen", [])
     
+    # body
+    body = timm.create_model(body_name, 
+                             features_only=True, 
+                             out_indices=feature_scales, 
+                             pretrained=True) # always pretrained
+    
+    body_channels           = body.feature_info.channels()
+    body_reductions         = body.feature_info.reduction()
+    body_module_names       = body.feature_info.module_name()
+    
+    # output dim
+    body_dim= out_dim = body_channels[-1]
+   
+   # freeze layers
+    if len(frozen) > 0:
+        frozen_layers = [ body_module_names[item] for item in frozen]
+        logger.info(f"frozen layers {frozen_layers}")
+        freeze(body, frozen_layers) 
+    
+    # reduction 
+    if reduction:
+        assert reduction < out_dim, (f"reduction {reduction} has to be less than input dim {out_dim}")
+        out_dim = reduction
+    
+    # head
+    head = RetrievalHead(inp_dim=body_dim,
+                         out_dim=out_dim,
+                         pooling=pooling)
+    
+    # model
+    model = ImageRetrievalNet(body, head) 
+    
+    # 
     if pretrained:
-        if pretrained_custom_load:
-            # FIXME improve custom load trigger
-            load_custom_pretrained(model, pretrained_cfg=pretrained_cfg)
-        else:
-            load_pretrained(
-                model,
-                pretrained_cfg=pretrained_cfg,
-                num_classes=num_classes_pretrained,
-                in_chans=kwargs.get('in_chans', 3),
-                filter_fn=pretrained_filter_fn,
-                strict=pretrained_strict)
+        pretrained_cfg = get_pretrained_cfg(variant)
+        load_pretrained(model, variant, pretrained_cfg) 
 
-    # Wrap the model in a feature extraction module if enabled
-    if features:
-        feature_cls = FeatureListNet
-        if 'feature_cls' in feature_cfg:
-            feature_cls = feature_cfg.pop('feature_cls')
-            if isinstance(feature_cls, str):
-                feature_cls = feature_cls.lower()
-                if 'hook' in feature_cls:
-                    feature_cls = FeatureHookNet
-                elif feature_cls == 'fx':
-                    feature_cls = FeatureGraphNet
-                else:
-                    assert False, f'Unknown feature class {feature_cls}'
-        model = feature_cls(model, **feature_cfg)
-        model.pretrained_cfg = pretrained_cfg_for_features(pretrained_cfg)  # add back default_cfg
-        model.default_cfg = model.pretrained_cfg  # alias for backwards compat
+    logger.info(f"body channels:{body_channels}  reductions:{body_reductions}   layer_names: {body_module_names}")
     
     return model
-  
+    
+
+
+# SfM-120k
+@register_model
+def resnet10t_gem(pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-10-T with GeM model.
+    """    
+    model_args = dict()
+    model_args["pooling"] = pooling
+    
+    return _create_model('resnet10t_gem', 'resnet10t', pretrained, **model_args)
+
 
 @register_model
-def resnet10t(pretrained=False, **kwargs):
-    """Constructs a ResNet-10-T model.
+def resnet18_gem_512(pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-18 with GeM model.
     """
-    model_args = dict(block=BasicBlock, layers=[1, 1, 1, 1], stem_width=32, stem_type='deep_tiered', avg_down=True, **kwargs)
+  
+    model_args = dict()
+    model_args["pooling"] = pooling
+
+    return _create_model('resnet18_gem_512', 'resnet18', pretrained, **model_args)
+
+
+@register_model
+def resnet50_gem_2048(pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-50 with GeM model.
+    """  
+    model_args = dict()
+    model_args["pooling"] = pooling
     
-    return build_model_with_cfg('resnet10t', pretrained, **model_args)
+    return _create_model('resnet50_gem', 'resnet50', pretrained, **model_args)
+
+
+@register_model
+def resnet50_c4_gem_1024(pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+    """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales
+    """   
+    model_args = dict()
+    model_args["pooling"] = pooling
+    
+    return _create_model('resnet50_c4_gem', 'resnet50', pretrained, feature_scales, **model_args)
+
+
+@register_model
+def resnet101_gem_2048(pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-101 with GeM model.
+    """    
+    model_args = dict()
+    model_args["pooling"] = pooling
+    
+    return _create_model('resnet101_gem_2048', 'resnet101', pretrained, **model_args)
+
+
+@register_model
+def resnet101_c4_gem_1024(pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+    """Constructs a SfM-120k ResNet-101 with GeM model, only 4 features scales
+    """    
+    model_args = dict()
+    model_args["pooling"] = pooling
+    
+    return _create_model('resnet101_c4_gem_1024', 'resnet101', pretrained, feature_scales, **model_args)
+
+# TODO: Google Landmark 18
+
+# TODO: Google Landmark 20
+
+if __name__ == '__main__':
+    
+    create_fn = create_model("resnet101_gem_2048", pretrained=True)
+    print(create_fn)
