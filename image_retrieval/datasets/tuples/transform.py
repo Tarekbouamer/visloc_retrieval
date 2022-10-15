@@ -1,59 +1,49 @@
-from cmath import pi
-import os
-import torch.utils.data as data
-
-import random
-
-import numpy as np
 from PIL import Image
 
-from    torchvision.transforms import functional as tfn
 import  torchvision.transforms as transforms
 
-from  timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD, DEFAULT_CROP_PCT
+from  timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 class ImagesTransform:
 
-    def __init__(self,
-                 max_size,
-                 preprocessing=None,
-                 augmentation=None,
-                 postprocessing=None,
+    def __init__(self, max_size, preprocessing=None, augmentation=None, postprocessing=None,
                  mean=IMAGENET_DEFAULT_MEAN,
-                 std=IMAGENET_DEFAULT_STD,
-                 is_aug=False
-                 ):
+                 std=IMAGENET_DEFAULT_STD):
         
         self.max_size = max_size
         self.mean   = mean
         self.std    = std
-
-       
-        # transformations 
-        self.preprocessing  = preprocessing
-        self.augmentation   = augmentation
-        self.postprocessing = postprocessing
         
-        if postprocessing is None:
+        # preprocessing 
+        if preprocessing:
+            self.preprocessing  = preprocessing
+        
+        # augmentation
+        if augmentation:
+            self.augmentation   = augmentation
+
+        # to tensor
+        if postprocessing:
+            self.postprocessing = postprocessing
+        else:
             self.postprocessing = transforms.Compose([
                 transforms.ToTensor(),
                 transforms.Normalize(mean=mean, std=std)
-        ])
+                ])
         
-        self.is_aug = is_aug
-
     def __call__(self, img):
-
         
-        if self.is_aug:
+        #
+        if hasattr(self, 'preprocessing'):
             img = self.preprocessing(img)
-            img = self.augmentation(img)
-
         else:
-            # testing 
             img.thumbnail((self.max_size, self.max_size), Image.BILINEAR)        
-        
+
+        #
+        if hasattr(self, 'augmentation'):
+            img = self.augmentation(img)
+            
+        #
         img = self.postprocessing(img)           
 
         return dict(img=img)
-

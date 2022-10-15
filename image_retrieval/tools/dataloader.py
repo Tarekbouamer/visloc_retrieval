@@ -1,15 +1,15 @@
-from distutils.command.build import build
 import numpy as np
 import logging
 
 from  torch.utils.data import DataLoader, SubsetRandomSampler
+
 from  timm.data import create_transform
 from  timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
 # image_retrieval
-from image_retrieval.datasets.tuples import TuplesDataset, ImagesFromList, ImagesTransform 
-from image_retrieval.datasets.satellite import SatDataset
+from image_retrieval.datasets import TuplesDataset, ImagesFromList, ImagesTransform 
+from image_retrieval.datasets import SatDataset
 
 from image_retrieval.datasets.misc  import collate_tuples
 
@@ -22,10 +22,6 @@ def build_dataset(args, cfg, transform, mode='train'):
     data_cfg    = cfg["dataloader"]
     test_cfg    = cfg["test"]
     
-    data_opt = {    "neg_num": data_cfg.getint("neg_num"),
-                    "batch_size": data_cfg.getint("batch_size"),
-                    "num_workers": data_cfg.getint("num_workers")
-                }
     # sfm
     if data_cfg.get("dataset") in ["retrieval-SfM-120k", "gl18"] :
         
@@ -38,7 +34,7 @@ def build_dataset(args, cfg, transform, mode='train'):
                                 query_size=query_size,
                                 pool_size=pool_size,
                                 transform=transform,
-                                **data_opt) 
+                                neg_num=data_cfg.getint("neg_num")) 
         
     
     elif  data_cfg.get("dataset") == "SAT" :
@@ -49,7 +45,7 @@ def build_dataset(args, cfg, transform, mode='train'):
                                 query_size=data_cfg.getint("query_size"),
                                 pool_size=data_cfg.getint("pool_size"),
                                 transform=transform,
-                                **data_opt)
+                                neg_num=data_cfg.getint("neg_num"))
         
     
     return train_db  

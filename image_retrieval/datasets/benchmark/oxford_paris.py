@@ -3,17 +3,25 @@ from os import path
 
 from image_retrieval.datasets.misc import cid2filename
 
-TEST_DATASETS = ["val_eccv20", 'oxford5k', 'paris6k', 'roxford5k', 'rparis6k']
+TEST_DATASETS = ["val_eccv20", 
+                 'oxford5k', 'paris6k', 
+                 'roxford5k', 'rparis6k']
+
 _EXTENSIONS = ["*.jpg", "*.jpeg", "*.png"]
 
 
 def ParisOxfordTestDataset(root_dir, name=None):
+    """
+        Paris Oxford dataset
+          
+        source:     https://www.robots.ox.ac.uk/~vgg/data/parisbuildings/
+                    http://cmp.felk.cvut.cz/revisitop/
+                    https://github.com/gtolias/how/
+    """
 
 
     if name not in TEST_DATASETS:
         raise ValueError('Unknown dataset: {}!'.format(name))
-
-    # Loading imlist, qimlist, and gnd, in cfg as a dict
     
     meta = {}
     
@@ -60,7 +68,5 @@ def ParisOxfordTestDataset(root_dir, name=None):
         meta['query_bbx']   = [db['gnd'][item]['bbx'] for item in range(meta['n_query'])]
 
     meta['pkl_path']      = pkl_path
-
-
 
     return meta

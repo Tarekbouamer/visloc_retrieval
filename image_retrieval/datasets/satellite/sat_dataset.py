@@ -7,7 +7,7 @@ from tqdm import tqdm
 import torch
 import torch.utils.data as data
 
-from image_retrieval.datasets.tuples import ImagesFromList, ImagesTransform, INPUTS
+from image_retrieval.datasets import ImagesFromList, ImagesTransform, INPUTS
 
 # logger
 import logging

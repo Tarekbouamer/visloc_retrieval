@@ -13,7 +13,7 @@ import timm
 from timm.utils.model import freeze, unfreeze
 
 # image retrieval
-from image_retrieval.datasets.tuples import ImagesFromList, ImagesTransform, INPUTS
+from image_retrieval.datasets import ImagesFromList, ImagesTransform, INPUTS
 from image_retrieval.modules.heads.head         import RetrievalHead
 
 

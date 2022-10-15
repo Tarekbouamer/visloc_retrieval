@@ -2,4 +2,3 @@ include README.md
 include LICENSE
 
 include image_retrieval/configuration/defaults/*.ini
-include classification/configuration/defaults/*.ini

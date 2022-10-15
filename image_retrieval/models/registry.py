@@ -1,17 +1,21 @@
 import sys
-import re
-import fnmatch
-from collections import defaultdict
-from copy import deepcopy
 
-_module_to_models = defaultdict(set)  # dict of sets to check membership of model in module
-_model_to_module = {}  # mapping of model names to module names
-_model_entrypoints = {}  # mapping of model names to entrypoint fns
-_model_has_pretrained = set()  # set of model names that have pretrained weight url present
-_model_pretrained_cfgs = dict()  # central repo for model default_cfgs
+from collections import defaultdict
+
+# inspired from timm library, we construct and collect models achieved proposed in the context of image retrieval 
+# and load the wieghts from cloud if possible
+# if not, please train it :) 
+
+
+_module_to_models = defaultdict(set)    # dict of sets to check membership of model in module
+_model_to_module = {}                   # mapping of model names to module names
+_model_entrypoints = {}                 # mapping of model names to entrypoint fns
+_model_has_pretrained = set()           # set of model names that have pretrained weight url present
+_model_pretrained_cfgs = dict()         # central repo for model default_cfgs
 
 
 def register_model(fn):
+    
     # lookup containing module
     mod = sys.modules[fn.__module__]
     module_name_split = fn.__module__.split('.')
@@ -28,10 +32,14 @@ def register_model(fn):
     _model_entrypoints[model_name] = fn
     _model_to_module[model_name] = module_name
     _module_to_models[module_name].add(model_name)
-    has_valid_pretrained = False  # check if model has a pretrained url to allow filtering on this
+    
+    # check if model has a pretrained url to allow filtering on this
+    has_valid_pretrained = False  
+
+    # this will catch all models that have entrypoint matching cfg key, but miss any aliasing
+    # entrypoints or non-matching combos 
     if hasattr(mod, 'default_cfgs') and model_name in mod.default_cfgs:
-        # this will catch all models that have entrypoint matching cfg key, but miss any aliasing
-        # entrypoints or non-matching combos
+
         cfg = mod.default_cfgs[model_name]
         has_valid_pretrained = (
             ('url' in cfg and 'http' in cfg['url']) or
@@ -39,6 +47,8 @@ def register_model(fn):
             ('hf_hub_id' in cfg and cfg['hf_hub_id'])
         )
         _model_pretrained_cfgs[model_name] = mod.default_cfgs[model_name]
+    
     if has_valid_pretrained:
         _model_has_pretrained.add(model_name)
+    
     return fn

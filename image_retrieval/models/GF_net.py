@@ -1,19 +1,12 @@
-from copy import deepcopy
-import imghdr
 from typing import List
-import torch
 import torch.nn as nn
 
-from  tqdm import tqdm
- 
-import numpy as np
-from collections import OrderedDict
-
-from image_retrieval.datasets.tuples import ImagesFromList, ImagesTransform, INPUTS
-
-    
-
 class ImageRetrievalNet(nn.Module):
+    """ ImageRetrievalNet
+
+        General image retrieval model that consists of backbone and head
+    
+    """
     
     def __init__(self, body, head):
         super(ImageRetrievalNet, self).__init__()
@@ -36,4 +29,3 @@ class ImageRetrievalNet(nn.Module):
             return preds
 
         return preds
-        
