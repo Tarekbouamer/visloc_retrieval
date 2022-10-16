@@ -96,6 +96,7 @@ def create_model(
         raise RuntimeError('Unknown model (%s)' % model_name)
 
     create_fn = model_entrypoint(model_name)
+   
     model = create_fn(pretrained=pretrained, pretrained_cfg=pretrained_cfg, **kwargs)
 
     return model
