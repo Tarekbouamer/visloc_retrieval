@@ -39,7 +39,7 @@ from image_retrieval.datasets.misc                      import iss_collate_fn, c
 from image_retrieval.modules.heads.transformer_head     import TransformerHead
 
 from image_retrieval.algos.attention_algo               import globalFeatureAlgo, globalFeatureLoss
-from image_retrieval.models.GF_net                      import ImageRetrievalNet
+from image_retrieval.models.base                      import ImageRetrievalNet
 
 
 def set_batchnorm_eval(m):

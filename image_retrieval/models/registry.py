@@ -13,6 +13,8 @@ _model_has_pretrained = set()           # set of model names that have pretraine
 _model_pretrained_cfgs = dict()         # central repo for model default_cfgs
 
 
+
+
 def is_model(model_name):
     """ Check if a model name exists
     """
@@ -29,6 +31,7 @@ def list_modules():
     """ Return list of module names that contain models / model entrypoints
     """
     modules = _module_to_models.keys()
+
     return list(sorted(modules))
 
 
@@ -65,7 +68,7 @@ def register_model(fn):
         mod.__all__.append(model_name)
     else:
         mod.__all__ = [model_name]
-
+    
     # add entries to registry dict/sets
     _model_entrypoints[model_name] = fn
     _model_to_module[model_name] = module_name

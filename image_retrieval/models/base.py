@@ -7,7 +7,6 @@ class ImageRetrievalNet(nn.Module):
         General image retrieval model that consists of backbone and head
     
     """
-    
     def __init__(self, body, head):
         super(ImageRetrievalNet, self).__init__()
         

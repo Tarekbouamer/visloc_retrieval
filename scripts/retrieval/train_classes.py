@@ -37,7 +37,7 @@ from image_retrieval.datasets.generic.generic   import ImagesFromList, ImagesTra
 
 from image_retrieval.modules.heads.head     import globalHead
 from image_retrieval.algos.algo             import globalFeatureAlgo, globalFeatureLoss
-from image_retrieval.models.GF_net          import ImageRetrievalNet
+from image_retrieval.models.base          import ImageRetrievalNet
 
 
 def set_batchnorm_eval(m):

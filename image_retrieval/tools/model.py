@@ -16,11 +16,11 @@ from timm.utils.model import freeze, unfreeze
 
 # image retrieval
 from image_retrieval.datasets import ImagesFromList, ImagesTransform, INPUTS
-from image_retrieval.modules.heads.head         import RetrievalHead
+from image_retrieval.modules.heads.head         import GemHead
 
 
-from image_retrieval.models.GF_net              import ImageRetrievalNet
-from image_retrieval.models.GF_net              import ImageRetrievalNet
+from image_retrieval.models.base              import ImageRetrievalNet
+from image_retrieval.models.base              import ImageRetrievalNet
 
 from image_retrieval.utils.io   import create_withen_file_from_cfg
 from image_retrieval.utils.pca   import PCA_whitenlearn_shrinkage
@@ -160,7 +160,7 @@ def build_model(cfg):
         out_dim = global_cfg.getint("global_dim")
 
     # head
-    global_head = RetrievalHead(inp_dim=body_dim,
+    global_head = GemHead(inp_dim=body_dim,
                                 out_dim=out_dim,
                                 pooling=global_cfg.getstruct("pooling"),
                                 layer=global_cfg.get("type"))

@@ -550,14 +550,14 @@ class ImageRetrievalTrainer(TrainerBase):
           It now calls :func:`detectron2.modeling.build_model`.
           Overwrite it if you'd like a different model.
         """
-        meta_arch  = cfg["body"].get("arch")
+        model_name  = cfg["body"].get("arch")
         
         # model = build_model(cfg)
         
-        model = create_model("resnet18_gem_512")
+        model = create_model(model_name, cfg)
         
         model.to(torch.device("cuda"))
-        _log_api_usage("modeling.meta_arch." + meta_arch)
+        _log_api_usage("modeling.meta_arch." + model_name)
         
         logger.info(f"model:\n {model}")
         return model

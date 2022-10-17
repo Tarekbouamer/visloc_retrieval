@@ -3,8 +3,8 @@ from .factory import create_model, load_pretrained
 
 import timm
 from timm.utils.model import freeze, unfreeze
-from image_retrieval.modules.heads.head         import RetrievalHead
-from image_retrieval.models.GF_net              import ImageRetrievalNet
+from image_retrieval.modules.heads.head         import GemHead
+from image_retrieval.models.base              import ImageRetrievalNet
 
 
 # logger
@@ -20,7 +20,8 @@ def _cfg(url='', drive='', **kwargs):
         'url': url,
         'drive':drive,
         'reduction': False, 
-        'input_size': (3, 1024, 1024), 
+        'input_size': (3, 1024, 1024),
+        'out_dim': 1024, 
         'pooling': pooling,
         **kwargs
     }
@@ -28,11 +29,10 @@ def _cfg(url='', drive='', **kwargs):
  
 default_cfgs = {
     'resnet50_c4_gem': _cfg(
-        drive='https://drive.google.com/uc?id=1ra74D2Tr9CpnXu_uTXCGkHqfomp2jmKT') 
-}
+        drive='https://drive.google.com/uc?id=1ra74D2Tr9CpnXu_uTXCGkHqfomp2jmKT')}
  
  
-def _create_model(variant, body_name, pretrained=True, feature_scales=[1, 2, 3, 4], **kwargs):
+def _create_model(variant, body_name, cfg=None, pretrained=True, feature_scales=[1, 2, 3, 4], **kwargs):
     
     # assert
     assert body_name in timm.list_models(pretrained=True), f"model: {body_name}  not implemented timm models yet!"
@@ -53,7 +53,7 @@ def _create_model(variant, body_name, pretrained=True, feature_scales=[1, 2, 3, 
     body_module_names       = body.feature_info.module_name()
     
     # output dim
-    body_dim= out_dim = body_channels[-1]
+    body_dim = out_dim = body_channels[-1]
    
    # freeze layers
     if len(frozen) > 0:
@@ -67,9 +67,8 @@ def _create_model(variant, body_name, pretrained=True, feature_scales=[1, 2, 3, 
         out_dim = reduction
     
     # head
-    head = RetrievalHead(inp_dim=body_dim,
-                         out_dim=out_dim,
-                         pooling=pooling)
+    head = GemHead(inp_dim=body_dim,
+                    out_dim=out_dim)
     
     # model
     model = ImageRetrievalNet(body, head) 
@@ -78,73 +77,75 @@ def _create_model(variant, body_name, pretrained=True, feature_scales=[1, 2, 3, 
     if pretrained:
         pretrained_cfg = get_pretrained_cfg(variant)
         load_pretrained(model, variant, pretrained_cfg) 
-
+        
     logger.info(f"body channels:{body_channels}  reductions:{body_reductions}   layer_names: {body_module_names}")
     
+    #
+    cfg.set('global', 'global_dim', str(out_dim))
+ 
     return model
     
 
-
 # SfM-120k
 @register_model
-def resnet10t_gem(pretrained=True, **kwargs):
+def resnet10t_gem(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-10-T with GeM model.
     """    
     model_args = dict()
     model_args["pooling"] = pooling
     
-    return _create_model('resnet10t_gem', 'resnet10t', pretrained, **model_args)
+    return _create_model('resnet10t_gem', 'resnet10t', cfg, pretrained, **model_args)
 
 
 @register_model
-def resnet18_gem_512(pretrained=True, **kwargs):
+def resnet18_gem_512(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-18 with GeM model.
     """
   
-    model_args = dict()
+    model_args = dict(**kwargs)
     model_args["pooling"] = pooling
 
-    return _create_model('resnet18_gem_512', 'resnet18', pretrained, **model_args)
+    return _create_model('resnet18_gem_512', 'resnet18', cfg, pretrained, **model_args)
 
 
 @register_model
-def resnet50_gem_2048(pretrained=True, **kwargs):
+def resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-50 with GeM model.
     """  
     model_args = dict()
     model_args["pooling"] = pooling
     
-    return _create_model('resnet50_gem', 'resnet50', pretrained, **model_args)
+    return _create_model('resnet50_gem_2048', 'resnet50', cfg, pretrained, **model_args)
 
 
 @register_model
-def resnet50_c4_gem_1024(pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+def resnet50_c4_gem_1024(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
     """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales
     """   
     model_args = dict()
     model_args["pooling"] = pooling
     
-    return _create_model('resnet50_c4_gem', 'resnet50', pretrained, feature_scales, **model_args)
+    return _create_model('resnet50_c4_gem', 'resnet50', cfg, pretrained, feature_scales, **model_args)
 
 
 @register_model
-def resnet101_gem_2048(pretrained=True, **kwargs):
+def resnet101_gem_2048(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-101 with GeM model.
     """    
     model_args = dict()
     model_args["pooling"] = pooling
     
-    return _create_model('resnet101_gem_2048', 'resnet101', pretrained, **model_args)
+    return _create_model('resnet101_gem_2048', 'resnet101', cfg, pretrained, **model_args)
 
 
 @register_model
-def resnet101_c4_gem_1024(pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+def resnet101_c4_gem_1024(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
     """Constructs a SfM-120k ResNet-101 with GeM model, only 4 features scales
     """    
     model_args = dict()
     model_args["pooling"] = pooling
     
-    return _create_model('resnet101_c4_gem_1024', 'resnet101', pretrained, feature_scales, **model_args)
+    return _create_model('resnet101_c4_gem_1024', 'resnet101', cfg, pretrained, feature_scales, **model_args)
 
 # TODO: Google Landmark 18
 

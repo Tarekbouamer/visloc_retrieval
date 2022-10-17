@@ -83,6 +83,7 @@ def load_pretrained(
       
 def create_model(
         model_name,
+        cfg,
         pretrained=False,
         pretrained_cfg=None,
         **kwargs):
@@ -97,6 +98,6 @@ def create_model(
 
     create_fn = model_entrypoint(model_name)
    
-    model = create_fn(pretrained=pretrained, pretrained_cfg=pretrained_cfg, **kwargs)
+    model = create_fn(cfg=cfg, pretrained=pretrained, pretrained_cfg=pretrained_cfg, **kwargs)
 
     return model
