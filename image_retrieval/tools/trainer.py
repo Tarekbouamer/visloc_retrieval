@@ -28,8 +28,6 @@ import logging
 logger = logging.getLogger("retrieval")
 
 
-
-            
 class TrainerBase:
     """
       Base class for iterative trainer with hooks.
