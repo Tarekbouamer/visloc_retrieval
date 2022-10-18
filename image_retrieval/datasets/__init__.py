@@ -5,3 +5,5 @@ from .tuples.dataset         import ImagesFromList, INPUTS
 from .tuples.transform       import ImagesTransform
 
 from .satellite.sat_dataset  import SatDataset
+
+from .generic.dataset import ImagesListDataset

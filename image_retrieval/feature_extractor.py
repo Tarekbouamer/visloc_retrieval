@@ -1,13 +1,15 @@
-import numpy as np
-import time
+import h5py
 
 import torch
+from torchvision import transforms
 
-import os
+from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from tqdm import tqdm
+
+
+from image_retrieval.datasets import ImagesListDataset
 
 from image_retrieval.models.factory import create_model
-
-from image_retrieval.utils.configurations          import config_to_string
 
 
 # logger
@@ -21,7 +23,7 @@ class FeatureExtractorOptions(object):
 
 
 class FeatureExtractor():
-    def __init__(self, model_name, args=None, cfg=None, eval=False, dataset=None):
+    def __init__(self, model_name, dataset=None, output=None):
         super().__init__()
         
         # options
@@ -29,29 +31,58 @@ class FeatureExtractor():
         
         if dataset is None:
             raise ValueError(f'dataset is None Type {dataset}')
-          
+        
+        #      
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        # build  
+        self.model  = create_model(model_name, pretrained=True).to(device=self.device)
+        self.model.eval()
+
         # dataset
         self.dataset = dataset
-          
-        # cfg 
-        self.cfg          = cfg
-        self.args         = args
+                
+        # transform
+        self.transform = transforms.Compose([
+                transforms.ToTensor(),
+                transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, 
+                                     std=IMAGENET_DEFAULT_STD)])
         
-        # build  
-        self.model  = create_model(model_name, pretrained=True)
-        print(self.model)
-
-              
+        self.output = output
+         
+    @torch.no_grad()       
     def extract(self):
-      
-        for data in self.dataset:
-            print(data)
+        
+        for data in tqdm(self.dataset, total=len(self.dataset), colour='magenta', desc='extract'.rjust(15)):
+            img     = data['img']
+            name    = data['img_name']
             
+            img  = self.transform(img).unsqueeze(0).to(self.device)
+            desc = self.model(img).squeeze(0).cpu().numpy()
+            
+            if self.output is not None:
+                with h5py.File(str(self.output), 'a') as fd:
+                    try:
+                        if name in fd:
+                            del fd[name]
+                        
+                        grp = fd.create_group(name)
+                        grp.create_dataset('desc', data=desc)
+
+                    except OSError as error:                    
+                        raise error       
+                        
             
 if __name__ == '__main__':
     
-    create_fn = FeatureExtractor("resnet50_c4_gem_1024", dataset="test")
-    print(create_fn)
+    DATA_DIR='/media/dl/Data/datasets/test/oxford5k/jpg'
+    OUT='db.h5'
+    
+    dataset = ImagesListDataset(DATA_DIR, max_size=1024)
+    
+    feature_extractor = FeatureExtractor("resnet50_c4_gem_1024", dataset=dataset, output=OUT)
+    feature_extractor.extract()
+    print(feature_extractor)
 
         
   
