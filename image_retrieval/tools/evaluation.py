@@ -4,7 +4,7 @@ import torch
 from torch import nn
 
 import os
-from .test import  build_paris_oxford_dataset, test_asmk, test_global_descriptor
+from image_retrieval.test import  build_paris_oxford_dataset, test_asmk, test_global_descriptor
 import image_retrieval.utils.evaluation.asmk as eval_asmk
 
 

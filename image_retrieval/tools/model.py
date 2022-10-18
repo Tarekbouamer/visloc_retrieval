@@ -6,21 +6,9 @@ from copy import deepcopy
 import numpy as np
 
 import  torch 
-import  torch.nn as nn 
-
-
-
-# Timm 
-import timm
-from timm.utils.model import freeze, unfreeze
 
 # image retrieval
-from image_retrieval.datasets import ImagesFromList, ImagesTransform, INPUTS
-from image_retrieval.modules.heads.head         import GemHead
-
-
-from image_retrieval.models.base              import ImageRetrievalNet
-from image_retrieval.models.base              import ImageRetrievalNet
+from image_retrieval.datasets import  INPUTS 
 
 from image_retrieval.utils.io   import create_withen_file_from_cfg
 from image_retrieval.utils.pca   import PCA_whitenlearn_shrinkage
@@ -29,6 +17,12 @@ from image_retrieval.utils.pca   import PCA_whitenlearn_shrinkage
 import logging
 logger = logging.getLogger("retrieval")
 
+def set_batchnorm_eval(m):
+    classname = m.__class__.__name__
+    if classname.find('BatchNorm') != -1:
+        m.eval()
+        
+        
 def run_pca(arg, cfg, model, sample_dl):
     
     if model.training:
@@ -114,67 +108,3 @@ def compute_pca(args, cfg, model, sample_dl):
     # Init model layer    
     model.init_whitening(layer_state, logger)
                 
- 
-def build_model(cfg):
-    
-    # parse params with default values
-    global_cfg   = cfg["global"]
-    
-    # create backbone
-    body_arch       = cfg["body"].get("arch")
-    feature_scales  = cfg["body"].getstruct("features_scales")
-    
-    logger.info(f"creating backbone model:  {body_arch}     features_scales:    {feature_scales}    Pre-trained:    {str(cfg['body'].getboolean('pretrained'))}")
-    
-    # check if in timm
-    timm_model_list = timm.list_models(pretrained=True)
-    
-    # assert
-    assert body_arch in timm_model_list, (f"model: {body_arch}  not implemented timm models yet!")
-
-    # load model state dictionary
-    body = timm.create_model(body_arch, 
-                             features_only=True, 
-                             out_indices=feature_scales, 
-                             pretrained=cfg["body"].getboolean("pretrained"))
-    
-    body_channels           = body.feature_info.channels()
-    body_reductions         = body.feature_info.reduction()
-    body_module_names       = body.feature_info.module_name()
-      
-    logger.info("body channels: %s    reductions: %s      layer_names: %s",    body_channels, 
-                                                                                body_reductions,
-                                                                                body_module_names)
-    # freeze modules in backbone
-    if len(cfg["body"].getstruct("num_frozen")) > 0:
-        logger.info("frozen layers: %s ", cfg["body"].getstruct("num_frozen"))
-        frozen_layers = cfg["body"].getstruct("num_frozen")
-        freeze(body, frozen_layers)
-    
-    # output dim
-    body_dim    = body_channels[-1]
-    out_dim     = body_channels[-1]
-    
-    # reduction 
-    if global_cfg.getboolean("reduction"):
-        out_dim = global_cfg.getint("global_dim")
-
-    # head
-    global_head = GemHead(inp_dim=body_dim,
-                                out_dim=out_dim,
-                                pooling=global_cfg.getstruct("pooling"),
-                                layer=global_cfg.get("type"))
-    
-    # create a generic image retrieval network
-    model = ImageRetrievalNet(body, global_head)  
-    
-    # 
-    cfg.set('global', 'global_dim', str(out_dim))
-    
-    return model
-
-# def build_model(cfg):
-    
-#     create_fn = model_entrypoint("resnet50_c4_gem")
-
-    

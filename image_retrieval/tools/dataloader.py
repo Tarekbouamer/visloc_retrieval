@@ -124,7 +124,6 @@ def build_val_dataloader(args, cfg):
     
     return val_dl
     
-    
 def build_transforms(cfg):
     data_cfg    = cfg["dataloader"]
     aug_cfg     = cfg["augmentaion"]

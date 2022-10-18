@@ -1,5 +1,5 @@
 import sys
-
+from copy import deepcopy
 from collections import defaultdict
 
 __all__ = ['list_models', 'is_model', 'model_entrypoint', 'list_modules', 'is_model_in_modules',

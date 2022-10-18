@@ -5,19 +5,11 @@ import torch.nn as nn
 class Head(nn.Module):
     
     """ Global Image Descriptor Head 
-    Consists of two main operations (1) pooling and (2) withening, each followed by L2 normalization.
-    
+   
     Args:
-        pooling: struct
-                pooling paramaters {name, coefficient...} 
-        withening: boolean 
-                weather the final the descriptor is withened or not. 
-        inp_dim: int
-                the initial descriptor size, after performing pooling opertion.    
-        out_dim: int 
-                the final descriptor size, if out_dim < inp_dim, model reduction throught linear layer.
-        norm_act: nn.module
-                the nomlization layer and activation function used for this head.     
+
+        inp_dim:    int         the input features size  
+        out_dim:    int         the final descriptor size
     """
 
     def __init__(self, inp_dim, out_dim):
@@ -42,10 +34,8 @@ class Head(nn.Module):
     def forward(self, x, do_whitening=True):
         """ 
         Args:
-                x: torch.tensor
-                    input tensor [B, C, H, W] 
-                do_whitening: boolean 
-                    do or skip whithening (Note: used to initilize the linear layer using PCA) 
+                x:              torch.Tensor    input tensor [B, C, H, W] 
+                do_whitening:   boolean         do or skip whithening 
         """
                 
         raise NotImplementedError

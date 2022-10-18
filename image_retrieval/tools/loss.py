@@ -1,5 +1,5 @@
 
-from image_retrieval.modules.losses import TripletLoss, ContrastiveLoss
+from image_retrieval.loss import TripletLoss, ContrastiveLoss
 
 # logger
 import logging
@@ -13,14 +13,16 @@ def build_loss(cfg):
     # Create Loss
     logger.debug("creating Loss function { %s }", global_config.get("loss"))
     
-    loss_name = global_config.get("loss")
-    loss_margin  =  global_config.getfloat("loss_margin")
+    loss_name       = global_config.get("loss")
+    loss_margin     = global_config.getfloat("loss_margin")
     
     # Triplet
     if loss_name == 'triplet':
         return TripletLoss(margin=loss_margin)
+    
     # Constractive   
     elif loss_name == 'contrastive':
         return ContrastiveLoss(margin=loss_margin)
+    
     else:
         raise NotImplementedError(f"loss not implemented yet {global_config.get('loss') }" )

@@ -9,7 +9,7 @@ from timm import utils
 from image_retrieval.models import  create_model
 
 # 
-from .model             import build_model, run_pca
+from .model             import run_pca, set_batchnorm_eval
 from .optimizer         import build_optimizer, build_lr_scheduler
 from .dataloader        import build_train_dataloader, build_val_dataloader, build_sample_dataloader
 from .loss              import build_loss
@@ -27,15 +27,8 @@ from image_retrieval.utils.snapshot     import save_snapshot, resume_from_snapsh
 import logging
 logger = logging.getLogger("retrieval")
 
-# modes
-TEST_MODES = ["global", "asmk", "all"]
 
 
-def set_batchnorm_eval(m):
-    classname = m.__class__.__name__
-    if classname.find('BatchNorm') != -1:
-        m.eval()
-        
             
 class TrainerBase:
     """
@@ -555,8 +548,8 @@ class ImageRetrievalTrainer(TrainerBase):
         # model = build_model(cfg)
         
         model = create_model(model_name, cfg)
-        
         model.to(torch.device("cuda"))
+        
         _log_api_usage("modeling.meta_arch." + model_name)
         
         logger.info(f"model:\n {model}")
