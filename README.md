@@ -1,16 +1,17 @@
-## Image-Retrieval-for-Image-Based-Localization
+## Image Retrieval Library
 
 ### TO DO?
-* add timm EMA and more event logginh add image add tensor and 
 * Add results on roxford5k rparis6k.
-* Add unsupervised local features descriptor head.
 
 ### Prerequisites
+`
 Main system requirements:
-* Python3 (Tested with Python 3.6.9)
-* Linux with GCC 7 or 8
-* PyTorch 1.4.0 Torchvision 0.4.0
-* CUDA (10.0 - 10.2)
+  * Python 3.6.9
+  * Linux with GCC 7 or 8
+  * PyTorch 1.13.0 Torchvision 0.14.0
+  * CUDA 11.1
+  * Faiss library (faiss-gpu 1.7.2)
+`
 
 ### Setup
 
