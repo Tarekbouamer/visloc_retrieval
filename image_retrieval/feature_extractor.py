@@ -35,7 +35,7 @@ class FeatureExtractor():
         dataset:                ImagesListDataset
         output:     str         path to save features as h5py format     
     """
-    def __init__(self, model_name, dataset=None, output=None):
+    def __init__(self, model_name):
         super().__init__()
         
         # options
@@ -46,8 +46,6 @@ class FeatureExtractor():
         if dataset is None:
             raise ValueError(f'dataset is None Type {dataset}')
         
-        self.dataset    = dataset
-        self.dataloader = DataLoader(dataset, num_workers=1)
         
         # build  
         self.model  = create_model(model_name, pretrained=True)
@@ -60,11 +58,9 @@ class FeatureExtractor():
                 transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
                 ])
         
-        # writer
-        self.output = output
-        if output is not None:
-            self.writer = h5py.File(str(output), 'a')
-            
+    def __init_writer__(self, save_path):  
+        self.writer = h5py.File(str(save_path), 'a')
+      
     def __write__(self, key, data, name='desc'):   
         hf  = self.writer
         try:
@@ -108,13 +104,20 @@ class FeatureExtractor():
         return False
             
     @torch.no_grad()     
-    def extract(self, scales=[1.0], min_size=200, max_size=1200):
+    def extract(self, dataset, save_path=None, scales=[1.0], min_size=200, max_size=1200):
         
-        features = np.empty(shape=(len(self.dataset), self.cfg['out_dim']))
+        # set writer
+        if save_path is not None:
+            self.writer = h5py.File(str(save_path), 'a')
+
+        # loader
+        dataloader = DataLoader(dataset, num_workers=1)
+        
+        features = np.empty(shape=(len(dataloader), self.cfg['out_dim']))
         
         start_time = time.time()
         
-        for it, data in enumerate(tqdm(self.dataloader, total=len(self.dataloader), colour='magenta', desc='extract'.rjust(15))):
+        for it, data in enumerate(tqdm(dataloader, total=len(dataloader), colour='magenta', desc='extract'.rjust(15))):
             
             img , name, original_size = data['img'], data['img_name'][0], data["original_size"][0]
             
@@ -161,9 +164,9 @@ class FeatureExtractor():
         
         # 
         end_time = time.time() - start_time  
-        logger.info(f'extraction done {end_time:.4} seconds saved {self.output}')
+        logger.info(f'extraction done {end_time:.4} seconds saved {save_path}')
         
-        return features, self.output
+        return features, save_path
                                     
             
 if __name__ == '__main__':
@@ -172,17 +175,17 @@ if __name__ == '__main__':
 
     DATA_DIR='/media/dl/Data/datasets/test/oxford5k/jpg'
     DATA_DIR='/media/loc/ssd_5126/tmp/how/how_data/test/oxford5k/jpg'
-    OUT='db.h5'
+    save_path='db.h5'
     
     dataset = ImagesListDataset(DATA_DIR, max_size=500)
     
-    feature_extractor = FeatureExtractor("resnet50_c4_gem_1024", dataset=dataset, output=OUT)
+    feature_extractor = FeatureExtractor("resnet50_c4_gem_1024")
     scales = [0.5, 0.707, 1.0, 1.414, 2.0]
     
-    feat, pth = feature_extractor.extract(scales)
+    feat, pth = feature_extractor.extract(dataset, save_path=save_path)
     
     print("features path", pth)
-    print("feature shape", feat.shape)
+    print("features shape", feat.shape)
 
         
   
