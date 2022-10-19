@@ -50,7 +50,6 @@ def is_model_pretrained(model_name):
 
 
 def get_pretrained_cfg(model_name):
-    print(_model_pretrained_cfgs)
     if model_name in _model_pretrained_cfgs:
         return deepcopy(_model_pretrained_cfgs[model_name])
     return {}

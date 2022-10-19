@@ -1,0 +1,6 @@
+[10/19 16:47 retrieval]: found 5063 images in /media/loc/ssd_5126/tmp/how/how_data/test/oxford5k/jpg
+[10/19 16:47 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1ra74D2Tr9CpnXu_uTXCGkHqfomp2jmKT)
+[10/19 16:47 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/resnet50_c4_gem_1024.pth'
+[10/19 16:47 retrieval]: body channels:[256, 512, 1024]  reductions:[4, 8, 16]   layer_names: ['layer1', 'layer2', 'layer3']
+[10/19 16:47 retrieval]: make sure img is in pil format as torchvision transform requires
+[10/19 16:54 retrieval]: extraction done 424.0 seconds saved db.h5

@@ -34,7 +34,7 @@ class ImagesListDataset(Dataset):
         
         #   
         self.images_fn = sorted(list(set(paths)))      
-        logger.info('Found {len(self.images_fn)} images in {self.images_path}') 
+        logger.info(f'found {len(self.images_fn)} images in {self.images_path}') 
         
     def __len__(self):
         return len(self.images_fn)
@@ -47,17 +47,21 @@ class ImagesListDataset(Dataset):
         return [ self.split + "/" + str(p.relative_to(self.images_path)) for p in self.images_fn] 
          
     def load_img(self, img_path, mode='color'):
-
         if    mode=='gray':
             mode = cv2.IMREAD_GRAYSCALE
-        
         elif  mode=='color':
             mode = cv2.IMREAD_COLOR
-        
         else:
             raise KeyError(f'mode {mode} not found!')
-                
-        return cv2.imread(str(img_path), mode) 
+        
+        # read
+        img = cv2.imread(str(img_path), mode) 
+        img = img.astype(np.float32)
+        
+        # HxWxC to CxHxW
+        img = img.transpose((2, 0, 1))  
+        img = img / 255.
+        return img
     
     def get_cameras(self,):
         if hasattr(self, "cameras"):
@@ -70,16 +74,9 @@ class ImagesListDataset(Dataset):
         out = {}
         
         # load
-        item_path  = self.images_fn[item]
-        img = self.load_img(item_path)
-        
-        ori_size   = np.array(img.shape[:2][::-1])
-
-        # resize    
-        if self.max_size :
-            scale = self.max_size / max(ori_size)
-            target_size = tuple(int(round(x * scale)) for x in ori_size)
-            img = self.resize_image(img, target_size)
+        item_path = self.images_fn[item]
+        img       = self.load_img(item_path)
+        ori_size  = np.array(img.shape[1:])
 
         # dict
         out["img"]              = img
