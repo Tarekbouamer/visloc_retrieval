@@ -8,6 +8,9 @@ experiments/*
 pretrained_models/*
 pretrained_drive/*
 
+*h5
+*h5py
+
 # C extensions
 *.so
 
