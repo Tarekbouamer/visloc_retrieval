@@ -5,11 +5,12 @@ import numpy as np
 import torch 
 
 # Image Retrieval
-from image_retrieval.tools import  ImageRetrievalTrainer
-from image_retrieval.configuration import DEFAULTS as DEFAULT_CONFIG
-from image_retrieval.utils.configurations  import make_config
+from retrieval.tools import  ImageRetrievalTrainer
+from retrieval.configuration import DEFAULTS as DEFAULT_CONFIG
+from retrieval.utils.configurations  import make_config
 
-from image_retrieval.utils.logging import setup_logger
+
+from retrieval.utils.logging import setup_logger
 
 
 def make_parser():

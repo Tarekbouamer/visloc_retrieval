@@ -3,9 +3,9 @@ from tqdm import tqdm
 import numpy as np
 import torch
 
-from image_retrieval.utils.evaluation.ParisOxfordEval import compute_map_revisited, compute_map
+from retrieval.utils.evaluation.ParisOxfordEval import compute_map_revisited, compute_map
 
-from image_retrieval.datasets import INPUTS
+from retrieval.datasets import INPUTS
 
 # logger
 import logging

@@ -5,11 +5,11 @@ import numpy as np
 import torch 
 
 # Image Retrieval
-from image_retrieval.feature_extractor import  FeatureExtractor
-from image_retrieval.configuration import DEFAULTS as DEFAULT_CONFIG
-from image_retrieval.utils.configurations  import make_config
+from retrieval.feature_extractor import  FeatureExtractor
+from retrieval.configuration import DEFAULTS as DEFAULT_CONFIG
+from retrieval.utils.configurations  import make_config
 
-from image_retrieval.utils.logging import setup_logger
+from retrieval.utils.logging import setup_logger
 from image_retrieval.datasets.generic import ImagesFromList
 
 

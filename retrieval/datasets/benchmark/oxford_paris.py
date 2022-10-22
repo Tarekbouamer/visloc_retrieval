@@ -1,7 +1,7 @@
 import pickle
 from os import path
 
-from image_retrieval.datasets.misc import cid2filename
+from retrieval.datasets.misc import cid2filename
 
 TEST_DATASETS = ["val_eccv20", 
                  'oxford5k', 'paris6k', 

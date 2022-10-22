@@ -1,17 +1,92 @@
-## Image Retrieval Library
+# Visloc-Retrieval: Library for Image Retrival and Place Recognition
+
+## Introduction:
+
+Visloc-Retrieval is a collectio of image retrieval and place recognition models and algorithms for robotics and autonomous system applications.
+
+
+## Welcome
+
+Welcome to the `Visloc-Retrieval`
+
+## Install
+
+The library can be installed with pip:
+
+```
+pip install git+https://github.com/Tarekbouamer/visloc_retrieval.git
+```
+
+Main system requirements:
+  * Python 3.7
+  * CUDA 11.3
+  * Faiss library (faiss-gpu 1.7.2)
+
+```
+conda create -n loc
+conda activate loc
+conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
+conda install faiss-gpu
+```
+
+## Load a Pretrained Model
+
+Pretrained models can be loaded using `timm.create_model`
+
+```python
+import timm
+
+m = timm.create_model('mobilenetv3_large_100', pretrained=True)
+m.eval()
+```
+
+## List Models with Pretrained Weights
+```python
+import timm
+from pprint import pprint
+model_names = timm.list_models(pretrained=True)
+pprint(model_names)
+>>> ['adv_inception_v3',
+ 'cspdarknet53',
+ 'cspresnext50',
+ 'densenet121',
+ 'densenet161',
+ 'densenet169',
+ 'densenet201',
+ 'densenetblur121d',
+ 'dla34',
+ 'dla46_c',
+...
+]
+```
+
+## List Model Architectures by Wildcard
+```python
+import timm
+from pprint import pprint
+model_names = timm.list_models('*resne*t*')
+pprint(model_names)
+>>> ['cspresnet50',
+ 'cspresnet50d',
+ 'cspresnet50w',
+ 'cspresnext50',
+...
+]
+```
 
 ### TO DO?
+* Add shield IO
 * Add results on roxford5k rparis6k.
 
 ### Prerequisites
-`
+
 Main system requirements:
   * Python 3.6.9
   * Linux with GCC 7 or 8
   * PyTorch 1.13.0 Torchvision 0.14.0
   * CUDA 11.1
   * Faiss library (faiss-gpu 1.7.2)
-`
+
 
 ### Setup
 

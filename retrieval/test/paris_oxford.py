@@ -1,6 +1,6 @@
 from os import path
 
-from image_retrieval.datasets import ImagesFromList, ImagesTransform, INPUTS, ParisOxfordTestDataset
+from retrieval.datasets import ImagesFromList, ImagesTransform, INPUTS, ParisOxfordTestDataset
 
 from torch.utils.data import DataLoader
 

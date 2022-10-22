@@ -1,10 +1,10 @@
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Type, Union
 
 # core
-from image_retrieval.utils.misc        import OTHER_LAYERS, NORM_LAYERS
-from image_retrieval.utils.misc        import scheduler_from_config
+from retrieval.utils.misc        import OTHER_LAYERS, NORM_LAYERS
+from retrieval.utils.misc        import scheduler_from_config
 
-from image_retrieval.modules.pools import RET_LAYERS
+from retrieval.modules.pools import RET_LAYERS
 # 
 import torch
 import torch.optim as optim

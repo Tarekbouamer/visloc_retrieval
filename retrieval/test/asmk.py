@@ -1,9 +1,9 @@
 import time
 import torch
 
-import  image_retrieval.utils.evaluation.asmk as eval_asmk
-from image_retrieval.utils.general     import htime
-from image_retrieval.utils.evaluation.ParisOxfordEval import compute_map_revisited, compute_map
+import  retrieval.utils.evaluation.asmk as eval_asmk
+from retrieval.utils.general     import htime
+from retrieval.utils.evaluation.ParisOxfordEval import compute_map_revisited, compute_map
 
 
 # logger

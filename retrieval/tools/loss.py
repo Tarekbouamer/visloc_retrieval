@@ -1,5 +1,5 @@
 
-from image_retrieval.loss import TripletLoss, ContrastiveLoss
+from retrieval.loss import TripletLoss, ContrastiveLoss
 
 # logger
 import logging

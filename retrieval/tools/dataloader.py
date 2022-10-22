@@ -8,10 +8,10 @@ from  timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
 
 # image_retrieval
-from image_retrieval.datasets import TuplesDataset, ImagesFromList, ImagesTransform 
-from image_retrieval.datasets import SatDataset
+from retrieval.datasets import TuplesDataset, ImagesFromList, ImagesTransform 
+from retrieval.datasets import SatDataset
 
-from image_retrieval.datasets.misc  import collate_tuples
+from retrieval.datasets.misc  import collate_tuples
 
 # logger
 import logging

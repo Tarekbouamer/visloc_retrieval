@@ -4,8 +4,8 @@ import torch
 from torch import nn
 
 import os
-from image_retrieval.test import  build_paris_oxford_dataset, test_asmk, test_global_descriptor
-import image_retrieval.utils.evaluation.asmk as eval_asmk
+from retrieval.test import  build_paris_oxford_dataset, test_asmk, test_global_descriptor
+import retrieval.utils.evaluation.asmk as eval_asmk
 
 
 # logger

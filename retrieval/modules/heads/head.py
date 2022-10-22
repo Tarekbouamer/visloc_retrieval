@@ -3,7 +3,7 @@ from functools import partial
 import torch.nn as nn
 
 
-from image_retrieval.modules.pools import GeM
+from retrieval.modules.pools import GeM
 from .registry import register_head, model_entrypoint, is_model
 
 from .base import Head

@@ -1,6 +1,6 @@
 import torch
 
-from image_retrieval.utils.misc import config_to_string
+from retrieval.utils.misc import config_to_string
 
 
 

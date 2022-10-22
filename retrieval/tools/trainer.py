@@ -6,7 +6,7 @@ import torch
 import os
 
 from timm import utils
-from image_retrieval.models import  create_model
+from retrieval.models import  create_model
 
 # 
 from .model             import run_pca, set_batchnorm_eval
@@ -18,9 +18,9 @@ from .events            import EventWriter
 from .evaluation        import DatasetEvaluator
 
 
-from image_retrieval.utils.logging                 import  _log_api_usage
-from image_retrieval.utils.configurations          import config_to_string
-from image_retrieval.utils.snapshot     import save_snapshot, resume_from_snapshot
+from retrieval.utils.logging                 import  _log_api_usage
+from retrieval.utils.configurations          import config_to_string
+from retrieval.utils.snapshot     import save_snapshot, resume_from_snapshot
 
 
 # logger

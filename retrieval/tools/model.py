@@ -8,10 +8,10 @@ import numpy as np
 import  torch 
 
 # image retrieval
-from image_retrieval.datasets import  INPUTS 
+from retrieval.datasets import  INPUTS 
 
-from image_retrieval.utils.io   import create_withen_file_from_cfg
-from image_retrieval.utils.pca   import PCA_whitenlearn_shrinkage
+from retrieval.utils.io   import create_withen_file_from_cfg
+from retrieval.utils.pca   import PCA_whitenlearn_shrinkage
 
 # logger
 import logging

@@ -12,9 +12,9 @@ from torchvision import transforms
 
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 
-from image_retrieval.utils.logging import setup_logger
-from image_retrieval.datasets import ImagesListDataset
-from image_retrieval.models import create_model, get_pretrained_cfg
+from retrieval.utils.logging import setup_logger
+from retrieval.datasets import ImagesListDataset
+from retrieval.models import create_model, get_pretrained_cfg
 
 
 # logger

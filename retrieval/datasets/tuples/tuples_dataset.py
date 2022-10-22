@@ -7,7 +7,7 @@ from tqdm import tqdm
 import torch
 import torch.utils.data as data
 
-from image_retrieval.datasets.misc import cid2filename
+from retrieval.datasets.misc import cid2filename
 
 from .dataset import ImagesFromList, INPUTS
 from .transform import ImagesTransform
