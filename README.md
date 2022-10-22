@@ -54,9 +54,29 @@ print(model_names)
   ...
 ]
 ```
+## Datasets
+the models are trained in well known public dataset as retrieval-SfM-120k-images [retrieval-SfM-120k-images](http://cmp.felk.cvut.cz/cnnimageretrieval/) and Google Landmark [v1](https://www.kaggle.com/datasets/google/google-landmarks-dataset), [v2 and v2_clean](https://github.com/cvdfoundation/google-landmark). We also evaluatetrained models mAP on the [Revisiting Oxford and Paris](https://github.com/filipradenovic/revisitop) benchmark. Retrieval-SfM-120k-images and Revisiting Oxford and Paris datasets can be downloaded using `TODO` script or automatically in training script below.
 
-## Train
-The provided train script [this subtext](scripts/train.py) will train a new network from scratch, to resume training add --resume_path and set to a full path, filename and extension to an existing checkpoint file. Note to resume our provided models, first remove the WPCA layers.
+
+
+## Training
+The provided [train](scripts/train.py) script will train a specific model (backbone + head) from our factory on a specific configuration provided in `ini` format as in [default](retrieval/configuration/defaults/default.ini).
+
+In your config file you can specify the trainning loss, optimizer, scheduler, training and test datasets, augmentation ... etc
+
+Run training:
+
+```
+DATA_DIR='/......./data'
+EXPERIMENT='./experiments/'
+
+python3 ./scripts/train.py \
+      --directory $EXPERIMENT \
+      --data $DATA_DIR \
+      --local_rank 0 \
+      --config ./image_retrieval/configuration/defaults/defaults.ini \
+      --eval 
+```
 
 
 
@@ -74,51 +94,6 @@ The provided train script [this subtext](scripts/train.py) will train a new netw
 * Add shield IO
 * Add results on roxford5k rparis6k.
 
-### Prerequisites
-
-Main system requirements:
-  * Python 3.6.9
-  * Linux with GCC 7 or 8
-  * PyTorch 1.13.0 Torchvision 0.14.0
-  * CUDA 11.1
-  * Faiss library (faiss-gpu 1.7.2)
-
-
-### Setup
-
-To install all other dependencies using pip:
-
-```bash
-pip install -r requirements.txt
-```
-
-Our code is split into two main components: a library containing implementations for the various network modules,
-algorithms and utilities, and a set of scripts for training and testing the networks.
-
-The library, called `cirtorch`, can be installed with:
-```bash
-git clone https://github.com/Tarekbouamer/Image-Retrieval-for-Image-Based-Localization.git
-cd Image-Retrieval-for-Image-Based-Localization
-python setup.py install
-```
-
-## Training
-
-Training involves three main steps: dataset preparation (automatic download), creating a configuration file and running the training
-script.
-
-The script downloads [The Retrieval-SfM-120k](https://arxiv.org/abs/1711.02512) trainning dataset and [The Revisiting Oxford and Paris](https://github.com/filipradenovic/revisitop) test sets and benchmarking to `$DataFolder`.
-
-The configuration file is a simple text file in `ini` format. The default value of each configuration parameter, as well as a short description of what it does, is available in
-[cirtorch/configuration/defaults/](cirtorch/configuration/defaults/).
-
-To run the training:
-```bash
-sh scripts/train_globalF.sh 
-```
-
-It's also highly recommended to train on multiple GPUs in order to obtain good results.
-Training logs, both in text and Tensorboard formats, will be written under `experiments`.
 
 
 ### Results
