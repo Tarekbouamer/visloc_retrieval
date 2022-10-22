@@ -2,7 +2,7 @@
 
 - [Introduction](#introduction)
 - [Welcome](#welcome)
-- [Train](#train)
+- [Training](#training)
 - [Results](#results)
 - [Licenses](#licenses)
 - [Citing](#citing)
