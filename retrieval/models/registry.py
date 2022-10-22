@@ -1,3 +1,4 @@
+import re
 import sys
 from copy import deepcopy
 from collections import defaultdict
@@ -93,3 +94,27 @@ def register_model(fn):
         _model_has_pretrained.add(model_name)
     
     return fn
+
+
+def _natural_key(string_):
+    return [int(s) if s.isdigit() else s for s in re.split(r'(\d+)', string_.lower())]
+
+
+def list_models(filter='', module='', pretrained=False, exclude_filters='', name_matches_cfg=False):
+    """ Return list of available model names, sorted alphabetically
+    Args:
+        pretrained (bool) - Include only models with pretrained weights if True
+        name_matches_cfg (bool) - Include only models w/ model_name matching default_cfg name (excludes some aliases)
+    """
+    if module:
+        all_models = list(_module_to_models[module])
+    else:
+        all_models = _model_entrypoints.keys()
+    
+    if pretrained:
+        models = _model_has_pretrained.intersection(all_models)
+    
+    if name_matches_cfg:
+        models = set(_model_pretrained_cfgs).intersection(models)
+    
+    return list(sorted(models, key=_natural_key))

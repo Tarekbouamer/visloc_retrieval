@@ -30,18 +30,16 @@ conda install -c conda-forge faiss-gpu
 pip install gdown
 ```
 
-## Load a Pretrained Model
-
-Pretrained models can be loaded using `timm.create_model`
+Pretrained models can be loaded using `retrieval.create_model`
 
 ```python
-import timm
+import retrieval
 
-m = timm.create_model('mobilenetv3_large_100', pretrained=True)
-m.eval()
+extractor = retrieval.create_model('resnet50_c4_gem_1024')
+extractor.eval()
 ```
 
-## List Models with Pretrained Weights
+List available models 
 ```python
 import timm
 from pprint import pprint
