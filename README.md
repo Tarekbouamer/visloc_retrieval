@@ -27,7 +27,7 @@ conda create -n loc
 conda activate loc
 conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
 conda install -c conda-forge faiss-gpu 
-pip install gdown
+pip install gdown timm==0.5.4
 ```
 
 Pretrained models can be loaded using `retrieval.create_model`
@@ -39,28 +39,15 @@ extractor = retrieval.create_model('resnet50_c4_gem_1024')
 extractor.eval()
 ```
 
-List available models 
-```python
-import retrieval
-from pprint import pprint
-model_names = retrieval.list_models(pretrained=True)
-pprint(model_names)
->>>
-...
-]
-```
-
 ## List Model Architectures by Wildcard
 ```python
-import timm
-from pprint import pprint
-model_names = timm.list_models('*resne*t*')
-pprint(model_names)
->>> ['cspresnet50',
- 'cspresnet50d',
- 'cspresnet50w',
- 'cspresnext50',
-...
+import retrieval
+
+model_names = retrieval.list_models('*resne*t*')
+print(model_names)
+>>> [
+  'resnet50_c4_gem_1024'
+  ...
 ]
 ```
 
