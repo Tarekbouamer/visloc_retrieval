@@ -26,7 +26,7 @@ Main system requirements:
 conda create -n loc
 conda activate loc
 conda install pytorch torchvision cudatoolkit=11.3 -c pytorch
-conda install faiss-gpu
+conda install -c conda-forge faiss-gpu
 ```
 
 ## Load a Pretrained Model
