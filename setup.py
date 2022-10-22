@@ -32,6 +32,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
-    install_requires=['gdown'],
+    install_requires=['gdown', 'timm==0.5.4'],
 
 )
