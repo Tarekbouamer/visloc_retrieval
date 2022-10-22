@@ -86,7 +86,7 @@ def register_model(fn):
         has_valid_pretrained = (
             ('url' in cfg and 'http' in cfg['url']) or
             ('file' in cfg and cfg['file']) or
-            ('hf_hub_id' in cfg and cfg['hf_hub_id'])
+            ('drive' in cfg and cfg['drive'])
         )
         _model_pretrained_cfgs[model_name] = mod.default_cfgs[model_name]
     
