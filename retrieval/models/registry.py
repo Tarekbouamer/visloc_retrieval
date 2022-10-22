@@ -107,12 +107,12 @@ def list_models(filter='', module='', pretrained=False, exclude_filters='', name
         name_matches_cfg (bool) - Include only models w/ model_name matching default_cfg name (excludes some aliases)
     """
     if module:
-        all_models = list(_module_to_models[module])
+        models = list(_module_to_models[module])
     else:
-        all_models = _model_entrypoints.keys()
+        models = _model_entrypoints.keys()
     
     if pretrained:
-        models = _model_has_pretrained.intersection(all_models)
+        models = _model_has_pretrained.intersection(models)
     
     if name_matches_cfg:
         models = set(_model_pretrained_cfgs).intersection(models)

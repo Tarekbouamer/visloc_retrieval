@@ -41,20 +41,11 @@ extractor.eval()
 
 List available models 
 ```python
-import timm
+import retrieval
 from pprint import pprint
-model_names = timm.list_models(pretrained=True)
+model_names = retrieval.list_models(pretrained=True)
 pprint(model_names)
->>> ['adv_inception_v3',
- 'cspdarknet53',
- 'cspresnext50',
- 'densenet121',
- 'densenet161',
- 'densenet169',
- 'densenet201',
- 'densenetblur121d',
- 'dla34',
- 'dla46_c',
+>>>
 ...
 ]
 ```
