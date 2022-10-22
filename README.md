@@ -1,15 +1,19 @@
 # Visloc-Retrieval: Library for Image Retrival and Place Recognition
 
+- [Introduction](#introduction)
+- [Welcome](#welcome)
+- [Train](#train)
+- [Results](#results)
+- [Licenses](#licenses)
+- [Citing](#citing)
+
 ## Introduction:
 
 Visloc-Retrieval is a collectio of image retrieval and place recognition models and algorithms for robotics and autonomous system applications.
 
-
 ## Welcome
 
-Welcome to the `Visloc-Retrieval`
-
-## Install
+Welcome to the `Visloc-Retrieval` 
 
 The library can be installed with pip:
 
@@ -30,7 +34,7 @@ conda install -c conda-forge faiss-gpu
 pip install gdown timm==0.5.4
 ```
 
-Pretrained models can be loaded using `retrieval.create_model`
+Pretrained models can be loaded using `retrieval.create_model`:
 
 ```python
 import retrieval
@@ -39,7 +43,7 @@ extractor = retrieval.create_model('resnet50_c4_gem_1024')
 extractor.eval()
 ```
 
-## List Model Architectures by Wildcard
+List available model architectures:
 ```python
 import retrieval
 
@@ -50,6 +54,21 @@ print(model_names)
   ...
 ]
 ```
+
+## Train
+The provided train script [this subtext](scripts/train.py) will train a new network from scratch, to resume training add --resume_path and set to a full path, filename and extension to an existing checkpoint file. Note to resume our provided models, first remove the WPCA layers.
+
+
+
+
+
+
+
+
+
+
+
+
 
 ### TO DO?
 * Add shield IO
