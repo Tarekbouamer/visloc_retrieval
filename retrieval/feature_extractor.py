@@ -32,8 +32,6 @@ class FeatureExtractor():
     """ Feature extraction 
         
         model_name:     str     model name from models factory
-        dataset:                ImagesListDataset
-        output:     str         path to save features as h5py format     
     """
     def __init__(self, model_name):
         super().__init__()
@@ -41,11 +39,7 @@ class FeatureExtractor():
         # options
         self.options = FeatureExtractorOptions()
         self.cfg     = get_pretrained_cfg(model_name)
-        
-        # dataset        
-        if dataset is None:
-            raise ValueError(f'dataset is None Type {dataset}')
-        
+    
         
         # build  
         self.model  = create_model(model_name, pretrained=True)
