@@ -9,11 +9,11 @@
 
 ## Introduction:
 
-Visloc-Retrieval is a collectio of image retrieval and place recognition models and algorithms for robotics and autonomous system applications.
+Visloc-Retrieval library is a collection of an image retrieval and place recognition models and algorithms for robotics and autonomous system applications.
 
 ## Welcome
 
-Welcome to the `Visloc-Retrieval` 
+* Welcome to the `Visloc-Retrieval` :smile:
 
 The library can be installed with pip:
 
@@ -55,18 +55,25 @@ print(model_names)
 ]
 ```
 ## Datasets
-the models are trained in well known public dataset as retrieval-SfM-120k-images [retrieval-SfM-120k-images](http://cmp.felk.cvut.cz/cnnimageretrieval/) and Google Landmark [v1](https://www.kaggle.com/datasets/google/google-landmarks-dataset), [v2 and v2_clean](https://github.com/cvdfoundation/google-landmark). We also evaluatetrained models mAP on the [Revisiting Oxford and Paris](https://github.com/filipradenovic/revisitop) benchmark. Retrieval-SfM-120k-images and Revisiting Oxford and Paris datasets can be downloaded using `TODO` script or automatically in training script below.
+the models are trained in well known public dataset as:
+ * Retrieval-SfM-120k-images [retrieval-SfM-120k-images](http://cmp.felk.cvut.cz/cnnimageretrieval/) 
+ * Google Landmark [v1](https://www.kaggle.com/datasets/google/google-landmarks-dataset), [v2 and v2_clean](https://github.com/cvdfoundation/google-landmark). 
+
+We evaluate trained models on the [Revisiting Oxford and Paris](https://github.com/filipradenovic/revisitop) benchmark.
+
+Retrieval-SfM-120k-images and Revisiting Oxford and Paris datasets can be downloaded using `TODO` script or automatically in training script below.
+
+ Note! Other training and evaluation datasets will be added soon !!!
+
 
 
 
 ## Training
-The provided [train](scripts/train.py) script will train a specific model (backbone + head) from our factory on a specific configuration provided in `ini` format as in [default](retrieval/configuration/defaults/default.ini).
+We trained our models using the [training](scripts/train.py) script with a specific configuration provided in `ini` format as in [default](retrieval/configuration/defaults/default.ini), where you can specify the trainning loss, optimizer, scheduler, training and test datasets, data augmentation policy if needed ... etc
 
-In your config file you can specify the trainning loss, optimizer, scheduler, training and test datasets, augmentation ... etc
+start your training:
 
-Run training:
-
-```
+```sh
 DATA_DIR='/......./data'
 EXPERIMENT='./experiments/'
 
@@ -76,7 +83,18 @@ python3 ./scripts/train.py \
       --local_rank 0 \
       --config ./image_retrieval/configuration/defaults/defaults.ini \
       --eval 
+
 ```
+
+## Roadmap
+
+- [x] Add Changelog
+- [x] Add back to top links
+- [ ] Add Additional Templates w/ Examples
+- [ ] Add "components" document to easily copy & paste sections of the readme
+- [ ] Multi-language Support
+    - [ ] Chinese
+    - [ ] Spanish
 
 
 
