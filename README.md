@@ -1,8 +1,11 @@
 # Visloc-Retrieval: Library for Image Retrival and Place Recognition
 
+## Content
 - [Introduction](#introduction)
 - [Welcome](#welcome)
+- [Datasets](#datasets)
 - [Training](#training)
+- [Roadmap](#roadmap)
 - [Results](#results)
 - [Licenses](#licenses)
 - [Citing](#citing)
@@ -55,7 +58,7 @@ print(model_names)
 ]
 ```
 
-<p align="right"><a href="#readme-top">Menu :arrow_up:</a></p>
+<p align="right"><a href="#content">:arrow_up:</a></p>
 
 ## Datasets
 The models are trained in well known public dataset as:
@@ -88,7 +91,8 @@ python3 ./scripts/train.py \
       --eval 
 
 ```
-<p align="right"><a href="#readme-top">Menu :arrow_up:</a></p>
+<p align="right"><a href="#content">:arrow_up:</a></p>
+
 ## Roadmap
 
 - [ ] Add Changelog
@@ -97,7 +101,9 @@ python3 ./scripts/train.py \
 - [ ] Add results on roxford5k rparis6k.
 
 
-### Results
+<p align="right"><a href="#content">:arrow_up:</a></p>
+
+## Results
 Table: Large-scale image retrieval results of our models on Revisited Oxford and Paris datasets. 
 We evaluate against the Easy, Medium and Hard with the mAP metric.
 
@@ -106,4 +112,12 @@ We evaluate against the Easy, Medium and Hard with the mAP metric.
   |   mAP        | Easy   | Medium | Hard   | Easy   | Medium | Hard   |          |
   | ResNet50-GeM | 66.20  | 51.78  | 28.76  | 79.28  | 62.35  | 36.66  |[resnet50](https://drive.google.com/file/d/1mZpzcAHLFkeKLKROC4ljT7kuy0AUh6WV/view?usp=sharing)|
 
-<p align="right"><a href="#readme-top">Menu :arrow_up:</a></p>
+<p align="right"><a href="#content">:arrow_up:</a></p>
+
+## Licenses
+
+<p align="right"><a href="#content">:arrow_up:</a></p>
+
+## Citing
+
+<p align="right"><a href="#content">:arrow_up:</a></p>
