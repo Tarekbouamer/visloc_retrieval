@@ -83,6 +83,7 @@ start your training:
 DATA_DIR='/......./data'
 EXPERIMENT='./experiments/'
 CONFIG='./image_retrieval/configuration/defaults/defaults.ini'
+
 python3 ./scripts/train.py \
       --directory $EXPERIMENT \
       --data $DATA_DIR \
@@ -97,7 +98,6 @@ python3 ./scripts/train.py \
 
 - [ ] Add Changelog
 - [ ] Add shield IO
-- [ ] Add Additional Templates w/ Examples
 - [ ] Add results on roxford5k rparis6k.
 
 
