@@ -32,6 +32,6 @@ setup(
         "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
     ],
-    install_requires=['gdown', 'timm==0.5.4', 'h5py'],
+    install_requires=['gdown', 'timm==0.5.4', 'h5py', 'tabulate'],
 
 )
