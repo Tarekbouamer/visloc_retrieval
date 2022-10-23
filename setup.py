@@ -36,6 +36,8 @@ setup(
                       'timm==0.5.4', 
                       'h5py',
                       'tabulate',
-                      'termcolor'],
+                      'termcolor',
+                      'opencv-contrib-python==4.6.0.66',
+                      'opencv-python==4.6.0.66'],
 
 )
