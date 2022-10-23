@@ -88,30 +88,10 @@ python3 ./scripts/train.py \
 
 ## Roadmap
 
-- [x] Add Changelog
-- [x] Add back to top links
+- [ ] Add Changelog
+- [ ] Add shield IO
 - [ ] Add Additional Templates w/ Examples
-- [ ] Add "components" document to easily copy & paste sections of the readme
-- [ ] Multi-language Support
-    - [ ] Chinese
-    - [ ] Spanish
-
-
-
-
-
-
-
-
-
-
-
-
-
-### TO DO?
-* Add shield IO
-* Add results on roxford5k rparis6k.
-
+- [ ] Add results on roxford5k rparis6k.
 
 
 ### Results
