@@ -82,12 +82,12 @@ start your training:
 ```sh
 DATA_DIR='/......./data'
 EXPERIMENT='./experiments/'
-
+CONFIG='./image_retrieval/configuration/defaults/defaults.ini'
 python3 ./scripts/train.py \
       --directory $EXPERIMENT \
       --data $DATA_DIR \
       --local_rank 0 \
-      --config ./image_retrieval/configuration/defaults/defaults.ini \
+      --config $CONFIG \
       --eval 
 
 ```
