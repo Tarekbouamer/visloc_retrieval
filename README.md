@@ -16,7 +16,7 @@ Visloc-Retrieval library is a collection of an image retrieval and place recogni
 
 ## Welcome
 
-* Welcome to the `Visloc-Retrieval` :smile:
+* Welcome to the `Visloc-Retrieval` :sparkles:
 
 The library can be installed with pip:
 
