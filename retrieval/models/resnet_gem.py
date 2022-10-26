@@ -13,21 +13,24 @@ logger = logging.getLogger("retrieval")
 
 
 
-def _cfg(url='', drive='', **kwargs):
+def _cfg(url='', drive='', out_dim=1024, **kwargs):
     return {
         'url': url,
         'drive':drive,
         'reduction': False, 
         'input_size': (3, 1024, 1024),
-        'out_dim': 1024, 
+        'out_dim': out_dim, 
         **kwargs
     }
  
  
 default_cfgs = {
-    'resnet50_gem_2048':        _cfg(drive='https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5'),
-    'resnet50_c4_gem_1024':     _cfg(drive='https://drive.google.com/uc?id=1ber3PbTF4ZWAmnBuJu5AEp2myVJFNM7F'),
-    'resnet101_gem_2048':       _cfg(drive='https://drive.google.com/uc?id=10CqmzZE_XwRCyoiYlZh03tfYk1jzeziz'),
+    'resnet50_gem_2048':        
+        _cfg(drive='https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5', out_dim=2048),
+    'resnet50_c4_gem_1024':     
+        _cfg(drive='https://drive.google.com/uc?id=1ber3PbTF4ZWAmnBuJu5AEp2myVJFNM7F'),
+    'resnet101_gem_2048':       
+        _cfg(drive='https://drive.google.com/uc?id=10CqmzZE_XwRCyoiYlZh03tfYk1jzeziz', out_dim=2048),
 
     }
  
