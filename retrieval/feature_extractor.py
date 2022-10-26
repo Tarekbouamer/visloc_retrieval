@@ -165,16 +165,18 @@ class FeatureExtractor():
             
 if __name__ == '__main__':
     
+    
+    
     logger = setup_logger(output=".", name="retrieval")
-
+    print("hello")
     DATA_DIR='/media/dl/Data/datasets/test/oxford5k/jpg'
-    DATA_DIR='/media/loc/ssd_5126/tmp/how/how_data/test/oxford5k/jpg'
+    # DATA_DIR='/media/loc/ssd_5126/tmp/how/how_data/test/oxford5k/jpg'
     save_path='db.h5'
     
     dataset = ImagesListDataset(DATA_DIR, max_size=500)
     
     feature_extractor = FeatureExtractor("resnet50_c4_gem_1024")
-    scales = [0.5, 0.707, 1.0, 1.414, 2.0]
+    scales = [1.0]
     
     feat, pth = feature_extractor.extract(dataset, save_path=save_path)
     

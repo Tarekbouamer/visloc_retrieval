@@ -10,11 +10,13 @@ logger = logging.getLogger("retrieval")
 
 
 models = {
-  "resnet50_noaugment":
-      "https://drive.google.com/drive/folders/1UjD837vojuYiSOHiNFo8cy4R0TDrkfL-?usp=sharing",
-  
-  "resnet_50_4_rand-m9-mstd0.5-inc1":
-      "https://drive.google.com/drive/folders/1CG25qdytGROMAoyJyniibNfqRWFAy0Dh?usp=sharing"
+    
+    "resnet50_c4_gem_1024":
+        "https://drive.google.com/drive/folders/1wozNSqPmkm8ctbQiealTvGB52P0HKjWa?usp=sharing",
+    
+    "resnet50_gem_2048":
+        "https://drive.google.com/drive/folders/1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5/view?usp=sharing"
+        
 }
 
 def ask_yesno(question):
