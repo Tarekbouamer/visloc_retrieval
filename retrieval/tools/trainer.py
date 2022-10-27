@@ -542,10 +542,11 @@ class ImageRetrievalTrainer(TrainerBase):
           Overwrite it if you'd like a different model.
         """
         model_name  = cfg["body"].get("arch")
-        
+        pretrained  = cfg["body"].getboolean("pretrained")
+       
         # model = build_model(cfg)
         
-        model = create_model(model_name, cfg)
+        model = create_model(model_name, cfg, pretrained=pretrained)
         model.to(torch.device("cuda"))
         
         _log_api_usage("modeling.meta_arch." + model_name)

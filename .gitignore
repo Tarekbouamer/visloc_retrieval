@@ -4,10 +4,10 @@ __pycache__/
 *$py.class
 
 # 
-experiments/*
-pretrained_models/*
-pretrained_drive/*
-
+experiments
+pretrained_models
+pretrained_drive
+image_retrieval
 *h5
 *h5py
 

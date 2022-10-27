@@ -84,7 +84,7 @@ def load_pretrained(
 def create_model(
         model_name,
         cfg=None,
-        pretrained=True,
+        pretrained=False,
         pretrained_cfg=None,
         **kwargs):
     """Create a model
