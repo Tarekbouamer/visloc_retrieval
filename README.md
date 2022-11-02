@@ -105,7 +105,7 @@ python3 ./scripts/train.py \
 
 ## Results
 
-### :large_blue_diamond: Single-Scale Benchmark
+### :blue_square: Single-Scale Benchmark
 
   | Models               | |     | ROxford5k |     | |     | RParis5k |      |
   |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
@@ -115,7 +115,7 @@ python3 ./scripts/train.py \
   | resnet101_gem_2048   | | 81.73 | 65.67 | 39.93 | | 90.79 | 74.85 | 52.67 |
   | resnet101_c4_gem_1024| | 82.12 | 62.81 | 36.56 | | 90.44 | 74.64 | 52.67 |
 
-### :large_red_diamond: Multi-Scale Benchmark
+### :orange_square: Multi-Scale Benchmark
 
   | Models               | |     | ROxford5k |     | |     | RParis5k |      |
   |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
