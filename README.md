@@ -65,7 +65,7 @@ The models are trained in well known public dataset as:
  * Retrieval-SfM-120k-images [retrieval-SfM-120k-images](http://cmp.felk.cvut.cz/cnnimageretrieval/) 
  * Google Landmark [v1](https://www.kaggle.com/datasets/google/google-landmarks-dataset), [v2 and v2_clean](https://github.com/cvdfoundation/google-landmark). 
 
-We evaluate trained models on the [Revisiting Oxford and Paris](https://github.com/filipradenovic/revisitop) benchmark.
+We evaluate trained models on the [RParis6K and ROxford5K](https://github.com/filipradenovic/revisitop) benchmark and with R1M if possible. The datasets contain 4993 and 6322 images respectively, with 70 query images. Optionally, a set of 1 million distractor images (R1M) can be added to each dataset for large scale benchmarking.
 
 Retrieval-SfM-120k-images and Revisiting Oxford and Paris datasets can be downloaded using `TODO` script or automatically in training script below.
 
@@ -104,8 +104,8 @@ python3 ./scripts/train.py \
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
 ## Results
-Table: Large-scale image retrieval results of our models on Revisited Oxford and Paris datasets.
-We evaluate against the Easy, Medium and Hard with the mAP metric.
+
+### :large_blue_diamond: ROxford5k RParis6k (Single Scale Benchmark)
 
   | Models               | |       | Oxford|       | |       | Paris |       |
   |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
@@ -114,6 +114,7 @@ We evaluate against the Easy, Medium and Hard with the mAP metric.
   | resnet50_c4_gem_1024 | | 79.22 | 60.53 | 34.30 | | 89.24 | 71.77 | 49.14 |
   | resnet101_gem_2048   | | 81.73 | 65.67 | 39.93 | | 90.79 | 74.85 | 52.67 |
   | resnet101_c4_gem_1024| | 82.12 | 62.81 | 36.56 | | 90.44 | 74.64 | 52.67 |
+
 
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
