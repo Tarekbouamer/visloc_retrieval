@@ -80,7 +80,7 @@ def load_pretrained(model, variant, pretrained_cfg, strict=True):
     
     
       
-def create_model(model_name, cfg=None, pretrained=True, pretrained_cfg=None, **kwargs):
+def create_model(model_name, cfg=None, pretrained=False, pretrained_cfg=None, **kwargs):
     """
         create a model
     """
