@@ -1,4 +1,3 @@
-import numpy as np
 import time
 import shutil
 import torch
@@ -15,11 +14,10 @@ from .dataloader        import build_train_dataloader, build_val_dataloader, bui
 from .loss              import build_loss
 
 from .events            import EventWriter
-from .evaluation        import DatasetEvaluator
+from .evaluation        import build_evaluator
 
-
-from retrieval.utils.logging                 import  _log_api_usage
-from retrieval.utils.configurations          import config_to_string
+from retrieval.utils.logging            import  _log_api_usage
+from retrieval.utils.configurations     import config_to_string
 from retrieval.utils.snapshot     import save_snapshot, resume_from_snapshot
 
 
@@ -30,16 +28,7 @@ logger = logging.getLogger("retrieval")
 
 class TrainerBase:
     """
-      Base class for iterative trainer with hooks.
-      The only assumption we made here is: the training runs in a loop.
-      A subclass can implement what the loop is.
-      We made no assumptions about the existence of dataloader, optimizer, model, etc.
-      Attributes:
-          iter(int): the current iteration.
-          start_epoch(int): The iteration to start with.
-              By convention the minimum possible value is 0.
-          max_epochs(int): The iteration to end training.
-          storage(EventStorage): An EventStorage that's opened during the course of training.
+      Base class for trainer 
     """
 
     def __init__(self, epoch=0, start_epoch=1, max_epochs=0):
@@ -50,8 +39,9 @@ class TrainerBase:
 
     def train(self, start_epoch, max_epochs):
         """
-          Args:
-              start_epoch, max_epochs (int): See docs above
+            Args:
+                start_epoch
+                max_epochs
         """
 
         self.epoch = self.start_epoch = start_epoch
@@ -92,11 +82,7 @@ class TrainerBase:
     def test_epoch(self):
         pass
     
-    def train_epoch(self):
-        """
-            Implement the standard training logic described above.
-        """
-        
+    def train_epoch(self):     
         # set to training 
         if not self.model.training:
             self.model.train()
@@ -179,11 +165,7 @@ class TrainerBase:
             #
             data_time = time.time()
 
-    def val_epoch(self):
-        """
-            Implement the standard training logic described above.
-        """
-        
+    def val_epoch(self):    
         # set to eval 
         if self.model.training:
             self.model.eval()
@@ -292,8 +274,10 @@ class ImageRetrievalTrainer(TrainerBase):
         # build        
         self.model              = self.build_model(cfg)
         self.optimizer          = self.build_optimizer(cfg, self.model)
+        
         self.train_dl           = self.build_train_loader(args, cfg)       
         self.val_dl             = self.build_val_loader(args, cfg)       
+        
         self.loss               = self.build_loss(cfg)     
 
         # params 
@@ -308,7 +292,7 @@ class ImageRetrievalTrainer(TrainerBase):
             self.resume_or_load()
         
         # init pca
-        elif cfg["global"].getboolean("update"):
+        elif not cfg['body'].getboolean('pretrained'):
             self.init_model()
             
         # ema
@@ -319,7 +303,8 @@ class ImageRetrievalTrainer(TrainerBase):
 
         # evaluation
         if args.eval:
-            self.evaluator  = DatasetEvaluator(args, cfg, self.model, self.model_ema, self.get_dataset(), self.writer)
+            # self.evaluator  = DatasetEvaluator(args, cfg, self.model, self.model_ema, self.get_dataset(), self.writer)
+            self.evaluator  = self.build_evaluator(args, cfg)
             
         # evaluate starting epoch
         if args.eval:
@@ -333,15 +318,7 @@ class ImageRetrievalTrainer(TrainerBase):
         
     def resume_or_load(self, resume=True):
         """
-            If `resume==True` and `cfg.OUTPUT_DIR` contains the last checkpoint (defined by
-            a `last_checkpoint` file), resume from the file. Resuming means loading all
-            available states (eg. optimizer and scheduler) and update iteration counter
-            from the checkpoint. ``cfg.MODEL.WEIGHTS`` will not be used.
-            Otherwise, this is considered as an independent training. The method will load model
-            weights from the file `cfg.MODEL.WEIGHTS` (but will not load other states) and start
-            from iteration 0.
-            Args:
-                resume (bool): whether to do resume or not
+            resume training from checkpoint
         """
         
         # model
@@ -353,9 +330,7 @@ class ImageRetrievalTrainer(TrainerBase):
         
         # optimizer
         self.optimizer.load_state_dict(snapshot_last["state_dict"]["optimizer"])
-        # print(snapshot_last["state_dict"]["optimizer"])
-        # input()
-        # scores
+
         self.start_epoch    = snapshot_last["training_meta"]["epoch"] + 1
         self.best_score     = snapshot_last["training_meta"]["best_score"]
         self.global_step    = snapshot_last["training_meta"]["global_step"]
@@ -469,8 +444,6 @@ class ImageRetrievalTrainer(TrainerBase):
     def train(self):
         """
           Run training.
-          Returns:
-              OrderedDict of results, if evaluation is enabled. Otherwise None.
         """
         logger.info("start training")
         super().train(self.start_epoch, self.max_epochs)
@@ -513,9 +486,7 @@ class ImageRetrievalTrainer(TrainerBase):
     def write_metrics(self, metrics, step, max_steps, global_step=None, prefix=""):
         """
         Args:
-            loss_dict (dict): dict of scalar losses
-            data_time (float): time taken by the dataloader iteration
-            prefix (str): prefix for logging keys
+            metrics (dict): losses, batch and data time 
         """
         
         metrics_dict = {k: v.detach().cpu() for k, v in metrics.items()}
@@ -534,23 +505,20 @@ class ImageRetrievalTrainer(TrainerBase):
             self.writer.log(self.epoch, self.max_epochs,  step, max_steps)
 
     @classmethod
-    def build_model(cls, cfg):
+    def build_model(self, cfg):
         """
-          Returns:
-              torch.nn.Module:
-          It now calls :func:`detectron2.modeling.build_model`.
-          Overwrite it if you'd like a different model.
+            Create model from factory 
         """
         model_name  = cfg["body"].get("arch")
-        
-        # model = build_model(cfg)
-        
-        model = create_model(model_name, cfg)
+        pretrained  = cfg["body"].getboolean("pretrained")
+                
+        model = create_model(model_name, cfg, pretrained=pretrained)
         model.to(torch.device("cuda"))
         
         _log_api_usage("modeling.meta_arch." + model_name)
         
         logger.info(f"model:\n {model}")
+        
         return model
     
     def build_ema_model(self, args, cfg):
@@ -574,58 +542,69 @@ class ImageRetrievalTrainer(TrainerBase):
         return ema_model
 
     @classmethod
-    def build_optimizer(cls, cfg, model):
+    def build_optimizer(self, cfg, model):
         """
-          Returns:
-              torch.optim.Optimizer:
+            Build optimizer for training  
         """
         return build_optimizer(cfg, model)
 
     @classmethod
-    def build_lr_scheduler(cls, cfg, optimizer):
+    def build_lr_scheduler(self, cfg, optimizer):
         """
+            Build learning scheduler 
         """
         return build_lr_scheduler(cfg, optimizer)
 
     @classmethod
     def build_train_loader(self, args, cfg):
         """
-        Returns:
+            build train dataloader
         """
         return build_train_dataloader(args, cfg)
 
     @classmethod
     def build_val_loader(self, args, cfg):
         """
-        Returns:
+            build validation dataloader
         """
         return build_val_dataloader(args, cfg)    
     
     @classmethod
     def build_loss(self, cfg):
         """
-        Returns:
+            build training loss
         """
         return build_loss(cfg)
     
     @classmethod
-    def build_test_loader(cls, cfg, dataset_name):
-        """
-        Returns:
-            iterable
-        It now calls :func:`detectron2.data.build_detection_test_loader`.
-        Overwrite it if you'd like a different data loader.
-        """
-        # TODO: build test data;loader
-        pass
+    def build_test_loader(self, cfg, dataset_name):
+        raise NotImplementedError
 
     @classmethod
     def build_writers(self, args, cfg):        
-        return EventWriter(args.directory, 
-                           cfg["general"].getint("log_interval"))
+        """
+            build event writers
+        """
+
+        return EventWriter(args.directory, cfg["general"].getint("log_interval"))
+    
+    def build_evaluator(self, args, cfg):
+        """
+            build training evaluator 
+        """
         
+        meta = {}
+        
+        if cfg['test'].get('mode') == 'asmk':
+            meta['train_dataset']= self.get_dataset()
+        
+        return build_evaluator(args, cfg, self.model, self.model_ema, self.writer, **meta)
+          
     def test(self):
-                
+        """
+            Run test step
+        """   
+                     
         logger.info(f"evaluate epoch {self.epoch}")
               
         # test

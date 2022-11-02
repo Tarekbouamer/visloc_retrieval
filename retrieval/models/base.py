@@ -4,7 +4,7 @@ import torch.nn as nn
 class ImageRetrievalNet(nn.Module):
     """ ImageRetrievalNet
 
-        General image retrieval model that consists of backbone and head
+        General image retrieval model, consists of backbone and head
     
     """
     def __init__(self, body, head):

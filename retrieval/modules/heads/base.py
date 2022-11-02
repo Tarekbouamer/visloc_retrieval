@@ -3,7 +3,6 @@ import torch.nn as nn
 
 
 class Head(nn.Module):
-    
     """ Global Image Descriptor Head 
    
     Args:

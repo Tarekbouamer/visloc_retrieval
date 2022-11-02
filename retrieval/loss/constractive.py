@@ -3,7 +3,8 @@ import torch.nn as nn
 
 
 class ContrastiveLoss(nn.Module):
-    
+    """ Contrastive Loss
+    """    
     def __init__(self, margin=0.7, eps=1e-6):
         super(ContrastiveLoss, self).__init__()
             

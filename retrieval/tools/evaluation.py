@@ -10,72 +10,25 @@ import retrieval.utils.evaluation.asmk as eval_asmk
 
 # logger
 import logging
+
 logger = logging.getLogger("retrieval")
 
 class DatasetEvaluator:
     """
       Base class for a dataset evaluator.
     """
-    def build_dataset(self):
-        pass
-
-    def reset(self):
-        """
-        Preparation for a new round of evaluation.
-        Should be called before starting a round of evaluation.
-        """
-        pass
-
-    def process(self, inputs, outputs):
-        """
-        Process the pair of inputs and outputs.
-        If they contain batches, the pairs can be consumed one-by-one using `zip`:
-        .. code-block:: python
-            for input_, output in zip(inputs, outputs):
-                # do evaluation on single input/output pair
-                ...
-        Args:
-            inputs (list): the inputs that's used to call the model.
-            outputs (list): the return value of `model(inputs)`
-        """
-        pass
-
-    def evaluate(self):
-        """
-        Evaluate/summarize the performance, after processing all input/output pairs.
-        Returns:
-            dict:
-                A new evaluator class can return a dict of arbitrary format
-                as long as the user can process the results.
-                In our train_net.py, we expect the following format:
-                * key: the name of the task (e.g., bbox)
-                * value: a dict of {metric name: score}, e.g.: {"AP50": 80}
-        """
-        pass
-
-
-class DatasetEvaluator(DatasetEvaluator):
-    """
-    Wrapper class to combine multiple :class:`DatasetEvaluator` instances.
-    This class dispatches every evaluation call to
-    all of its :class:`DatasetEvaluator`.
-    """
-
-    def __init__(self, args, cfg, model, model_ema=None, train_dataset=None, writer=None):
-        """
-        Args:
-            evaluators (list): the evaluators to combine.
-        """
-        super().__init__()
+    def __init__(self, args, cfg, model, model_ema=None, writer=None):
+        
+        # mode
+        self.test_mode = cfg['test'].get('mode')
         
         #  model
         self.model = model if model_ema is None else model_ema.module
-        self.train_dataset = train_dataset
-        
+                
+        # writer
         self.writer = writer
         
         #  
-        self.test_mode      = cfg["test"].get("mode")
         self.test_datasets  = cfg["test"].getstruct("datasets")
         self.multi_scale    = cfg["test"].getboolean("multi_scale")
         
@@ -83,20 +36,104 @@ class DatasetEvaluator(DatasetEvaluator):
 
         # 
         self.cfg    = cfg
-        self.args   = args
+        self.args   = args  
+
+    def write_metrics(self, metrics, datatset, step, scale=1):
+  
+        # push metrics to history
+        if len(metrics) > 0:
+            for k, v in metrics.items():
+                if isinstance(v, torch.Tensor):
+                    self.writer.put(datatset +"/"+ k, v * scale)
+                else:
+                    self.writer.put(datatset +"/"+ k, torch.as_tensor(v * scale))
+                    
+        # write to board
+        self.writer.write(step)
         
-        # asmk
-        if self.test_mode == "asmk":
-            
-            # number of sampled image 
-            self.num_samples = cfg["test"].getint("num_samples")
-            
-            # train and save the codebook for each test set
-            self.build_codebook()
+    def evaluate(self):
+        """
+        """
+        raise NotImplementedError
+
+
+class GlobalEvaluator(DatasetEvaluator):
+    """
+
+    """
+
+    def __init__(self, args, cfg, model, model_ema=None, writer=None):
+        """
+        Args:
+            evaluators (list): the evaluators to combine.
+        """
+        super().__init__(args, cfg, model, model_ema, writer)
         
-        # 
         logger.info(f"init evaluator on ({self.test_mode}) mode")
-     
+          
+    def build_test_dataset(self, data_path, dataset):
+        
+        query_dl, database_dl, ground_truth = None, None, None
+                    
+        if dataset in ['roxford5k', 'rparis6k', "val_eccv20"]:
+            query_dl, database_dl, ground_truth = build_paris_oxford_dataset(data_path, dataset, self.cfg)
+        else:
+            raise KeyError
+            
+        return query_dl, database_dl, ground_truth
+            
+    def evaluate(self, epoch):
+        
+        # eval mode
+        if self.model.training:
+            self.model.eval()
+        
+        #
+        self.writer.test()
+        
+        # data path
+        if not os.path.exists(self.args.data):
+            logger.error("path not found: {self.args.data}")   
+        
+        data_path = self.args.data 
+        
+        # result dictionary
+        results = OrderedDict()
+
+        # eval all test_datasets
+        for dataset in self.test_datasets:
+            
+            # build dataset
+            query_dl, database_dl, ground_truth = self.build_test_dataset(data_path, dataset)
+            
+            # test
+            metrics = test_global_descriptor(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth)
+                
+            # write
+            self.write_metrics(metrics, dataset, epoch, scale=100)
+            
+            # map
+            results[dataset] = metrics["map"]
+            
+        return results
+    
+    
+class ASMKEvaluator(DatasetEvaluator):
+    
+    def __init__(self, args, cfg, model, model_ema=None, writer=None, **kwargs):
+        super().__init__(args, cfg, model, model_ema, writer)
+
+        # train dataset
+        self.train_dataset = kwargs.pop('train_dataset', None)
+         
+        # number of sampled image 
+        self.num_samples = cfg["test"].getint("num_samples")
+                
+        # train and save the codebook for each test set
+        self.build_codebook()
+        
+        logger.info(f"init evaluator on ({self.test_mode}) mode")
+        
     def build_codebook(self, ):
         
         # eval mode
@@ -119,35 +156,13 @@ class DatasetEvaluator(DatasetEvaluator):
                                         save_path=save_path)
         
         return asmk
-        
-    def build_test_dataset(self, data_path, dataset):
-        
-        query_dl, database_dl, ground_truth = None, None, None
-                    
-        if dataset in ['roxford5k', 'rparis6k', "val_eccv20"]:
-            query_dl, database_dl, ground_truth = build_paris_oxford_dataset(data_path, dataset, self.cfg)
-            
-        return query_dl, database_dl, ground_truth
     
-    def write_metrics(self, metrics, datatset, step, scale=1):
-
-        # push metrics to history
-        if len(metrics) > 0:
-            for k, v in metrics.items():
-                if isinstance(v, torch.Tensor):
-                    self.writer.put(datatset +"/"+ k, v * scale)
-                else:
-                    self.writer.put(datatset +"/"+ k, torch.as_tensor(v * scale))
-                    
-        # write to board
-        self.writer.write(step)
-        
-
     def evaluate(self, epoch):
         
         # eval mode
         if self.model.training:
             self.model.eval()
+        
         #
         self.writer.test()
         
@@ -167,14 +182,7 @@ class DatasetEvaluator(DatasetEvaluator):
             query_dl, database_dl, ground_truth = self.build_test_dataset(data_path, dataset)
             
             # test
-            if self.test_mode == "global":
-                metrics = test_global_descriptor(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth)
-            
-            elif self.test_mode == "asmk":
-                metrics = test_asmk(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth, self.asmk)
-            
-            else:
-                logger.error(f"{self.test_mode} is not implemented yet")
+            metrics = test_asmk(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth, self.asmk)
                 
             # write
             self.write_metrics(metrics, dataset, epoch, scale=100)
@@ -184,3 +192,18 @@ class DatasetEvaluator(DatasetEvaluator):
 
        
         return results
+    
+
+def build_evaluator(args, cfg, model, model_ema, writer, **meta):
+    
+    if cfg['test'].get('mode') == 'global':
+        return GlobalEvaluator(args, cfg, model, model_ema, writer, **meta)
+    
+    elif cfg['test'].get('mode') == 'asmk':
+        return ASMKEvaluator(args, cfg, model, model_ema, writer, **meta)
+    
+    else:
+        raise KeyError
+
+    
+

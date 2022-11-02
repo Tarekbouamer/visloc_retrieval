@@ -36,18 +36,17 @@ def load_state_dict(checkpoint_path, use_ema=True):
         logger.error("No checkpoint found at '{}'".format(checkpoint_path))
         raise FileNotFoundError()
 
-def load_pretrained(
-        model,
-        variant,
-        pretrained_cfg,
-        strict=True,
-):
+
+def load_pretrained(model, variant, pretrained_cfg, strict=True):
     """ Load pretrained checkpoint
+        local file
+        url
+        google drive
     """
     
     pretrained_file   = pretrained_cfg.get('file',  None)
     pretrained_url    = pretrained_cfg.get('url',   None)
-    pretrained_drive  = pretrained_cfg.get('drive',   None)
+    pretrained_drive  = pretrained_cfg.get('drive', None)
 
     if pretrained_file:
         logger.info(f'Loading pretrained weights from file ({pretrained_file})')
@@ -81,13 +80,9 @@ def load_pretrained(
     
     
       
-def create_model(
-        model_name,
-        cfg=None,
-        pretrained=True,
-        pretrained_cfg=None,
-        **kwargs):
-    """Create a model
+def create_model(model_name, cfg=None, pretrained=True, pretrained_cfg=None, **kwargs):
+    """
+        create a model
     """
 
     kwargs = {k: v for k, v in kwargs.items() if v is not None}

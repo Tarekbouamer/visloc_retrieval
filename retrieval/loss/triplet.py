@@ -3,7 +3,8 @@ import torch.nn as nn
 
 
 class TripletLoss(nn.Module):
-  
+    """ Triplet Loss
+    """
     def __init__(self, margin=0.1):
         super(TripletLoss, self).__init__()
         
