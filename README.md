@@ -104,15 +104,23 @@ python3 ./scripts/train.py \
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
 ## Results
-Table: Large-scale image retrieval results of our models on Revisited Oxford and Paris datasets. 
+Table: Large-scale image retrieval results of our models on Revisited Oxford and Paris datasets.
 We evaluate against the Easy, Medium and Hard with the mAP metric.
 
-  | Models       |        | Oxford |        |        | Paris  |        | Download |
-  |:------------:|:------:|:------:|:------:|:------:|:------:|:------:|:---------|
-  |   mAP        | Easy   | Medium | Hard   | Easy   | Medium | Hard   |          |
-  | ResNet50-GeM | 66.20  | 51.78  | 28.76  | 79.28  | 62.35  | 36.66  |[resnet50](https://drive.google.com/file/d/1mZpzcAHLFkeKLKROC4ljT7kuy0AUh6WV/view?usp=sharing)|
+  | Models               | |       | Oxford|       | |       | Paris |       |
+  |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
+  |                      | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
+  | resnet50_gem_2048    | | 83.83 | 66.01 | 38.96 | | 91.83 | 77.16 | 55.82 |
+  | resnet50_c4_gem_1024 | | 79.22 | 60.53 | 34.30 | | 89.24 | 71.77 | 49.14 |
+  | resnet101_gem_2048   | | 81.73 | 65.67 | 39.93 | | 90.79 | 74.85 | 52.67 |
+  | resnet101_c4_gem_1024| | 82.12 | 62.81 | 36.56 | | 90.44 | 74.64 | 52.67 |
 
 <p align="right"><a href="#content">:arrow_up:</a></p>
+
+
+
+
+
 
 ## Licenses
 

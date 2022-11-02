@@ -32,21 +32,21 @@ def make_parser():
     parser.add_argument("--save_path", metavar="IMPORT_DIR", type=str,
                         help="path where features are saved as h5py format ",
                         default='.')
-    
+
+    parser.add_argument("--name", metavar="FILE", type=str,
+                        help="name of stored file ",
+                        default='db')
     # 
     args = parser.parse_args()
-    print(args)
-    input()
+
     return args
 
 
 def main(args):
     
     logger = setup_logger(output=".", name="retrieval")
-
-    DATA_DIR='/media/dl/Data/datasets/test/oxford5k/jpg'
     
-    args.save_path = args.save_path + '/db.h5'
+    args.save_path = path.join(args.save_path, args.name + '.h5')
 
     #
     logger.info(f"loading images from {args.data}")

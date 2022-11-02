@@ -36,6 +36,7 @@ def test_global_descriptor(dataset, query_dl, db_dl, model, descriptor_size, gro
             desc    = model(**batch, do_whitening=True)
                 
             q_vecs[it * batch_size: (it+1) * batch_size, :] = desc
+            
             del desc
 
         # extract database vectors

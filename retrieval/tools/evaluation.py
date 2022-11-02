@@ -39,9 +39,11 @@ class DatasetEvaluator:
         self.args   = args  
 
     def write_metrics(self, metrics, datatset, step, scale=1):
-  
+        if self.writer is None:
+            return
+        
         # push metrics to history
-        if len(metrics) > 0:
+        if len(metrics) > 0 :
             for k, v in metrics.items():
                 if isinstance(v, torch.Tensor):
                     self.writer.put(datatset +"/"+ k, v * scale)
@@ -82,14 +84,15 @@ class GlobalEvaluator(DatasetEvaluator):
             
         return query_dl, database_dl, ground_truth
             
-    def evaluate(self, epoch):
+    def evaluate(self, epoch=0):
         
         # eval mode
         if self.model.training:
             self.model.eval()
         
         #
-        self.writer.test()
+        if self.writer is not None:
+            self.writer.test()
         
         # data path
         if not os.path.exists(self.args.data):

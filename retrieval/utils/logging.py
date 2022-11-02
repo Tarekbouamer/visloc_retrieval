@@ -40,7 +40,7 @@ class _ColorfulFormatter(logging.Formatter):
 
 @functools.lru_cache()  # so that calling setup_logger multiple times won't add many handlers
 
-def setup_logger(output=None, *, color=True, name="visloc", abbrev_name=None):
+def setup_logger(output=None, *, color=True, name="visloc", abbrev_name=None, suffix=None):
     """
     Initialize the detectron2 logger and set its verbosity level to "DEBUG".
     Args:
@@ -76,8 +76,10 @@ def setup_logger(output=None, *, color=True, name="visloc", abbrev_name=None):
 
     # file logging
     if output is not None:
-        
-        filename = os.path.join(output, "log.txt")
+        if suffix is not None:
+            filename = os.path.join(output, suffix + ".txt")
+        else:
+            filename = os.path.join(output, "log.txt")
         
         file_handler = logging.FileHandler(filename, mode="w")
         file_handler.setFormatter(plain_formatter)

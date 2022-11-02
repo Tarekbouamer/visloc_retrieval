@@ -8,6 +8,7 @@ experiments
 pretrained_models
 pretrained_drive
 image_retrieval
+results
 *h5
 *h5py
 
