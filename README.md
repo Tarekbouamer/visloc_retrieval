@@ -105,15 +105,25 @@ python3 ./scripts/train.py \
 
 ## Results
 
-### :large_blue_diamond: ROxford5k RParis6k (Single Scale Benchmark)
+### :large_blue_diamond: Single-Scale Benchmark
 
-  | Models               | |       | Oxford|       | |       | Paris |       |
+  | Models               | |     | ROxford5k |     | |     | RParis5k |      |
   |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
   |                      | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
   | resnet50_gem_2048    | | 83.83 | 66.01 | 38.96 | | 91.83 | 77.16 | 55.82 |
   | resnet50_c4_gem_1024 | | 79.22 | 60.53 | 34.30 | | 89.24 | 71.77 | 49.14 |
   | resnet101_gem_2048   | | 81.73 | 65.67 | 39.93 | | 90.79 | 74.85 | 52.67 |
   | resnet101_c4_gem_1024| | 82.12 | 62.81 | 36.56 | | 90.44 | 74.64 | 52.67 |
+
+### :large_red_diamond: Multi-Scale Benchmark
+
+  | Models               | |     | ROxford5k |     | |     | RParis5k |      |
+  |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
+  |                      | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
+  | resnet50_gem_2048    | |       |       |       | |       |       |       |
+  | resnet50_c4_gem_1024 | |       |       |       | |       |       |       |
+  | resnet101_gem_2048   | |       |       |       | |       |       |       |
+  | resnet101_c4_gem_1024| |       |       |       | |       |       |       |
 
 
 <p align="right"><a href="#content">:arrow_up:</a></p>
