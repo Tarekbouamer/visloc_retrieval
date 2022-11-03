@@ -126,6 +126,7 @@ class FeatureExtractor():
             num_scales = 0. 
             
             for scale in scales:
+                
                 # scale
                 if scale == 1.0:
                     img_s = img

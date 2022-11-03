@@ -1,5 +1,7 @@
 # General
 import argparse
+from argparse import ArgumentError
+
 from os import makedirs, path
 import numpy as np
 import torch 
@@ -12,6 +14,20 @@ from retrieval.tools.events            import EventWriter
 import retrieval.datasets as data
 from retrieval import  build_evaluator, create_model
 from  retrieval.utils.logging import  setup_logger
+
+
+def csv_float(seq, sep=','):
+    ''' Convert a string of comma separated values to floats
+        @returns iterable of floats
+    '''
+    values = []
+    for v0 in seq.split(sep):
+        try:
+            v = float(v0)
+            values.append(v)
+        except ValueError as err:
+            raise ArgumentError('Invalid value %s, values must be a number' % v)
+    return values
 
 
 def make_parser():
@@ -30,7 +46,7 @@ def make_parser():
                         help="path to config file ini",
                         default='retrieval/configuration/defaults/test.ini')
     
-    parser.add_argument("--scales",
+    parser.add_argument("--scales", type=csv_float,
                         help="images scales ",
                         default=[1.0])
 
@@ -54,7 +70,7 @@ def main(args):
     logger = setup_logger(output="results", name="retrieval", suffix=args.model)
 
     args.save_path = path.join(args.save_path, args.name + '.h5')
-    
+
     # load cfg file 
     cfg = make_config(args.config, defauls=DEFAULT_CONFIG["default"])
     
@@ -64,7 +80,7 @@ def main(args):
     
     # 
     evaluator = build_evaluator(args, cfg, model, None, None)
-    evaluator.evaluate()
+    evaluator.evaluate(scales=args.scales)
 
 
 

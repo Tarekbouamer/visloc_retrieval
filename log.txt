@@ -1,0 +1,10 @@
+[11/02 18:25 retrieval]: loading images from /media/loc/Elements/revisitop/data/datasets/revisitop1m/jpg
+[11/02 18:26 retrieval]: found 1064732 images in /media/loc/Elements/revisitop/data/datasets/revisitop1m/jpg
+[11/02 18:26 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5)
+[11/02 18:26 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/resnet50_gem_2048.pth'
+[11/02 18:26 retrieval]: body channels:[256, 512, 1024, 2048]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']
+[11/03 14:01 retrieval]: extraction done 7.05e+04 seconds saved /media/loc/ssd_5126/db.h5
+[11/03 14:01 retrieval]: feature extractor resnet50_gem_2048  dim 2048
+[11/03 14:01 retrieval]: #images 1064732 img_size 1024
+[11/03 14:01 retrieval]: extraction scales [1.0]
+[11/03 14:01 retrieval]: feature saved /media/loc/ssd_5126/db.h5

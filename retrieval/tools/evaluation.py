@@ -30,7 +30,7 @@ class DatasetEvaluator:
         
         #  
         self.test_datasets  = cfg["test"].getstruct("datasets")
-        self.multi_scale    = cfg["test"].getboolean("multi_scale")
+        self.scales    = cfg["test"].getboolean("multi_scale")
         
         self.descriptor_size = cfg["global"].getint("global_dim")
 
@@ -53,7 +53,7 @@ class DatasetEvaluator:
         # write to board
         self.writer.write(step)
         
-    def evaluate(self):
+    def evaluate(self, epoch=0):
         """
         """
         raise NotImplementedError
@@ -84,7 +84,7 @@ class GlobalEvaluator(DatasetEvaluator):
             
         return query_dl, database_dl, ground_truth
             
-    def evaluate(self, epoch=0):
+    def evaluate(self, epoch=0, scales=[1]):
         
         # eval mode
         if self.model.training:
@@ -110,7 +110,10 @@ class GlobalEvaluator(DatasetEvaluator):
             query_dl, database_dl, ground_truth = self.build_test_dataset(data_path, dataset)
             
             # test
-            metrics = test_global_descriptor(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth)
+            metrics = test_global_descriptor(dataset, query_dl, database_dl, 
+                                             self.model, self.descriptor_size, 
+                                             ground_truth,
+                                             scales=scales)
                 
             # write
             self.write_metrics(metrics, dataset, epoch, scale=100)
@@ -160,7 +163,7 @@ class ASMKEvaluator(DatasetEvaluator):
         
         return asmk
     
-    def evaluate(self, epoch):
+    def evaluate(self, epoch=0):
         
         # eval mode
         if self.model.training:
