@@ -127,7 +127,7 @@ You can evaluate our pretrained models using [test](scripts/test.py) script and 
   | resnet101_gem_2048   | | 83.65 | 66.88 | 40.60 | | 92.11 | 76.63 | 55.11 |
   | resnet101_c4_gem_1024| | 83.94 | 64.41 | 38.09 | | 91.66 | 76.70 | 55.28 |
 
-  :information_source: Three (3) scales are used to extract global discriptors [ 0.7071, 1.0, 1.4142 ] with minimum size 100 and maximum area 2000*2000.
+  :information_source: Three (3) scales are used to extract global discriptors `[ 0.7071, 1.0, 1.4142 ]` with minimum size `100` and maximum area `2000*2000`.
 
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
