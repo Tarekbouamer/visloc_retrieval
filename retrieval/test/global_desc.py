@@ -36,10 +36,9 @@ def extract_ms(img, model, out_dim, scales=[1], min_size=100, max_size=2000):
     
     #
     desc = torch.zeros(out_dim).to(img.device)
-            
-    #
     num_scales = 0. 
-
+    
+    #
     for scale in scales:
 
         # scale
@@ -47,11 +46,12 @@ def extract_ms(img, model, out_dim, scales=[1], min_size=100, max_size=2000):
             img_s = img
         else:
             img_s = functional.interpolate(img, scale_factor=scale, mode='bilinear', align_corners=False)   
+
+            # assert size within boundaries
+            if __check_size__(img_s, min_size, max_size):
+                continue
         
-        # assert size within boundaries
-        if __check_size__(img_s, min_size, max_size):
-            continue
-                
+        #       
         num_scales += 1.0
                  
         # extract

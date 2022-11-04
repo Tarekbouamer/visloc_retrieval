@@ -120,11 +120,12 @@ python3 ./scripts/train.py \
   | Models               | |     | ROxford5k |     | |     | RParis5k |      |
   |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
   |                      | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
-  | resnet50_gem_2048    | |       |       |       | |       |       |       |
+  | resnet50_gem_2048    | | 84.96 | 67.19 | 40.45 | | 92.67 | 78.39 | 57.84 |
   | resnet50_c4_gem_1024 | |       |       |       | |       |       |       |
-  | resnet101_gem_2048   | |       |       |       | |       |       |       |
+  | resnet101_gem_2048   | | 83.65 | 66.88 | 40.60 | | 92.11 | 76.63 | 55.11 |
   | resnet101_c4_gem_1024| |       |       |       | |       |       |       |
 
+  :information_source: Three (3) scales are used to extract global discriptors [0.7071, 1.0, 1.4142] with minimum size 100 and maximum area 2000*2000.
 
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
