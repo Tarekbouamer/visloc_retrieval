@@ -107,7 +107,7 @@ python3 ./scripts/train.py \
 
 ### :blue_square: Single-Scale Benchmark
 
-  | Models               | |     | ROxford5k |     | |     | RParis5k |      |
+  | Models               | |     | ROxford5k |     | |     | RParis6k |      |
   |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
   |                      | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
   | resnet50_gem_2048    | | 83.83 | 66.01 | 38.96 | | 91.83 | 77.16 | 55.82 |
@@ -117,7 +117,7 @@ python3 ./scripts/train.py \
 
 ### :orange_square: Multi-Scale Benchmark
 
-  | Models               | |     | ROxford5k |     | |     | RParis5k |      |
+  | Models               | |     | ROxford5k |     | |     | RParis6k |      |
   |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
   |                      | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
   | resnet50_gem_2048    | | 84.96 | 67.19 | 40.45 | | 92.67 | 78.39 | 57.84 |
