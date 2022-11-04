@@ -5,7 +5,7 @@ clear
 
 # DATA_DIR='/media/dl/Data/datasets/'
 DATA_DIR='/media/loc/ssd_5126/tmp/how/how_data/'
-MODEL='resnet101_c4_gem_1024'
+MODEL='resnet50_c4_gem_1024'
 
 SCALES=0.7071,1.0,1.4142
 

@@ -72,8 +72,6 @@ Retrieval-SfM-120k-images and Revisiting Oxford and Paris datasets can be downlo
  Note! Other training and evaluation datasets will be added soon !!!
 
 
-
-
 ## Training
 We trained our models using the [training](scripts/train.py) script with a specific configuration provided in `ini` format as in [default](retrieval/configuration/defaults/default.ini), where you can specify the trainning loss, optimizer, scheduler, training and test datasets, data augmentation policy if needed ... etc
 
@@ -89,10 +87,14 @@ python3 ./scripts/train.py \
       --data $DATA_DIR \
       --local_rank 0 \
       --config $CONFIG \
-      --eval 
+      --eval                # evaluate during training and save best model
 
 ```
-<p align="right"><a href="#content">:arrow_up:</a></p>
+
+You can evaluate our pretrained models using [test](scripts/test.py) script and default configuration [config.ini](retrieval/configuration/defaults/test.ini) file. The evaluation script extracts image features with a `max_size=1024` in a single scale, multi-scale feature extraction and evaluation is also supported and the list of scales can be intoduced as (`--scales 0.7071,1.0,1.4142`). Our results are presented in [Results](#results) section.
+
+<p align="right"><a href="#content">:arrow_up:</a></p
+
 
 ## Roadmap
 
@@ -121,11 +123,11 @@ python3 ./scripts/train.py \
   |----------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
   |                      | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
   | resnet50_gem_2048    | | 84.96 | 67.19 | 40.45 | | 92.67 | 78.39 | 57.84 |
-  | resnet50_c4_gem_1024 | |       |       |       | |       |       |       |
+  | resnet50_c4_gem_1024 | | 80.99 | 61.90 | 34.90 | | 90.20 | 72.58 | 49.98 |
   | resnet101_gem_2048   | | 83.65 | 66.88 | 40.60 | | 92.11 | 76.63 | 55.11 |
-  | resnet101_c4_gem_1024| |       |       |       | |       |       |       |
+  | resnet101_c4_gem_1024| | 83.94 | 64.41 | 38.09 | | 91.66 | 76.70 | 55.28 |
 
-  :information_source: Three (3) scales are used to extract global discriptors [0.7071, 1.0, 1.4142] with minimum size 100 and maximum area 2000*2000.
+  :information_source: Three (3) scales are used to extract global discriptors [ 0.7071, 1.0, 1.4142 ] with minimum size 100 and maximum area 2000*2000.
 
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
