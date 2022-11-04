@@ -292,7 +292,7 @@ class ImageRetrievalTrainer(TrainerBase):
             self.resume_or_load()
         
         # init pca
-        elif not cfg['body'].getboolean('pretrained'):
+        elif cfg['body'].getboolean('pca'):
             self.init_model()
             
         # ema

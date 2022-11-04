@@ -91,7 +91,19 @@ python3 ./scripts/train.py \
 
 ```
 
+## Testing
 You can evaluate our pretrained models using [test](scripts/test.py) script and default configuration [config.ini](retrieval/configuration/defaults/test.ini) file. The evaluation script extracts image features with a `max_size=1024` in a single scale, multi-scale feature extraction and evaluation is also supported and the list of scales can be intoduced as (`--scales 0.7071,1.0,1.4142`). Our results are presented in [Results](#results) section.
+
+```sh
+DATA_DIR='/......./data'
+MODEL='resnet50_gem_2048'
+SCALES=0.7071,1.0,1.4142
+
+python3 ./scripts/test.py \
+      --data $DATA_DIR \
+      --model $MODEL \
+      --scales $SCALES \
+```
 
 <p align="right"><a href="#content">:arrow_up:</a></p
 

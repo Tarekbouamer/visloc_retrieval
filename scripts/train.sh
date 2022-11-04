@@ -19,6 +19,6 @@ python3 ./scripts/train.py \
       --data $DATA_DIR \
       --local_rank 0 \
       --config ./image_retrieval/configuration/defaults/defaults.ini \
-      # --eval 
+      --eval 
 
 
