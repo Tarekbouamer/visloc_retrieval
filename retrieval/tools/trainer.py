@@ -331,7 +331,7 @@ class ImageRetrievalTrainer(TrainerBase):
         # optimizer
         self.optimizer.load_state_dict(snapshot_last["state_dict"]["optimizer"])
 
-        self.start_epoch    = snapshot_last["training_meta"]["epoch"] + 1
+        self.start_epoch =  self.epoch = snapshot_last["training_meta"]["epoch"] + 1
         self.best_score     = snapshot_last["training_meta"]["best_score"]
         self.global_step    = snapshot_last["training_meta"]["global_step"]
 
