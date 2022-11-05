@@ -25,9 +25,12 @@ def build_dataset(args, cfg, transform, mode='train'):
     # sfm
     if data_cfg.get("dataset") in ["retrieval-SfM-120k", "gl18"] :
         
-        query_size  = data_cfg.getint("query_size")     if mode == 'train'  else float('inf')
-        pool_size   = data_cfg.getint("pool_size")      if mode == 'train'    else float('inf')
+        # query_size  = data_cfg.getint("query_size")     if mode == 'train'  else float('inf')
+        # pool_size   = data_cfg.getint("pool_size")      if mode == 'train'    else float('inf')
 
+        query_size  = data_cfg.getint("query_size")
+        pool_size   = data_cfg.getint("pool_size") 
+        
         train_db = TuplesDataset(root_dir=args.data,
                                 name=data_cfg.get("dataset"),
                                 mode=mode,
