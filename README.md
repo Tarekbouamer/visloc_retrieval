@@ -1,5 +1,7 @@
 # Visloc-Retrieval: Library for Image Retrival and Place Recognition
 
+![demo_vid](assets/VisLoc-logos.jpeg)
+
 ## Content
 - [Introduction](#introduction)
 - [Welcome](#welcome)
