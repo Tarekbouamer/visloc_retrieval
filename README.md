@@ -116,7 +116,6 @@ python3 ./scripts/test.py \
 - [ ] Add shield IO
 - [ ] Add results on roxford5k rparis6k.
 
-
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
 ## Results
@@ -143,7 +142,7 @@ python3 ./scripts/test.py \
   | resnet101_c4_gem_1024   | | 83.94 | 64.41 | 38.09 | | 91.66 | 76.70 | 55.28 |
   | gl18_resnet101_gem_2048 | | 84.76 | 68.05 | 43.42 | | 93.25 | 79.75 | 61.14 |
 
-  :information_source: Three (3) scales are used to extract global discriptors `[ 0.7071, 1.0, 1.4142 ]` with minimum size `100` and maximum area `2000*2000`.
+  :information_source: Moreover, we use 3 image scales `[ 0.7071, 1.0, 1.4142 ]` to extract global discriptors to benchmark our trained model, with a minimum size `100` and a maximum area `2000*2000`.
 
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
