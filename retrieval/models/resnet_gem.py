@@ -30,17 +30,13 @@ default_cfgs = {
     'resnet50_c4_gem_1024':     
         _cfg(drive='https://drive.google.com/uc?id=1ber3PbTF4ZWAmnBuJu5AEp2myVJFNM7F'),
     
-    # #resnet101
+    # sfm resnet101
     'resnet101_gem_2048':       
         _cfg(drive='https://drive.google.com/uc?id=10CqmzZE_XwRCyoiYlZh03tfYk1jzeziz', out_dim=2048),
    
-    # #resnet101
-    # 'resnet101_gem_2048':       
-    #     _cfg(drive='https://drive.google.com/uc?id=1FuiYqKwtTtvQL9uN0d3nyebA2I1uimoc', out_dim=2048),
-
-    
     'resnet101_c4_gem_1024':       
         _cfg(drive='https://drive.google.com/uc?id=1uYYuLqqE9TNgtmQtY7Mg2YEIF9VkqAYz'),
+       
         
     # gl18
     'gl18_resnet50_gem_2048':      
