@@ -1,0 +1,133 @@
+import os
+import csv
+
+import argparse
+from pathlib import Path
+import pickle
+import numpy as np
+import glob as glob
+import pandas as  pd
+from tqdm import tqdm
+
+np.random.seed(123)
+
+def _id_to_qid(_id_list, _id_dict_):
+    qid_list = []
+    for _id in tqdm(_id_list):
+        qid_list.append(_id_dict_[_id])
+
+    return qid_list
+
+    
+def make_parser():
+    # ArgumentParser
+    parser = argparse.ArgumentParser(description='Prepare Google Landmark 2018')
+
+    parser.add_argument('--data', metavar='EXPORT_DIR', help='path to train / val GL18 dataste')
+
+    args = parser.parse_args()
+
+    for arg in vars(args):
+        print(' {}\t  {}'.format(arg, getattr(args, arg)))
+    print('\n ')
+    return parser
+  
+  
+def main(args):
+  
+    print(" Prepare Google Landmark 2020 : ", args.data)
+    
+    # train 
+    train_csv = os.path.join(args.data,   'train.csv')
+    train_db  = pd.read_csv(train_csv)    
+    print(len(train_db))
+
+    # find all train images
+    train_imgs_path = Path(args.data, 'train').glob('**/*.jpg')
+    imgs_db         = pd.DataFrame(train_imgs_path, columns=['path'])
+    print(len(imgs_db))
+    
+    # TODO: exclude args.data 
+    imgs_db['path'] = imgs_db['path'].apply(lambda x: str(x.absolute()))
+    imgs_db['id']   = imgs_db['path'].apply(lambda x: x.split('/')[-1].replace('.jpg', ''))
+    
+    # merge by id
+    train_db = train_db.merge(imgs_db, on='id')
+    
+    train_db_pkl_path = os.path.join(args.data, "train.pkl")
+    train_db.to_pickle(train_db_pkl_path)
+    print(f"save train {train_db_pkl_path}")
+
+    
+    # # class frequency
+    # class_freq = train_db.landmark_id.value_counts()    
+    # np.savetxt(os.path.join(args.data, 'class_freq.txt'), class_freq.values, fmt='%d')
+    
+    # # topk
+    # class_topk=1000
+    # use_landmark_ids = class_freq.index[:class_topk]
+    
+    
+    # keep_index = []
+    # limit_samples_per_class = 500
+    
+    # # balance and filter
+    # if limit_samples_per_class > 0:  # 
+        
+    #     # 
+    #     for id_ in class_freq[class_freq > limit_samples_per_class].index:
+    #         idx = train_db.query('landmark_id == @id_').sample(n=limit_samples_per_class, random_state=12345).index
+    #         keep_index.extend(idx)
+            
+    #     large_class_index = class_freq[class_freq > limit_samples_per_class].index
+    #     use_landmark_ids  = pd.Index(set(use_landmark_ids) - set(large_class_index))
+
+    #     keep_index = pd.Index(keep_index)
+    #     keep_index = keep_index.append(train_db[train_db['landmark_id'].isin(use_landmark_ids)].index)
+    
+    # else:
+    #     #
+    #     keep_index = train_db['landmark_id'].isin(use_landmark_ids)
+
+    # # filtred db
+    # train_filtered                  = train_db.loc[keep_index]
+    # train_filtered['landmark_id']   = train_filtered['landmark_id'].astype('category')
+    # train_filtered['class_id']      = train_filtered['landmark_id'].cat.codes.astype('int64')
+    
+    # #    
+    # class_freq = train_filtered.landmark_id.value_counts()    
+    # np.savetxt(os.path.join(args.data, 'filtred_class_freq.txt'), class_freq.values, fmt='%d')
+    
+    # # save filtred
+    # train_filtered_pkl_path = os.path.join(args.data, "train_filtred.pkl")
+    # train_filtered.to_pickle(train_filtered_pkl_path)
+    # print(f"save filtred {train_filtered_pkl_path}")
+
+
+    # train clean 
+    train_clean_csv = os.path.join(args.data,   'train_clean.csv')
+    train_clean_db  = pd.read_csv(train_clean_csv)  
+    
+    print(train_clean_db)
+    print(train_db)
+   
+    clean_train_ids = np.concatenate(train_clean_db['images'].str.split(' '))
+    
+    new_train_db = train_db[train_db['id'].isin(clean_train_ids)]
+    
+    print(len(train_clean_db))
+    print(train_db['landmark_id'].nunique())
+    print(new_train_db['landmark_id'].nunique())
+
+    assert len(train_clean_db) == new_train_db['landmark_id'].unique()
+    
+    print("Done")
+    exit(0)
+
+if __name__ == '__main__':
+
+    #
+    parser = make_parser()
+
+    #
+    main(parser.parse_args())
