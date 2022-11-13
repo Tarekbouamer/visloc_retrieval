@@ -37,6 +37,7 @@ def load_sfm_images(root_dir, name, mode):
     return images, db
 
 def load_gl_images(root_dir, name, mode):
+    # root
     root_dir = path.join(root_dir, name)
 
     # setting up paths
@@ -44,9 +45,13 @@ def load_gl_images(root_dir, name, mode):
     
     # loading db
     db_fn = path.join(root_dir, '{}.pkl'.format(name))
+    
+    if not path.exists(db_fn):
+        return [], {}
+    
     with open(db_fn, 'rb') as f:
         db = pickle.load(f)[mode]
-    
+   
     # setting fullpath for images
     images = [path.join(ims_root, db['cids'][i]+'.jpg') for i in range(len(db['cids']))]
     

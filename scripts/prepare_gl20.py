@@ -40,12 +40,10 @@ def main(args):
     # train 
     train_csv = os.path.join(args.data,   'train.csv')
     train_db  = pd.read_csv(train_csv)    
-    print(len(train_db))
 
     # find all train images
     train_imgs_path = Path(args.data, 'train').glob('**/*.jpg')
     imgs_db         = pd.DataFrame(train_imgs_path, columns=['path'])
-    print(len(imgs_db))
     
     # TODO: exclude args.data 
     imgs_db['path'] = imgs_db['path'].apply(lambda x: str(x.absolute()))
@@ -53,10 +51,20 @@ def main(args):
     
     # merge by id
     train_db = train_db.merge(imgs_db, on='id')
+    print(train_db)
+ 
+    db_dict   = {}
+    db_dict['train']  = {}
+
+    db_dict['train']['cids']    = []
+    db_dict['train']['qidxs']   = []
+    db_dict['train']['pidxs']   = []
+    db_dict['train']['cluster'] = []
+    db_dict['train']['bbxs']    = []
     
-    train_db_pkl_path = os.path.join(args.data, "train.pkl")
-    train_db.to_pickle(train_db_pkl_path)
-    print(f"save train {train_db_pkl_path}")
+    # train_db_pkl_path = os.path.join(args.data, "train.pkl")
+    # train_db.to_pickle(train_db_pkl_path)
+    # print(f"save train {train_db_pkl_path}")
 
     
     # # class frequency
@@ -109,20 +117,89 @@ def main(args):
     train_clean_db  = pd.read_csv(train_clean_csv)  
     
     print(train_clean_db)
-    print(train_db)
-   
+  
     clean_train_ids = np.concatenate(train_clean_db['images'].str.split(' '))
     
     new_train_db = train_db[train_db['id'].isin(clean_train_ids)]
-    
-    print(len(train_clean_db))
-    print(train_db['landmark_id'].nunique())
-    print(new_train_db['landmark_id'].nunique())
 
-    assert len(train_clean_db) == new_train_db['landmark_id'].unique()
+    print(new_train_db)
     
+    assert len(train_clean_db) == new_train_db['landmark_id'].nunique()
+    
+    
+    # landmark to images  dict
+    landmark_to_images_dict = {}
+    landmark_to_images_list = zip(train_clean_db['landmark_id'].to_numpy(), train_clean_db['images'])
+    
+    #
+    for item_cls, item_imgs in landmark_to_images_list:
+        landmark_to_images_dict[item_cls] = item_imgs.split(' ')
+        
+    print(f"we have {len(landmark_to_images_dict)} landmark")
+        
+    #
+    db_dict  = {}
+    db_dict['train']  = {}
+    db_dict['train']['cids']    = []
+    db_dict['train']['qidxs']   = []
+    db_dict['train']['pidxs']   = []
+    db_dict['train']['cluster'] = []
+    db_dict['train']['bbxs']    = []
+    
+    # 
+    data = new_train_db['id'].to_numpy()
+    
+    #
+    id_to_name = {}
+     
+    for it, (q_id) in enumerate(tqdm(data, total=len(new_train_db))):
+        id_to_name[it] = q_id
+    
+    name_to_id = {k: i for i, k in id_to_name.items()}
+    
+    # 
+    data = zip(new_train_db['id'].to_numpy(), new_train_db['landmark_id'].to_numpy(), new_train_db['path'].to_numpy())
+    
+    for it, (q_id, cls, cid) in enumerate(tqdm(data, total=len(new_train_db))):
+        
+        #
+        positive_keys_candidates = landmark_to_images_dict[cls]
+        
+        # filter keys 
+        positive_keys = []
+        for k in positive_keys_candidates:
+            if k  in  name_to_id.keys():
+                positive_keys.append(k)
+        
+        # continue
+        if len(positive_keys) < 1:
+            print("no positives taken")
+            continue
+        
+        # center key
+        m_key    = int( len(positive_keys) / 2.0)
+        pos_name = positive_keys[m_key]
+        
+        # id 
+        pos_id  = name_to_id[pos_name]
+        
+        # 
+        rel_cid = os.path.relpath(cid, os.path.join(args.data, "train")).split(".")[0]
+        
+        # 
+        db_dict['train']['qidxs'].append(it)
+        db_dict['train']['pidxs'].append(pos_id)        
+        db_dict['train']['cluster'].append(cls)
+        db_dict['train']['cids'].append(rel_cid)
+        db_dict['train']['bbxs'].append(None)
+
+
+    print(len(db_dict['train']['cids']))
+    # save
+    pkl_path = os.path.join( args.data,  'gl20.pkl')
+    pickle.dump(db_dict, open(pkl_path, 'wb'))
+         
     print("Done")
-    exit(0)
 
 if __name__ == '__main__':
 

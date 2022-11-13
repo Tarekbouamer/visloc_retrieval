@@ -38,15 +38,18 @@ def build_optimizer(cfg, model):
             body_other_params += [p for p in m_layer.parameters() if p.requires_grad]
 
     # head
-    pool_params, whiten_params     = [], []
+    attn_params, pool_params, whiten_params = [], [], []
         
-    for k, v in model.head.named_children():          
-        if k.find("pool") != -1:
+    for k, v in model.head.named_children():  
+        
+        if k.find("attention") != -1:
+            attn_params += [p for p in v.parameters() if p.requires_grad]
+        elif k.find("pool") != -1:
             pool_params += [p for p in v.parameters() if p.requires_grad]
         elif k.find("whiten")!= -1:
             whiten_params += [p for p in v.parameters() if p.requires_grad] 
-    
-    assert len(body_norm_params) + len(body_other_params) + len(pool_params) + len(whiten_params)== \
+
+    assert len(body_norm_params) + len(body_other_params) + len(attn_params) + len(pool_params) + len(whiten_params)== \
         len([p for p in model.parameters() if p.requires_grad]), \
           "not all parameters that require grad are accounted for in the optimizer"
     
@@ -64,11 +67,19 @@ def build_optimizer(cfg, model):
             "lr":           LR        ,
             "weight_decay": WEIGHT_DECAY    
         },
+        # attn
+        {
+            "params":       attn_params,
+            "lr":           LR,
+            "weight_decay": WEIGHT_DECAY
+        },
+        # pool
         {
             "params":       pool_params,
             "lr":           LR * 10,
             "weight_decay": 0.  
         },
+        # whiten
         {
             "params":       whiten_params,
             "lr":           LR,

@@ -3,7 +3,7 @@ from .factory   import create_model, load_pretrained
 
 import timm
 from timm.utils.model               import freeze, unfreeze
-from retrieval.modules.heads.head   import create_head
+from retrieval.modules.heads        import create_head
 from retrieval.models.base          import ImageRetrievalNet
 
 

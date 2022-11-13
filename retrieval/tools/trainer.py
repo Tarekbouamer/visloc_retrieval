@@ -55,7 +55,8 @@ class TrainerBase:
                 self.before_epoch()
                 self.train_epoch()
                 self.after_epoch()
-                self.val_epoch()
+                if self.val_dl:
+                    self.val_epoch()
                 self.test_epoch()
                     
                 self.epoch += 1
@@ -276,7 +277,8 @@ class ImageRetrievalTrainer(TrainerBase):
         self.optimizer          = self.build_optimizer(cfg, self.model)
         
         self.train_dl           = self.build_train_loader(args, cfg)       
-        self.val_dl             = self.build_val_loader(args, cfg)       
+        # self.val_dl             = self.build_val_loader(args, cfg) 
+        self.val_dl = None      
         
         self.loss               = self.build_loss(cfg)     
 

@@ -2,13 +2,14 @@ from functools import partial
 
 import torch.nn as nn
 
-
-from retrieval.modules.pools import GeM
-from .registry import register_head, model_entrypoint, is_model
-
+from  retrieval.modules.pools import GeM
 from .base import Head
 
+from .registry import register_head, model_entrypoint, is_model
+from .factory import create_head
 
+
+# TODO: only one implementioan for gem no conv gem
 @register_head
 def gem_linear(inp_dim, out_dim, **kwargs):
     return GemHead(inp_dim, out_dim, layer="linear", **kwargs)
@@ -76,25 +77,7 @@ class GemHead(Head):
         return x     
 
 
-def create_head(
-        model_name,
-        inp_dim, 
-        out_dim,
-        **kwargs):
-    """Create a head 
-    """
 
-    kwargs = {k: v for k, v in kwargs.items() if v is not None}
-    
-    if not is_model(model_name):
-        raise RuntimeError('Unknown model (%s)' % model_name)
-
-    create_fn = model_entrypoint(model_name)
-   
-    model = create_fn(inp_dim, out_dim,**kwargs)
-
-    return model
-    
     
 # test
 if __name__ == '__main__':
