@@ -8,7 +8,7 @@ from timm import utils
 from retrieval.models import  create_model
 
 # 
-from .model             import run_pca, set_batchnorm_eval
+from .model             import set_batchnorm_eval
 from .optimizer         import build_optimizer, build_lr_scheduler
 from .dataloader        import build_train_dataloader, build_val_dataloader, build_sample_dataloader
 from .loss              import build_loss
@@ -125,7 +125,7 @@ class TrainerBase:
                 for n in range(len(tuple_i)):
 
                     pred = self.model(tuple_i[n].cuda(), do_whitening=True)
-                    vecs[n, :]  = pred
+                    vecs[n, :]  = pred['feats']
     
                 # compute loss 
                 loss = self.loss(vecs, target_i.cuda())
@@ -202,7 +202,7 @@ class TrainerBase:
                     # extract vectors
                     for n in range(len(tuple_i)):
                         pred = self.model(tuple_i[n].cuda(), do_whitening=True)
-                        vecs[n, :]  = pred
+                        vecs[n, :]  = pred['feats']
         
                     # compute loss 
                     loss = self.loss(vecs, target_i.cuda())
@@ -422,22 +422,15 @@ class ImageRetrievalTrainer(TrainerBase):
             logger.info(f"save best snapshot:   {best_snapshot_path}")
     
     def init_model(self):
-            
-        logger.info("run init pca")
-            
-        sample_dl = build_sample_dataloader(self.cfg, self.get_dataset())
-            
-        layer = run_pca(self.args, self.cfg,  self.model, sample_dl)
-            
-        # save layer to whithen_path
-        layer_path = os.path.join(self.args.directory, "whiten.pth")
-        logger.info(f"save whiten layer: {layer_path}")
-        torch.save(layer.state_dict(), layer_path)
-            
-        # init
-        self.model.head.whiten.load_state_dict(layer.state_dict())
-            
-        logger.info("pca done")
+    
+        if hasattr(self.model, '_init_model'):
+            #
+            logger.info("init model layers")
+            sample_dl = build_sample_dataloader(self.cfg, self.get_dataset())
+
+            # 
+            self.model._init_model(self.args, self.cfg,  self.model, sample_dl)
+            logger.info("init model done")
         
     def before_train(self):
         

@@ -55,7 +55,8 @@ def extract_ms(img, model, out_dim, scales=[1], min_size=100, max_size=2000):
         num_scales += 1.0
                  
         # extract
-        desc_s = model(img_s, do_whitening=True).squeeze(0)
+        preds  = model.extract_global(img_s, do_whitening=True)
+        desc_s = preds['feats'].squeeze(0)
                 
         # accum
         desc += desc_s

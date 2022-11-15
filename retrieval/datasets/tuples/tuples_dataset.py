@@ -204,7 +204,7 @@ class TuplesDataset(data.Dataset):
                 batch = {k: batch[k].cuda(device="cuda", non_blocking=True) for k in INPUTS}
                 
                 pred = model(**batch, do_whitening=True)          
-                qvecs[it] = pred
+                qvecs[it] = pred["feats"]
                 
                 del pred
             
@@ -221,7 +221,7 @@ class TuplesDataset(data.Dataset):
                 batch = {k: batch[k].cuda(device="cuda", non_blocking=True) for k in INPUTS}
 
                 pred = model(**batch, do_whitening=True)
-                poolvecs[it] = pred
+                poolvecs[it] = pred["feats"]
            
                 del pred
 

@@ -73,8 +73,13 @@ class GemHead(Head):
         if do_whitening: 
             x = self.whiten(x)
             x = nn.functional.normalize(x, dim=-1, p=2, eps=1e-6)
+        
+        #    
+        preds = {
+            'feats': x
+        }
             
-        return x     
+        return preds     
 
 
 

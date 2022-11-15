@@ -1,10 +1,24 @@
 from .registry  import register_model, get_pretrained_cfg
 from .factory   import create_model, load_pretrained
 
+from copy import deepcopy
+from typing import List
+
+import os
+import torch 
+import torch.nn as nn
+
+from tqdm import tqdm
+import numpy as np
+
 import timm
 from timm.utils.model               import freeze, unfreeze
+
 from retrieval.modules.heads        import create_head
-from retrieval.models.base          import ImageRetrievalNet
+from retrieval.models.base          import BaseNet
+from retrieval.datasets             import  INPUTS 
+
+from retrieval.utils.pca   import PCA
 
 
 # logger
@@ -22,6 +36,7 @@ def _cfg(url='', drive='', out_dim=1024, **kwargs):
         'out_dim': out_dim, 
         **kwargs
     }
+ 
  
 default_cfgs = {
     #sfm resnet50
@@ -43,6 +58,75 @@ default_cfgs = {
         _cfg(drive='https://drive.google.com/uc?id=1AaS4aXe2FYyi-iiLetF4JAo0iRqKHQ2Z', out_dim=2048)
     }
 
+
+@torch.no_grad()
+def _init_model(args, cfg, model, sample_dl):
+    
+    # eval   
+    if model.training:
+        model.eval()   
+    
+    # options 
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        
+    # 
+    model_head  = model.head
+    inp_dim     = model_head.inp_dim
+    out_dim     = model_head.out_dim
+
+            
+    # prepare query loader
+    logger.info(f'extracting descriptors for PCA {inp_dim}--{out_dim} for {len(sample_dl)}')
+
+    # extract vectors
+    vecs = []
+    for _, batch in tqdm(enumerate(sample_dl), total=len(sample_dl)):
+  
+        # upload batch
+        batch   = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
+        pred    = model(**batch, do_whitening=False)
+                
+        vecs.append(pred['feats'].cpu().numpy())
+            
+        del pred
+    
+    # stack
+    vecs  = np.vstack(vecs)
+    print(vecs.shape)
+    
+    logger.info('compute PCA')
+    
+    m, P  = PCA(vecs)
+    m, P = m.T, P.T
+        
+    # create layer
+    layer = deepcopy(model_head.whiten)  
+    data_size = layer.weight.data.size()
+    
+    #
+    num_d  = layer.weight.shape[0]
+    
+    #
+    projection      = torch.Tensor(P[: num_d, :]).view(data_size)
+    projected_shift = - torch.mm(torch.FloatTensor(P), torch.FloatTensor(m)).squeeze() 
+
+    #
+    layer.weight.data   = projection
+    layer.bias.data     = projected_shift[:num_d]
+
+    # save layer to whithen_path
+    layer_path = os.path.join(args.directory, "whiten.pth")
+    torch.save(layer.state_dict(), layer_path)
+    
+    logger.info(f"save whiten layer: {layer_path}")
+            
+    # load   
+    model.head.whiten.load_state_dict(layer.state_dict())
+            
+    logger.info("pca done")
+    
+    return 
+    
  
 def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feature_scales=[1, 2, 3, 4], **kwargs):
     
@@ -84,7 +168,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
                         **kwargs)
     
     # model
-    model = ImageRetrievalNet(body, head) 
+    model = GemNet(body, head, init_model=_init_model) 
     
     # 
     if pretrained:
@@ -98,8 +182,33 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
         cfg.set('global', 'global_dim', str(out_dim))
  
     return model
-    
 
+##
+class GemNet(BaseNet):
+    """ ImageRetrievalNet
+
+        General image retrieval model, consists of backbone and head
+    
+    """
+        
+    def forward(self, img=None, do_whitening=True):
+          
+        # body
+        x = self.body(img)
+        
+        #
+        if isinstance(x, List):
+            x = x[-1] 
+        
+        # head
+        preds = self.head(x, do_whitening)
+        
+        if self.training:
+            return preds
+
+        return preds
+    
+    
 # SfM-120k
 @register_model
 def resnet10t_gem(cfg=None, pretrained=True, **kwargs):

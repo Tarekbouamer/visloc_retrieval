@@ -11,7 +11,7 @@ import  torch
 from retrieval.datasets import  INPUTS 
 
 from retrieval.utils.io   import create_withen_file_from_cfg
-from retrieval.utils.pca   import PCA_whitenlearn_shrinkage
+from retrieval.utils.pca   import PCA
 
 # logger
 import logging
@@ -23,54 +23,7 @@ def set_batchnorm_eval(m):
         m.eval()
         
         
-def run_pca(arg, cfg, model, sample_dl):
-    
-    if model.training:
-        model.eval()   
-    
-    # options 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        
-    #
-    model_head  = model.head
-    inp_dim     = model_head.inp_dim
-    out_dim     = model_head.out_dim
 
-    with torch.no_grad():
-            
-        # prepare query loader
-        logger.info(f'extracting descriptors for PCA {inp_dim}--{out_dim} for {len(sample_dl)}')
-
-        # extract vectors
-        vecs = []
-        for _, batch in tqdm(enumerate(sample_dl), total=len(sample_dl)):
-  
-            # upload batch
-            batch   = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
-            pred    = model(**batch, do_whitening=False)
-                
-            vecs.append(pred.cpu().numpy())
-            
-            del pred
-    #
-    vecs  = np.vstack(vecs)
-    
-    logger.info('compute PCA, ')
-    
-    m, P  = PCA_whitenlearn_shrinkage(vecs)
-    m, P = m.T, P.T
-        
-    # create layer
-    whithen_layer = deepcopy(model_head.whiten)  
-    num_d  = whithen_layer.weight.shape[0]
-    
-    projection          = torch.Tensor(P[: num_d, :])
-    projected_shift     = - torch.mm(torch.FloatTensor(P), torch.FloatTensor(m)).squeeze()
-    
-    whithen_layer.weight.data   = projection.to(device)
-    whithen_layer.bias.data     = projected_shift[:num_d].to(device)    
-
-    return whithen_layer
     
      
 def compute_pca(args, cfg, model, sample_dl):
