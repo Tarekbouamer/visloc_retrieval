@@ -67,11 +67,21 @@ def extract_ms(img, model, out_dim, scales=[1], min_size=100, max_size=2000):
     return desc
 
 
-def test_global_descriptor(dataset, query_dl, db_dl, model, descriptor_size, ground_truth, scales=[1]):
-  
+def test_global_descriptor(dataset, query_dl, db_dl, feature_extractor, descriptor_size, ground_truth, scales=[1]):
+    
+    # extract query
+    q_out   = feature_extractor.extract_global(query_dl.dataset, save_path=None)
+    q_vecs  = q_out['features']
+    print(q_vecs.shape)
+    # extract database
+    db_out  = feature_extractor.extract_global(db_dl.dataset, save_path=None)
+    db_vecs = db_out['features']
+    print(db_vecs.shape)
+    print(q_vecs)
+
     # options  
-    batch_size = 1
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # batch_size = 1
+    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # 
     if dataset in ["roxford5k", "rparis6k"]:
@@ -80,36 +90,37 @@ def test_global_descriptor(dataset, query_dl, db_dl, model, descriptor_size, gro
         revisited = False
 
     #
-    with torch.no_grad():
+    # with torch.no_grad():
             
-        # extract query vectors
-        q_vecs = torch.zeros(len(query_dl), descriptor_size).cuda()
+    #     # extract query vectors
+    #     q_vecs = torch.zeros(len(query_dl), descriptor_size).cuda()
 
-        for it, batch in tqdm(enumerate(query_dl), total=len(query_dl)):
+    #     for it, batch in tqdm(enumerate(query_dl), total=len(query_dl)):
             
-            batch   = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
-            desc    = extract_ms(batch["img"], model, descriptor_size, scales=scales)
+    #         batch   = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
+            
+    #         desc    = extract_ms(batch["img"], feature_extractor, descriptor_size, scales=scales)
                             
-            q_vecs[it * batch_size: (it+1) * batch_size, :] = desc
+    #         q_vecs[it * batch_size: (it+1) * batch_size, :] = desc
             
-            del desc
+            # del desc
 
-        # extract database vectors
-        db_vecs = torch.zeros(len(db_dl), descriptor_size).cuda()
+        # # extract database vectors
+        # db_vecs = torch.zeros(len(db_dl), descriptor_size).cuda()
 
-        for it, batch in tqdm(enumerate(db_dl), total=len(db_dl)):
+        # for it, batch in tqdm(enumerate(db_dl), total=len(db_dl)):
 
-            batch   = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
+        #     batch   = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
 
-            desc    = extract_ms(batch["img"], model, descriptor_size, scales=scales)
+        #     desc    = extract_ms(batch["img"], feature_extractor, descriptor_size, scales=scales)
                 
-            db_vecs[it * batch_size: (it+1) * batch_size, :] = desc
+        #     db_vecs[it * batch_size: (it+1) * batch_size, :] = desc
 
-            del desc
+        #     del desc
                 
     # convert to numpy
-    q_vecs  = q_vecs.cpu().numpy()
-    db_vecs = db_vecs.cpu().numpy()
+    # q_vecs  = q_vecs.cpu().numpy()
+    # db_vecs = db_vecs.cpu().numpy()
             
     # search, rank, and print
     scores = np.dot(db_vecs, q_vecs.T)

@@ -1,10 +1,9 @@
-
 import pickle
 import numpy as np
 import os
-from tqdm import tqdm
+from   tqdm import tqdm
 import torch
-import torch.utils.data as data
+from torch.utils.data import DataLoader
 
 from asmk import asmk_method, io_helpers, ASMKMethod, kernel as kern_pkg
 
@@ -18,49 +17,53 @@ from retrieval.utils.evaluation.ParisOxfordEval import compute_map
 import logging
 logger = logging.getLogger("retrieval")
 
-PARAM_PATH="./image_retrieval/configuration/defaults/asmk.yml"
+
+PARAM_PATH="./retrieval/configuration/defaults/asmk.yml"
 
 
 def asmk_init(params_path=None): 
     
-    # Load yml file
+    # load yml file
     if params_path is None:
         params_path = PARAM_PATH
     
+    # params
     params = io_helpers.load_params(params_path)
 
-    
-    # init asmk
+    # init asmk_method
     asmk = asmk_method.ASMKMethod.initialize_untrained(params)
     
+    #
     return asmk, params
 
 
-def train_codebook(cfg, train_images, model, asmk, save_path=None,):
+
+def train_codebook(cfg, train_images, model, asmk, save_path=None):
     """
         train_codebook
     """
-    
-    # if exsists load
+
+    # if exsists, load
     if save_path and os.path.exists(save_path):
         return asmk.train_codebook(None, cache_path=save_path)
     
     # options 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    trans_opt = {   "max_size":     cfg["test"].getint("max_size"),
-                    "mean":         cfg["augmentaion"].getstruct("mean"), 
-                    "std":          cfg["augmentaion"].getstruct("std")}
-            
-    dl_opt = {  "batch_size":   1, 
-                "shuffle":      False, 
-                "num_workers":  cfg["test"].getint("num_workers"), 
-                "pin_memory":   True }  
+    #
+    trans_opt = {   "max_size":     cfg["test"].getint("max_size")}
+     
+    dl_opt = { 
+              "batch_size":   1,      
+              "shuffle":      False, 
+              "num_workers":  cfg["test"].getint("num_workers"), 
+              "pin_memory":   True }  
     
     
     # train dataloader
     train_data  = ImagesFromList(root='', images=train_images, transform=ImagesTransform(**trans_opt) )                 
-    train_dl    = data.DataLoader(train_data,  **dl_opt )
+    train_dl    = DataLoader(train_data,  **dl_opt )
+    
     
     with torch.no_grad():
          
@@ -69,20 +72,20 @@ def train_codebook(cfg, train_images, model, asmk, save_path=None,):
 
         for it, batch in tqdm(enumerate(train_dl), total=len(train_dl)):
 
-            # upload batch
+            # batch
             batch = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
 
-            desc = model(**batch, do_whitening=True)
-
-            # append
-            train_vecs.append(desc.cpu().numpy())   
+            preds = model.extract_locals(**batch, do_whitening=True)
             
-            del desc
+            # append
+            train_vecs.append(preds['feats'].cpu().numpy())   
+            
+            del preds
                 
         # stack
         train_vecs  = np.vstack(train_vecs)
 
-    # Run 
+    # run 
     asmk = asmk.train_codebook(train_vecs, cache_path=save_path)
     
     logger.debug(f"Codebook trained in {asmk.metadata['train_codebook']['train_time']:.1f}s")
@@ -104,11 +107,15 @@ def index_database(db_dl, model, asmk, distractors_path=None):
                 
         # upload batch
         batch = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
-        pred = model(**batch, do_whitening=True)
-                
+        
+        preds = model.extract_locals(**batch, do_whitening=True)
+        
+        print(preds.keys())
+        
+        input()  
         # append
-        db_vecs.append(pred.cpu().numpy()    )
-        db_ids.append(np.full((pred.shape[0], ), it)     )
+        db_vecs.append(pred['feats'].cpu().numpy()    )
+        db_ids.append(np.full((pred['feats'].shape[0], ), it)     )
 
         del pred
             
@@ -140,11 +147,12 @@ def query_ivf(query_dl, model, asmk_db, cache_path=None, imid_offset=0):
 
         # upload batch
         batch = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
-        pred = model(**batch, do_whitening=True)
+        
+        preds = model.extract_locals(**batch, do_whitening=True)
 
         # append
-        q_vecs.append(pred.cpu().numpy()    )
-        q_ids.append(np.full((pred.shape[0], ), it) )             
+        q_vecs.append(pred['feats'].cpu().numpy()    )
+        q_ids.append(np.full((pred['feats'].shape[0], ), it) )             
                 
         del pred
                 

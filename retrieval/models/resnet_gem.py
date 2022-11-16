@@ -186,9 +186,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
 ##
 class GemNet(BaseNet):
     """ ImageRetrievalNet
-
         General image retrieval model, consists of backbone and head
-    
     """
         
     def forward(self, img=None, do_whitening=True):
@@ -207,6 +205,11 @@ class GemNet(BaseNet):
             return preds
 
         return preds
+    
+    def extract_global(self, img, do_whitening=True):
+        return self.forward(img, do_whitening=do_whitening)
+        
+        
     
     
 # SfM-120k

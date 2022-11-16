@@ -35,6 +35,9 @@ def _cfg(url='', drive='', out_dim=1024, **kwargs):
  
  
 default_cfgs = {
+    #sfm resnet50
+    'resnet50_c4_how':        
+        _cfg(out_dim=128),
     }
 
 
@@ -108,10 +111,14 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
     
     # assert
     assert body_name in timm.list_models(pretrained=True), f"model: {body_name}  not implemented timm models yet!"
-
-    # get flags
-    reduction   = cfg["global"].getint("reduction")
-    frozen      = cfg.pop("frozen", [])
+    
+    # default cfg
+    default_cfg = get_pretrained_cfg(variant)
+    
+    out_dim = default_cfg.pop('out_dim', None)
+    
+    #  
+    frozen      = default_cfg.pop("frozen", [])
     
     # body
     body = timm.create_model(body_name, 
@@ -124,8 +131,8 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
     body_reductions         = body.feature_info.reduction()
     body_module_names       = body.feature_info.module_name()
     
-    # output dim
-    body_dim = out_dim = body_channels[-1]
+    # input dim
+    body_dim =  body_channels[-1]
    
    # freeze layers
     if len(frozen) > 0:
@@ -133,10 +140,8 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
         logger.info(f"frozen layers {frozen_layers}")
         freeze(body, frozen_layers) 
     
-    # reduction 
-    if reduction > 0: 
-        assert reduction < out_dim, (f"reduction {reduction} has to be less than input dim {out_dim}")
-        out_dim = reduction
+    # assert 
+    assert out_dim <= body_dim, (f"reduction {out_dim} has to be less than input dim {body_dim}")
     
     # head
     head = create_head(head_name, 
@@ -149,8 +154,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
     
     # 
     if pretrained:
-        pretrained_cfg = get_pretrained_cfg(variant)
-        load_pretrained(model, variant, pretrained_cfg) 
+        load_pretrained(model, variant, default_cfg) 
         
     logger.info(f"body channels:{body_channels}  reductions:{body_reductions}   layer_names: {body_module_names}")
     
@@ -163,7 +167,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
 # 
 class HowNet(BaseNet):
     
-    def how_select_local(self, ms_feats, ms_masks, *, scales, num_feats):
+    def how_select_local(self, ms_feats, ms_masks, *, scales, num_features):
         """
             Convert multi-scale feature maps with attentions to a list of local descriptors
                 :param list ms_feats: A list of feature maps, each at a different scale
@@ -205,7 +209,7 @@ class HowNet(BaseNet):
             scls[slc] = sc
 
         #
-        keep_n = min(num_feats, atts.shape[0]) if num_feats is not None else atts.shape[0]
+        keep_n = min(num_features, atts.shape[0]) if num_features is not None else atts.shape[0]
         idx = atts.sort(descending=True)[1][:keep_n]
 
         #
@@ -282,13 +286,13 @@ class HowNet(BaseNet):
         #    
         return self.weighted_spoc(feat_list, attns_list)
     
-    def extract_locals(self, img, scales=[1], num_feats=1000, do_whitening=True):
+    def extract_locals(self, img, scales=[1], num_features=1000, do_whitening=True):
         
         #        
         feat_list, attns_list = self.__forward__(img, scales=scales, do_whitening=do_whitening)
         
         #
-        return self.how_select_local(feat_list, attns_list, scales=scales, num_feats=num_feats)
+        return self.how_select_local(feat_list, attns_list, scales=scales, num_features=num_features)
     
     def forward(self, img, do_whitening=True):
         return self.extract_global(img, do_whitening=do_whitening)

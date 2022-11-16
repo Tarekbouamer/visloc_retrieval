@@ -7,6 +7,7 @@ import os
 from retrieval.test import  build_paris_oxford_dataset, test_asmk, test_global_descriptor
 import retrieval.utils.evaluation.asmk as eval_asmk
 
+from retrieval.feature_extractor import FeatureExtractor
 
 # logger
 import logging
@@ -22,8 +23,9 @@ class DatasetEvaluator:
         # mode
         self.test_mode = cfg['test'].get('mode')
         
-        #  model
-        self.model = model if model_ema is None else model_ema.module
+        # features extractor
+        model = model if model_ema is None else model_ema.module
+        self.feature_extractor = FeatureExtractor(model=model, cfg=cfg)
                 
         # writer
         self.writer = writer
@@ -87,8 +89,7 @@ class GlobalEvaluator(DatasetEvaluator):
     def evaluate(self, epoch=0, scales=[1]):
         
         # eval mode
-        if self.model.training:
-            self.model.eval()
+        self.feature_extractor.eval()
         
         #
         if self.writer is not None:
@@ -111,7 +112,7 @@ class GlobalEvaluator(DatasetEvaluator):
             
             # test
             metrics = test_global_descriptor(dataset, query_dl, database_dl, 
-                                             self.model, self.descriptor_size, 
+                                             self.feature_extractor, self.descriptor_size, 
                                              ground_truth,
                                              scales=scales)
                 
@@ -138,6 +139,7 @@ class ASMKEvaluator(DatasetEvaluator):
         # train and save the codebook for each test set
         self.build_codebook()
         
+        #
         logger.info(f"init evaluator on ({self.test_mode}) mode")
         
     def build_codebook(self, ):
@@ -157,11 +159,21 @@ class ASMKEvaluator(DatasetEvaluator):
         idxs = torch.randperm(len(self.train_dataset))[ :self.num_samples]
         train_images  = [self.train_dataset[i] for i in idxs] 
 
-        # Run train_codebook
-        self.asmk = eval_asmk.train_codebook(self.cfg, train_images, self.model, asmk,
-                                        save_path=save_path)
+        # run train_codebook
+        self.asmk = eval_asmk.train_codebook(self.cfg, train_images, self.model, asmk)
         
         return asmk
+    
+    def build_test_dataset(self, data_path, dataset):
+        
+        query_dl, database_dl, ground_truth = None, None, None
+                    
+        if dataset in ['roxford5k', 'rparis6k', "val_eccv20"]:
+            query_dl, database_dl, ground_truth = build_paris_oxford_dataset(data_path, dataset, self.cfg)
+        else:
+            raise KeyError
+            
+        return query_dl, database_dl, ground_truth    
     
     def evaluate(self, epoch=0):
         
@@ -169,7 +181,7 @@ class ASMKEvaluator(DatasetEvaluator):
         if self.model.training:
             self.model.eval()
         
-        #
+        # writer 
         self.writer.test()
         
         # data path

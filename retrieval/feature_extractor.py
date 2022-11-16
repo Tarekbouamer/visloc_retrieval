@@ -30,28 +30,45 @@ class FeatureExtractorOptions(object):
 
 class FeatureExtractor():
     """ Feature extraction 
-        
-        model_name:     str     model name from models factory
     """
-    def __init__(self, model_name):
+    def __init__(self, model_name=None, model=None, cfg=None):
         super().__init__()
         
         # options
         self.options = FeatureExtractorOptions()
-        self.cfg     = get_pretrained_cfg(model_name)
-    
         
-        # build  
-        self.model  = create_model(model_name, pretrained=True)
+        # model build by name
+        if model is not None:
+            self.model  = model
+            self.cfg    = cfg
+        # create and get cfg from factory
+        elif model_name is not None:
+            self.cfg    = get_pretrained_cfg(model_name)
+            self.model  = create_model(model_name, pretrained=True)
+        # raise error
+        else:
+            self.model  = None
+            self.cfg    = None
+        
+        # 
+        self.out_dim = self.cfg['global'].getint('out_dim')
+           
+        # set to device
         self.model = self.__cuda__(self.model)
-        self.model.eval()
+        
+        # set to eval mode
+        self.eval()
 
         # transform
         self.transform = transforms.Compose([
-                # transforms.ToTensor(),
+                transforms.ToTensor(),
                 transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
                 ])
-        
+    #
+    def eval(self):
+        if self.model.training:
+            self.model.eval()
+            
     def __init_writer__(self, save_path):  
         self.writer = h5py.File(str(save_path), 'a')
       
@@ -74,15 +91,21 @@ class FeatureExtractor():
             return x
         
     def __prepare_input__(self, x):
-        x = self.transform(x)
+        
+        # Tensor 
+        if not isinstance(x, torch.Tensor):
+            x = transforms.ToTensor()(x)        
+        # MEAN-STD
+        x = transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD)(x)
+
+        # BCHW format
         if len(x.shape) < 4:
             x = x.unsqueeze(0)
+        
         return x
     
     def __to_numpy__(self, x):
-        if len(x.shape) > 1:
-            x = x.squeeze(0)
-            
+                    
         if x.is_cuda:
             x = x.cpu()
             
@@ -96,42 +119,52 @@ class FeatureExtractor():
         if not (x.size(-1) >= min_size and x.size(-2) >= min_size):
             return True
         return False
-            
+    
+    def __resize__(self, x, scale=1.0, mode='bilinear'):
+        if scale == 1.0:
+            return x
+        else:
+            return functional.interpolate(x, scale_factor=scale, mode=mode, align_corners=False)
+    
     @torch.no_grad()     
-    def extract(self, dataset, save_path=None, scales=[1.0], min_size=200, max_size=1200):
+    def extract_global(self, dataset, scales=[1.0], save_path=None, min_size=100, max_size=1200):
         
-        # set writer
+        #
+        self.eval()
+        
+        # file writer
         if save_path is not None:
             self.writer = h5py.File(str(save_path), 'a')
 
-        # loader
+        # dataloader
         dataloader = DataLoader(dataset, num_workers=1)
         
-        features = np.empty(shape=(len(dataloader), self.cfg['out_dim']))
+        # L D
+        features = np.empty(shape=(len(dataloader), self.out_dim))
         
+        # time
         start_time = time.time()
         
-        for it, data in enumerate(tqdm(dataloader, total=len(dataloader), colour='magenta', desc='extract'.rjust(15))):
+        # run --> 
+        for it, data in enumerate(tqdm(dataloader, total=len(dataloader), colour='magenta', desc='extract global'.rjust(15))):
             
-            img , name, original_size = data['img'], data['img_name'][0], data["original_size"][0]
+            img = data['img']
             
             # prepare inputs
             img  = self.__prepare_input__(img) 
             img  = self.__cuda__(img) 
             
-            #
-            desc = torch.zeros(self.cfg['out_dim'])
+            # D
+            desc = torch.zeros(self.out_dim)
+            desc = self.__cuda__(desc) 
             
             #
             num_scales = 0. 
             
             for scale in scales:
                 
-                # scale
-                if scale == 1.0:
-                    img_s = img
-                else:
-                    img_s = functional.interpolate(img, scale_factor=scale, mode='bilinear', align_corners=False)
+                # resize
+                img_s = self.__resize__(img, scale=scale)
                 
                 # assert size within boundaries
                 if self.__check_size__(img_s, min_size, max_size):
@@ -139,50 +172,154 @@ class FeatureExtractor():
                 
                 num_scales += 1.0
                  
-                # extract
-                desc_s = self.model(img_s).squeeze(0)
-                desc_s = self.__to_numpy__(desc_s)   
+                # extract globals
+                preds   = self.model.extract_global(img_s, do_whitening=True)
+                desc_s  = preds['feats']
                 
-                # accum
-                desc += (1./num_scales) * desc_s
-            #
-            features[it] = desc.norm()
+                # add
+                desc =  desc_s
             
+            # normalize
+            # desc = (1.0/num_scales) * desc
+            # desc = functional.normalize(desc, dim=-1)
+            
+            # numpy
+            desc            = self.__to_numpy__(desc) 
+            features[it]    = desc
+            
+            # write
             if hasattr(self, 'writer'):
+                name = data['img_name'][0]
                 self.__write__(name, desc)
-                
+            
+            # clear cache  
             if it % 10 == 0:
                 torch.cuda.empty_cache()
-        #   
+        
+        # close writer    
         if hasattr(self, 'writer'):  
             self.writer.close()  
         
-        # 
+        # end time
         end_time = time.time() - start_time  
+        
+        logger.info(f'extraction done {end_time:.4} seconds saved {save_path}')
+        
+        #
+        out = {
+            'features':     features,
+            'save_path':    save_path
+            }
+        
+        return out
+    
+    @torch.no_grad()     
+    def extract_locals(self, dataset, save_path=None, num_features=100, scales=[1.0], min_size=100, max_size=1200):
+
+        #
+        self.eval()
+        
+        # file writer
+        if save_path is not None:
+            self.writer = h5py.File(str(save_path), 'a')
+
+        # dataloader
+        dataloader = DataLoader(dataset, num_workers=1)
+        
+        # L N D
+        features = np.empty(shape=(len(dataloader), num_features, self.out_dim))
+        
+        # time
+        start_time = time.time()
+        
+        # run --> 
+        for it, data in enumerate(tqdm(dataloader, total=len(dataloader), colour='green', desc='extract locals'.rjust(15))):
+            
+            #
+            img = data['img']
+            
+            # prepare inputs
+            img  = self.__prepare_input__(img) 
+            img  = self.__cuda__(img) 
+            
+            # N D
+            desc = torch.zeros(num_features, self.out_dim)
+            desc = self.__cuda__(desc) 
+
+            # counter 
+            num_scales = 0. 
+            
+            # scale -->
+            for scale in scales:
+                
+                # resize
+                img_s = self.__resize__(img, scale=scale)
+                
+                # assert size to boundaries
+                if self.__check_size__(img_s, min_size, max_size):
+                    continue
+                
+                num_scales += 1.0
+                 
+                # extract locals 
+                preds   = self.model.extract_locals(img_s, num_features=num_features)
+                desc_s  = preds['feats']
+
+                # add
+                desc += desc_s
+            
+            # normalize
+            desc = (1.0/num_scales) * desc
+            desc = functional.normalize(desc, dim=-1)
+
+            # numpy
+            desc            = self.__to_numpy__(desc) 
+            features[it]    = desc
+
+            # write
+            if hasattr(self, 'writer'):
+                name = data['img_name'][0]
+                self.__write__(name, desc)
+            
+            # clear cache  
+            if it % 10 == 0:
+                torch.cuda.empty_cache()
+        
+        # close writer    
+        if hasattr(self, 'writer'):  
+            self.writer.close()  
+        
+        # end time
+        end_time = time.time() - start_time  
+        
         logger.info(f'extraction done {end_time:.4} seconds saved {save_path}')
         
         return features, save_path
                                     
+          
             
 if __name__ == '__main__':
     
     
-    
     logger = setup_logger(output=".", name="retrieval")
-    print("hello")
-    DATA_DIR='/media/dl/Data/datasets/test/oxford5k/jpg'
-    # DATA_DIR='/media/loc/ssd_5126/tmp/how/how_data/test/oxford5k/jpg'
+    # DATA_DIR='/media/dl/Data/datasets/test/oxford5k/jpg'
+    DATA_DIR='/media/loc/ssd_5127/tmp/how/how_data/test/oxford5k/jpg'
     save_path='db.h5'
     
     dataset = ImagesListDataset(DATA_DIR, max_size=500)
     
-    feature_extractor = FeatureExtractor("resnet50_c4_gem_1024")
-    scales = [1.0]
+    # feature_extractor = FeatureExtractor("resnet50_c4_gem_1024")
+    feature_extractor = FeatureExtractor("resnet50_c4_how")
+
+    scales = [0.707, 1.0, 1.424]
+    print(feature_extractor.model)
     
-    feat, pth = feature_extractor.extract(dataset, save_path=save_path)
+    global_feat, pth = feature_extractor.extract_global(dataset,    scales=scales, save_path=save_path)
+    local_feat, pth = feature_extractor.extract_locals(dataset,     scales=scales, save_path=save_path)
     
     print("features path", pth)
-    print("features shape", feat.shape)
+    print("global features shape", global_feat.shape)
+    print("global features shape", local_feat.shape)
 
         
   
