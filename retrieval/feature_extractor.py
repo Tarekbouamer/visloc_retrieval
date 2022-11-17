@@ -37,15 +37,15 @@ class FeatureExtractor():
         # options
         self.options = FeatureExtractorOptions()
         
-        # model build by name
+        # 
         if model is not None:
             self.model  = model
             self.cfg    = cfg
-        # create and get cfg from factory
+        #
         elif model_name is not None:
             self.cfg    = get_pretrained_cfg(model_name)
             self.model  = create_model(model_name, pretrained=True)
-        # raise error
+        #
         else:
             self.model  = None
             self.cfg    = None
@@ -61,10 +61,9 @@ class FeatureExtractor():
 
         # transform
         self.transform = transforms.Compose([
-                transforms.ToTensor(),
                 transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD),
                 ])
-    #
+      
     def eval(self):
         if self.model.training:
             self.model.eval()
@@ -90,15 +89,13 @@ class FeatureExtractor():
         else:
             return x
         
-    def __prepare_input__(self, x):
+    def __prepare_input__(self, x, normalize=False):
         
-        # Tensor 
-        if not isinstance(x, torch.Tensor):
-            x = transforms.ToTensor()(x)        
-        # MEAN-STD
-        x = transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN, std=IMAGENET_DEFAULT_STD)(x)
+        # normalize
+        if normalize:
+            x = transforms(x)
 
-        # BCHW format
+        # BCHW
         if len(x.shape) < 4:
             x = x.unsqueeze(0)
         
@@ -111,13 +108,15 @@ class FeatureExtractor():
             
         return x.numpy()
     
-    def __check_size__(self, x, min_size=200, max_size=1200):
+    def __check_size__(self, x, min_size=100, max_size=2000):
         # too large (area)
         if not (x.size(-1) * x.size(-2) <= max_size * max_size):
             return True
+        
         # too small
         if not (x.size(-1) >= min_size and x.size(-2) >= min_size):
             return True
+        
         return False
     
     def __resize__(self, x, scale=1.0, mode='bilinear'):
@@ -126,10 +125,16 @@ class FeatureExtractor():
         else:
             return functional.interpolate(x, scale_factor=scale, mode=mode, align_corners=False)
     
+    def __dataloader__(self, dataset):
+        if isinstance(dataset, DataLoader):
+            return dataset
+        else:
+            return DataLoader(dataset, num_workers=1, shuffle=False, drop_last=False, pin_memory=True)
+    
     @torch.no_grad()     
-    def extract_global(self, dataset, scales=[1.0], save_path=None, min_size=100, max_size=1200):
+    def extract_global(self, dataset, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
         
-        #
+        # to eval
         self.eval()
         
         # file writer
@@ -137,21 +142,22 @@ class FeatureExtractor():
             self.writer = h5py.File(str(save_path), 'a')
 
         # dataloader
-        dataloader = DataLoader(dataset, num_workers=1)
-        
+        dataloader = self.__dataloader__(dataset)
+
         # L D
         features = np.empty(shape=(len(dataloader), self.out_dim))
-        
+
         # time
         start_time = time.time()
         
         # run --> 
         for it, data in enumerate(tqdm(dataloader, total=len(dataloader), colour='magenta', desc='extract global'.rjust(15))):
             
+            #
             img = data['img']
             
             # prepare inputs
-            img  = self.__prepare_input__(img) 
+            img  = self.__prepare_input__(img, normalize=normalize) 
             img  = self.__cuda__(img) 
             
             # D
@@ -161,6 +167,7 @@ class FeatureExtractor():
             #
             num_scales = 0. 
             
+            # extract --> 
             for scale in scales:
                 
                 # resize
@@ -174,18 +181,17 @@ class FeatureExtractor():
                  
                 # extract globals
                 preds   = self.model.extract_global(img_s, do_whitening=True)
-                desc_s  = preds['feats']
+                desc_s  = preds['feats'].squeeze(0)
                 
                 # add
-                desc =  desc_s
+                desc +=  desc_s
             
             # normalize
-            # desc = (1.0/num_scales) * desc
-            # desc = functional.normalize(desc, dim=-1)
+            desc = (1.0 / num_scales) * desc
+            desc = functional.normalize(desc, dim=-1)
             
             # numpy
-            desc            = self.__to_numpy__(desc) 
-            features[it]    = desc
+            features[it]    = self.__to_numpy__(desc) 
             
             # write
             if hasattr(self, 'writer'):
@@ -195,7 +201,7 @@ class FeatureExtractor():
             # clear cache  
             if it % 10 == 0:
                 torch.cuda.empty_cache()
-        
+                
         # close writer    
         if hasattr(self, 'writer'):  
             self.writer.close()  
@@ -214,21 +220,22 @@ class FeatureExtractor():
         return out
     
     @torch.no_grad()     
-    def extract_locals(self, dataset, save_path=None, num_features=100, scales=[1.0], min_size=100, max_size=1200):
+    def extract_locals(self, dataset, num_features=50, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
 
-        #
+        # to eval
         self.eval()
         
         # file writer
         if save_path is not None:
             self.writer = h5py.File(str(save_path), 'a')
-
+        
         # dataloader
-        dataloader = DataLoader(dataset, num_workers=1)
+        dataloader = self.__dataloader__(dataset)
         
         # L N D
         features = np.empty(shape=(len(dataloader), num_features, self.out_dim))
-        
+        imids = []
+
         # time
         start_time = time.time()
         
@@ -269,13 +276,13 @@ class FeatureExtractor():
                 desc += desc_s
             
             # normalize
-            desc = (1.0/num_scales) * desc
+            desc = (1.0 / num_scales) * desc
             desc = functional.normalize(desc, dim=-1)
 
             # numpy
-            desc            = self.__to_numpy__(desc) 
-            features[it]    = desc
-
+            features[it]    = self.__to_numpy__(desc)
+            imids.append(np.full((desc[0].shape[0],), it))
+            
             # write
             if hasattr(self, 'writer'):
                 name = data['img_name'][0]
@@ -294,7 +301,18 @@ class FeatureExtractor():
         
         logger.info(f'extraction done {end_time:.4} seconds saved {save_path}')
         
-        return features, save_path
+        #
+        features    = features.reshape((-1, self.out_dim))
+        ids         = np.hstack(imids)
+       
+        #
+        out = {
+            'features':     features,
+            'ids':  ids,
+            'save_path':    save_path
+            }
+        
+        return out
                                     
           
             

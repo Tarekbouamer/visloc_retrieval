@@ -38,7 +38,7 @@ def asmk_init(params_path=None):
 
 
 
-def train_codebook(cfg, train_images, model, asmk, save_path=None):
+def train_codebook(cfg, train_images, feature_extractor, asmk, save_path=None):
     """
         train_codebook
     """
@@ -64,26 +64,30 @@ def train_codebook(cfg, train_images, model, asmk, save_path=None):
     train_data  = ImagesFromList(root='', images=train_images, transform=ImagesTransform(**trans_opt) )                 
     train_dl    = DataLoader(train_data,  **dl_opt )
     
+    train_out   = feature_extractor.extract_locals(train_dl, save_path=None)
+    train_vecs  = train_out["features"]
+    print(train_vecs.shape)
+
     
-    with torch.no_grad():
+    # with torch.no_grad():
          
-        # extract vectors
-        train_vecs = []
+    #     # extract vectors
+    #     train_vecs = []
 
-        for it, batch in tqdm(enumerate(train_dl), total=len(train_dl)):
+    #     for it, batch in tqdm(enumerate(train_dl), total=len(train_dl)):
 
-            # batch
-            batch = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
-
-            preds = model.extract_locals(**batch, do_whitening=True)
+    #         # batch
+    #         batch = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
+    #         print(batch)
+    #         preds = feature_extractor.extract_locals(**batch, do_whitening=True)
             
-            # append
-            train_vecs.append(preds['feats'].cpu().numpy())   
+    #         # append
+    #         train_vecs.append(preds['feats'].cpu().numpy())   
             
-            del preds
+    #         del preds
                 
-        # stack
-        train_vecs  = np.vstack(train_vecs)
+    #     # stack
+    #     train_vecs  = np.vstack(train_vecs)
 
     # run 
     asmk = asmk.train_codebook(train_vecs, cache_path=save_path)
@@ -93,37 +97,18 @@ def train_codebook(cfg, train_images, model, asmk, save_path=None):
     return asmk
   
 
-def index_database(db_dl, model, asmk, distractors_path=None):
+def index_database(db_dl, feature_extractor, asmk, distractors_path=None):
     """ 
             Asmk aggregate database and build ivf
     """
-    # options 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-            
-    # Extract vectors
-    db_vecs, db_locs, db_ids = [], [], []
-
-    for it, batch in tqdm(enumerate(db_dl), total=len(db_dl)):
-                
-        # upload batch
-        batch = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
-        
-        preds = model.extract_locals(**batch, do_whitening=True)
-        
-        print(preds.keys())
-        
-        input()  
-        # append
-        db_vecs.append(pred['feats'].cpu().numpy()    )
-        db_ids.append(np.full((pred['feats'].shape[0], ), it)     )
-
-        del pred
-            
+    
+    db_out = feature_extractor.extract_locals(db_dl)
+    
     # stack
-    db_vecs  = np.vstack(db_vecs)
-    db_ids   = np.hstack(db_ids)            
+    db_vecs  = db_out["features"]
+    db_ids   = db_out["ids"]            
 
-    # Run
+    # build ivf
     asmk_db = asmk.build_ivf(db_vecs, db_ids, distractors_path=distractors_path)
     
     logger.debug(f"indexed images in   {asmk_db.metadata['build_ivf']['index_time']:.2f}s")
@@ -132,34 +117,17 @@ def index_database(db_dl, model, asmk, distractors_path=None):
     return asmk_db
   
  
-def query_ivf(query_dl, model, asmk_db, cache_path=None, imid_offset=0):
+def query_ivf(query_dl, feature_extractor, asmk_db, cache_path=None, imid_offset=0):
     """ 
         asmk aggregate query and build ivf
     """
 
-    # options 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-        
-    # extract query vectors
-    q_vecs, q_locs, q_ids = [], [], []
+    q_out = feature_extractor.extract_locals(query_dl)
 
-    for it, batch in tqdm(enumerate(query_dl), total=len(query_dl)):
-
-        # upload batch
-        batch = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
-        
-        preds = model.extract_locals(**batch, do_whitening=True)
-
-        # append
-        q_vecs.append(pred['feats'].cpu().numpy()    )
-        q_ids.append(np.full((pred['feats'].shape[0], ), it) )             
-                
-        del pred
-                
     # stack
-    q_vecs  = np.vstack(q_vecs)
-    q_ids   = np.hstack(q_ids)
-
+    q_vecs  = q_out["features"]
+    q_ids   = q_out["ids"]   
+                
     # query vectors
     q_ids += imid_offset
     

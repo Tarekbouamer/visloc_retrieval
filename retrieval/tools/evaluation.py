@@ -34,6 +34,7 @@ class DatasetEvaluator:
         self.test_datasets  = cfg["test"].getstruct("datasets")
         self.scales    = cfg["test"].getboolean("multi_scale")
         
+        #
         self.descriptor_size = cfg["global"].getint("global_dim")
 
         # 
@@ -145,22 +146,21 @@ class ASMKEvaluator(DatasetEvaluator):
     def build_codebook(self, ):
         
         # eval mode
-        if self.model.training:
-            self.model.eval()
+        self.feature_extractor.eval()
 
         logger.info('init asmk')
         asmk, params = eval_asmk.asmk_init()
         
         # train codebook
         save_path =  os.path.join(self.args.directory, self.cfg["dataloader"].get("dataset") + "_codebook.pkl")
-        logger.info(f'train codebook:   {save_path}')
  
-        # sample data    
         idxs = torch.randperm(len(self.train_dataset))[ :self.num_samples]
         train_images  = [self.train_dataset[i] for i in idxs] 
+        
+        logger.info(f'train codebook {len(train_images)} :   {save_path}')
 
         # run train_codebook
-        self.asmk = eval_asmk.train_codebook(self.cfg, train_images, self.model, asmk)
+        self.asmk = eval_asmk.train_codebook(self.cfg, train_images, self.feature_extractor, asmk)
         
         return asmk
     
@@ -175,14 +175,14 @@ class ASMKEvaluator(DatasetEvaluator):
             
         return query_dl, database_dl, ground_truth    
     
-    def evaluate(self, epoch=0):
+    def evaluate(self,epoch=0, scales=[1]):
         
         # eval mode
-        if self.model.training:
-            self.model.eval()
+        self.feature_extractor.eval()
         
-        # writer 
-        self.writer.test()
+        #
+        if self.writer is not None:
+            self.writer.test()
         
         # data path
         if not os.path.exists(self.args.data):
@@ -200,7 +200,9 @@ class ASMKEvaluator(DatasetEvaluator):
             query_dl, database_dl, ground_truth = self.build_test_dataset(data_path, dataset)
             
             # test
-            metrics = test_asmk(dataset, query_dl, database_dl, self.model, self.descriptor_size, ground_truth, self.asmk)
+            metrics = test_asmk(dataset, query_dl, database_dl, 
+                                self.feature_extractor, 
+                                self.descriptor_size, ground_truth, self.asmk)
                 
             # write
             self.write_metrics(metrics, dataset, epoch, scale=100)

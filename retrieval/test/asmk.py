@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger("retrieval")
 
 
-def test_asmk(dataset, query_dl, db_dl, model, descriptor_size, ground_truth, asmk):
+def test_asmk(dataset, query_dl, db_dl, feature_extractor, descriptor_size, ground_truth, asmk):
              
     # 
     if dataset in ["roxford5k", "rparis6k"]:
@@ -27,11 +27,11 @@ def test_asmk(dataset, query_dl, db_dl, model, descriptor_size, ground_truth, as
             
         # database indexing 
         logger.info('{%s}: extracting descriptors for database images', dataset)
-        asmk_db = eval_asmk.index_database(db_dl, model, asmk)
+        asmk_db = eval_asmk.index_database(db_dl, feature_extractor, asmk)
             
         # query indexing
         logger.info('{%s}: extracting descriptors for query images', dataset)
-        ranks = eval_asmk.query_ivf(query_dl, model, asmk_db)
+        ranks = eval_asmk.query_ivf(query_dl, feature_extractor, asmk_db)
             
         # scores
         if revisited:

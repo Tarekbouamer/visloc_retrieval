@@ -11,6 +11,8 @@ from retrieval.configuration            import DEFAULTS as DEFAULT_CONFIG
 from retrieval.utils.configurations     import make_config
 from retrieval.tools.events            import EventWriter
 
+from retrieval.tools.dataloader        import build_train_dataloader
+
 import retrieval.datasets as data
 from retrieval import  build_evaluator, create_model
 from  retrieval.utils.logging import  setup_logger
@@ -65,25 +67,33 @@ def make_parser():
 
 def main(args):
     
+    args.directory = 'results'
+    
     writer = EventWriter(directory='results', print_freq=1)
     
-    logger = setup_logger(output="results", name="retrieval", suffix=args.model)
+    logger = setup_logger(output='results', name="retrieval", suffix=args.model)
 
     args.save_path = path.join(args.save_path, args.name + '.h5')
-
+    args.directory = args.save_path
+    
     # load cfg file 
     cfg = make_config(args.config, defauls=DEFAULT_CONFIG["default"])
+    
+    # train data
+    train_dl = build_train_dataloader(args=args, cfg=cfg)
+    meta = {}
+    meta['train_dataset']= train_dl.dataset.images
+
     
     # model
     model = create_model(args.model, cfg, pretrained=True)
     model.to(torch.device("cuda"))
-    
+        
     # 
-    evaluator = build_evaluator(args, cfg, model, None, None)
+    evaluator = build_evaluator(args, cfg, model, None, None, **meta)
     evaluator.evaluate(scales=args.scales)
 
-
-
+    #
     logger.info(f"extraction scales {args.scales}")
     logger.info(f"feature saved {args.save_path}")
 

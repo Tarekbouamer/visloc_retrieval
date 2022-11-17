@@ -42,6 +42,7 @@ default_cfgs = {
     #sfm resnet50
     'resnet50_gem_2048':        
         _cfg(drive='https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5', out_dim=2048),
+    
     'resnet50_c4_gem_1024':     
         _cfg(drive='https://drive.google.com/uc?id=1ber3PbTF4ZWAmnBuJu5AEp2myVJFNM7F'),
     

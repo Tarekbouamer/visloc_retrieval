@@ -18,3 +18,6 @@ class BaseNet(nn.Module):
         
     def forward(self, img=None, do_whitening=True):
         raise NotImplementedError
+
+    def extract_global(self, img=None, do_whitening=True):
+        raise NotImplementedError

@@ -142,7 +142,6 @@ def compute_map_revisited(ranks, gnd, kappas=[1, 5, 10]):
     """
         compute easy medium and hard mAPs  
     """
-    print(kappas)
     # easy 
     gnd_t = []
     for i in range(len(gnd)):
