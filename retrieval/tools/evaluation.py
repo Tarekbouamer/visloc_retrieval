@@ -159,7 +159,7 @@ class ASMKEvaluator(DatasetEvaluator):
         
         logger.info(f'train codebook {len(train_images)} :   {save_path}')
 
-        # run train_codebook
+        # train_codebook
         self.asmk = eval_asmk.train_codebook(self.cfg, train_images, self.feature_extractor, asmk)
         
         return asmk

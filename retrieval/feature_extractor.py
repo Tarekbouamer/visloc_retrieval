@@ -220,7 +220,8 @@ class FeatureExtractor():
         return out
     
     @torch.no_grad()     
-    def extract_locals(self, dataset, num_features=50, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
+    def extract_locals(self, dataset, num_features=50
+                       , scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
 
         # to eval
         self.eval()
@@ -281,7 +282,7 @@ class FeatureExtractor():
 
             # numpy
             features[it]    = self.__to_numpy__(desc)
-            imids.append(np.full((desc[0].shape[0],), it))
+            imids.append(np.full((desc.shape[0],), it))
             
             # write
             if hasattr(self, 'writer'):
@@ -304,7 +305,7 @@ class FeatureExtractor():
         #
         features    = features.reshape((-1, self.out_dim))
         ids         = np.hstack(imids)
-       
+        
         #
         out = {
             'features':     features,

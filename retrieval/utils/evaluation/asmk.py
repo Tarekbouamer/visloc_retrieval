@@ -66,7 +66,6 @@ def train_codebook(cfg, train_images, feature_extractor, asmk, save_path=None):
     
     train_out   = feature_extractor.extract_locals(train_dl, save_path=None)
     train_vecs  = train_out["features"]
-    print(train_vecs.shape)
 
     
     # with torch.no_grad():
