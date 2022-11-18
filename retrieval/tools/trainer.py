@@ -274,13 +274,11 @@ class ImageRetrievalTrainer(TrainerBase):
         
         # build        
         self.model              = self.build_model(cfg)
-        self.optimizer          = self.build_optimizer(cfg, self.model)
         
         self.train_dl           = self.build_train_loader(args, cfg)       
         # self.val_dl             = self.build_val_loader(args, cfg) 
         self.val_dl = None      
         
-        self.loss               = self.build_loss(cfg)     
 
         # params 
         self.start_epoch  = 1
@@ -301,7 +299,9 @@ class ImageRetrievalTrainer(TrainerBase):
         self.model_ema = self.build_ema_model(args, cfg)
         
         # scheduler
-        self.scheduler = self.build_lr_scheduler(cfg, self.optimizer)
+        self.optimizer  = self.build_optimizer(cfg, self.model)
+        self.loss       = self.build_loss(cfg)     
+        self.scheduler  = self.build_lr_scheduler(cfg, self.optimizer)
 
         # evaluation
         if args.eval:

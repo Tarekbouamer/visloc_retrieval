@@ -102,6 +102,11 @@ def _init_model(args, cfg, model, sample_dl):
             
     # load   
     model.head.whiten.load_state_dict(layer.state_dict())
+
+    # not trainable  
+    for param in model.head.whiten.parameters():
+        param.requires_grad = False
+
      
     #        
     logger.info("pca done")
@@ -286,7 +291,7 @@ class HowNet(BaseNet):
         #    
         return self.weighted_spoc(feat_list, attns_list)
     
-    def extract_locals(self, img, scales=[1], num_features=1000, do_whitening=True):
+    def extract_locals(self, img, scales=[1], num_features=100, do_whitening=True):
         
         #        
         feat_list, attns_list = self.__forward__(img, scales=scales, do_whitening=do_whitening)

@@ -37,7 +37,6 @@ class L2Attention(nn.Module):
 
     def forward(self, x):
         return (x.pow(2.0).sum(1) + 1e-10).sqrt().squeeze(0)
-        # return (x.pow(2.0).sum(1) + 1e-10).sqrt().squeeze(0)
 
 # 
 class SmoothingAvgPooling(nn.Module):
@@ -52,6 +51,9 @@ class SmoothingAvgPooling(nn.Module):
 
     def forward(self, x):
         return smoothing_avg_pooling(x, kernel_size=self.kernel_size)
+    
+    def __repr__(self):
+          return f'{self.__class__.__name__}(kernel_size={self.kernel_size})'
 
 # 
 class ConvDimReduction(nn.Conv2d):

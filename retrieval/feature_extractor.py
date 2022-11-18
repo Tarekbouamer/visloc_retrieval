@@ -220,8 +220,7 @@ class FeatureExtractor():
         return out
     
     @torch.no_grad()     
-    def extract_locals(self, dataset, num_features=50
-                       , scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
+    def extract_locals(self, dataset, num_features=50, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
 
         # to eval
         self.eval()

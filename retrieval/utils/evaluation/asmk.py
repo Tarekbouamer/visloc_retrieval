@@ -2,6 +2,9 @@ import pickle
 import numpy as np
 import os
 from   tqdm import tqdm
+import yaml
+import json
+
 import torch
 from torch.utils.data import DataLoader
 
@@ -90,8 +93,8 @@ def train_codebook(cfg, train_images, feature_extractor, asmk, save_path=None):
 
     # run 
     asmk = asmk.train_codebook(train_vecs, cache_path=save_path)
-    
-    logger.debug(f"Codebook trained in {asmk.metadata['train_codebook']['train_time']:.1f}s")
+    train_time = asmk.metadata['train_codebook']['train_time']
+    logger.debug(f"codebook trained in {train_time:.2f}s")
     
     return asmk
   
@@ -110,8 +113,13 @@ def index_database(db_dl, feature_extractor, asmk, distractors_path=None):
     # build ivf
     asmk_db = asmk.build_ivf(db_vecs, db_ids, distractors_path=distractors_path)
     
-    logger.debug(f"indexed images in   {asmk_db.metadata['build_ivf']['index_time']:.2f}s")
-    logger.debug(f"ivf stats:          {asmk_db.metadata['build_ivf']['ivf_stats']}"      )
+    index_time  = asmk_db.metadata['build_ivf']['index_time']
+    ivf_stats   = asmk_db.metadata['build_ivf']['ivf_stats']
+    
+    logger.debug(f"database indexing in {index_time:.2f}s")
+    
+    for k, v in ivf_stats.items():
+        logger.debug(f"ivf stats:   {k}:    {v:.2f}")
     
     return asmk_db
   
@@ -125,15 +133,16 @@ def query_ivf(query_dl, feature_extractor, asmk_db, cache_path=None, imid_offset
 
     # stack
     q_vecs  = q_out["features"]
-    q_ids   = q_out["ids"]   
-                
-    # query vectors
-    q_ids += imid_offset
-    
-    # run
+    q_ids   = q_out["ids"] + imid_offset  
+                 
+                 
+    # run ivf
     metadata, query_ids, ranks, scores = asmk_db.query_ivf(q_vecs, q_ids)
-    logger.info(f"average query time (quant+aggr+search) is {metadata['query_avg_time']:.3f}s")
-      
+    logger.info(f"average query time (quant + aggr + search) is {metadata['query_avg_time']:.3f}s")
+    
+    # 
+    ranks = ranks.T 
+    
     if cache_path:
         with cache_path.open("wb") as handle:
             pickle.dump({"metadata": metadata, "query_ids": query_ids, "ranks": ranks, "scores": scores}, handle)
