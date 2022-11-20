@@ -286,14 +286,7 @@ class ImageRetrievalTrainer(TrainerBase):
         self.max_epochs   = cfg["scheduler"].getint("epochs")
         self.last_score = None 
         self.best_score = None 
-        
-        # resume
-        if args.resume:
-            self.resume_or_load()
-        
-        # init pca
-        elif cfg['body'].getboolean('pca'):
-            self.init_model()
+    
             
         # ema
         self.model_ema = self.build_ema_model(args, cfg)
@@ -303,6 +296,14 @@ class ImageRetrievalTrainer(TrainerBase):
         self.loss       = self.build_loss(cfg)     
         self.scheduler  = self.build_lr_scheduler(cfg, self.optimizer)
 
+        # resume
+        if args.resume:
+            self.resume_or_load()
+        
+        # init pca
+        elif cfg['body'].getboolean('pca'):
+            self.init_model()
+            
         # evaluation
         if args.eval:
             # self.evaluator  = DatasetEvaluator(args, cfg, self.model, self.model_ema, self.get_dataset(), self.writer)

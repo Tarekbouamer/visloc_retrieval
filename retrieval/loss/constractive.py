@@ -20,7 +20,7 @@ class ContrastiveLoss(nn.Module):
         nq = torch.sum(label.data==-1)
         
         # Number of images per tuple Nq+ Np+ Nn
-        S = x.size(1) // nq 
+        S = torch.div(x.size(1), nq, rounding_mode='floor')
         
         xp = x[:, ::S].permute(1,0).repeat(1,S-1).view((S-1)*nq,    dim).permute(1,0)
         idx = [i for i in range(len(label)) if label.data[i] != -1]

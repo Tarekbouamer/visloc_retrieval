@@ -23,7 +23,7 @@ import logging
 logger = logging.getLogger("retrieval")
 
 
-def _cfg(url='', drive='', out_dim=1024, **kwargs):
+def _cfg(url='', drive='', out_dim=128, **kwargs):
     return {
         'url': url,
         'drive':drive,
@@ -36,8 +36,9 @@ def _cfg(url='', drive='', out_dim=1024, **kwargs):
  
 default_cfgs = {
     #sfm resnet50
-    'resnet50_c4_how':        
-        _cfg(out_dim=128),
+    'resnet18_how':     _cfg(),
+    
+    'resnet50_c4_how':  _cfg(),
     }
 
 
@@ -83,7 +84,6 @@ def _init_model(args, cfg, model, sample_dl):
         
     # create layer
     layer   = deepcopy(model_head.whiten)  
-    print(layer)
     num_d   = layer.weight.shape[0]
     
     #
@@ -107,7 +107,6 @@ def _init_model(args, cfg, model, sample_dl):
     for param in model.head.whiten.parameters():
         param.requires_grad = False
 
-     
     #        
     logger.info("pca done")
 
@@ -119,8 +118,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
     
     # default cfg
     default_cfg = get_pretrained_cfg(variant)
-    
-    out_dim = default_cfg.pop('out_dim', None)
+    out_dim     = default_cfg.pop('out_dim', None)
     
     #  
     frozen      = default_cfg.pop("frozen", [])
@@ -172,7 +170,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
 # 
 class HowNet(BaseNet):
     
-    def how_select_local(self, ms_feats, ms_masks, *, scales, num_features):
+    def how_select_local(self, ms_feats, ms_masks, scales, num_features):
         """
             Convert multi-scale feature maps with attentions to a list of local descriptors
                 :param list ms_feats: A list of feature maps, each at a different scale
@@ -192,6 +190,7 @@ class HowNet(BaseNet):
         scls = torch.zeros(size, dtype=torch.float16, device=device)
 
         pointer = 0
+        
         for sc, vs, ms in zip(scales, ms_feats, ms_masks):
             
             #
@@ -214,8 +213,8 @@ class HowNet(BaseNet):
             scls[slc] = sc
 
         #
-        keep_n = min(num_features, atts.shape[0]) if num_features is not None else atts.shape[0]
-        idx = atts.sort(descending=True)[1][:keep_n]
+        keep_n  = min(num_features, atts.shape[0]) if num_features is not None else atts.shape[0]
+        idx     = atts.sort(descending=True)[1][:keep_n]
 
         #
         preds = {
@@ -254,18 +253,13 @@ class HowNet(BaseNet):
 
     def __forward__(self, img, scales=[1], do_whitening=True):
         
-        #
         feats_list, attns_list = [], []
-        
-        #
+
         for s in scales:
             #
             imgs = functional.interpolate(img, scale_factor=s, mode='bilinear', align_corners=False)
-            
-            #
+
             x = self.body(imgs)
-            
-            #
             if isinstance(x, List):
                 x = x[-1] 
             
@@ -278,25 +272,17 @@ class HowNet(BaseNet):
          
         # normalize to max weight
         mx          = max(x.max()   for x in attns_list)
-        attns_list   = [x/mx         for x in attns_list]
+        attns_list  = [x/mx         for x in attns_list]
         
         #
         return feats_list, attns_list
    
     def extract_global(self, img, scales=[1], do_whitening=True):
-        
-        # 
         feat_list, attns_list = self.__forward__(img, scales=scales, do_whitening=do_whitening)
-        
-        #    
         return self.weighted_spoc(feat_list, attns_list)
     
-    def extract_locals(self, img, scales=[1], num_features=100, do_whitening=True):
-        
-        #        
+    def extract_locals(self, img, scales=[1], num_features=1000, do_whitening=True):
         feat_list, attns_list = self.__forward__(img, scales=scales, do_whitening=do_whitening)
-        
-        #
         return self.how_select_local(feat_list, attns_list, scales=scales, num_features=num_features)
     
     def forward(self, img, do_whitening=True):
@@ -305,11 +291,11 @@ class HowNet(BaseNet):
     
 # SfM-120k
 @register_model
-def resnet18_c4_how(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
-    """Constructs a SfM-120k ResNet-18 with GeM model, only 4 features scales
-    """   
+def resnet18_how(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-18 with GeM model.
+    """
     model_args = dict(**kwargs)
-    return _create_model('resnet18_c4_how', 'resnet18', 'how', cfg, pretrained, feature_scales, **model_args)
+    return _create_model('resnet18_how', 'resnet18', 'how', cfg, pretrained, **model_args)
 
 
 @register_model

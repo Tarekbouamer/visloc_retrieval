@@ -26,9 +26,8 @@ PARAM_PATH="./retrieval/configuration/defaults/asmk.yml"
 
 def asmk_init(params_path=None): 
     
-    # load yml file
-    if params_path is None:
-        params_path = PARAM_PATH
+    # 
+    params_path = PARAM_PATH
     
     # params
     params = io_helpers.load_params(params_path)
@@ -36,7 +35,6 @@ def asmk_init(params_path=None):
     # init asmk_method
     asmk = asmk_method.ASMKMethod.initialize_untrained(params)
     
-    #
     return asmk, params
 
 
@@ -45,14 +43,6 @@ def train_codebook(cfg, train_images, feature_extractor, asmk, save_path=None):
     """
         train_codebook
     """
-
-    # if exsists, load
-    if save_path and os.path.exists(save_path):
-        return asmk.train_codebook(None, cache_path=save_path)
-    
-    # options 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-
     #
     trans_opt = {   "max_size":     cfg["test"].getint("max_size")}
      
@@ -70,29 +60,9 @@ def train_codebook(cfg, train_images, feature_extractor, asmk, save_path=None):
     train_out   = feature_extractor.extract_locals(train_dl, save_path=None)
     train_vecs  = train_out["features"]
 
-    
-    # with torch.no_grad():
-         
-    #     # extract vectors
-    #     train_vecs = []
-
-    #     for it, batch in tqdm(enumerate(train_dl), total=len(train_dl)):
-
-    #         # batch
-    #         batch = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
-    #         print(batch)
-    #         preds = feature_extractor.extract_locals(**batch, do_whitening=True)
-            
-    #         # append
-    #         train_vecs.append(preds['feats'].cpu().numpy())   
-            
-    #         del preds
-                
-    #     # stack
-    #     train_vecs  = np.vstack(train_vecs)
-
-    # run 
+    # run  training
     asmk = asmk.train_codebook(train_vecs, cache_path=save_path)
+    
     train_time = asmk.metadata['train_codebook']['train_time']
     logger.debug(f"codebook trained in {train_time:.2f}s")
     
@@ -101,7 +71,7 @@ def train_codebook(cfg, train_images, feature_extractor, asmk, save_path=None):
 
 def index_database(db_dl, feature_extractor, asmk, distractors_path=None):
     """ 
-            Asmk aggregate database and build ivf
+        Asmk aggregate database and build ivf
     """
     
     db_out = feature_extractor.extract_locals(db_dl)
@@ -114,12 +84,7 @@ def index_database(db_dl, feature_extractor, asmk, distractors_path=None):
     asmk_db = asmk.build_ivf(db_vecs, db_ids, distractors_path=distractors_path)
     
     index_time  = asmk_db.metadata['build_ivf']['index_time']
-    ivf_stats   = asmk_db.metadata['build_ivf']['ivf_stats']
-    
     logger.debug(f"database indexing in {index_time:.2f}s")
-    
-    for k, v in ivf_stats.items():
-        logger.debug(f"ivf stats:   {k}:    {v:.2f}")
     
     return asmk_db
   

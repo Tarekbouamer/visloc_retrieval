@@ -54,7 +54,11 @@ class FeatureExtractor():
         self.out_dim = self.cfg['global'].getint('out_dim')
            
         # set to device
-        self.model = self.__cuda__(self.model)
+        print(self.model.device)
+
+        # self.model = self.__cuda__(self.model)
+        # print(self.model.device)
+        # input()
         
         # set to eval mode
         self.eval()
@@ -86,7 +90,7 @@ class FeatureExtractor():
     def __cuda__(self, x):
         if torch.cuda.is_available():
             return x.cuda()
-        else:
+        else: # cpu
             return x
         
     def __prepare_input__(self, x, normalize=False):
@@ -125,11 +129,11 @@ class FeatureExtractor():
         else:
             return functional.interpolate(x, scale_factor=scale, mode=mode, align_corners=False)
     
-    def __dataloader__(self, dataset):
-        if isinstance(dataset, DataLoader):
-            return dataset
+    def __dataloader__(self, x):
+        if isinstance(x, DataLoader):
+            return x
         else:
-            return DataLoader(dataset, num_workers=1, shuffle=False, drop_last=False, pin_memory=True)
+            return DataLoader(x, num_workers=1, shuffle=False, drop_last=False, pin_memory=True)
     
     @torch.no_grad()     
     def extract_global(self, dataset, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
@@ -220,7 +224,7 @@ class FeatureExtractor():
         return out
     
     @torch.no_grad()     
-    def extract_locals(self, dataset, num_features=50, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
+    def extract_locals(self, dataset, num_features=1000, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
 
         # to eval
         self.eval()
@@ -233,7 +237,7 @@ class FeatureExtractor():
         dataloader = self.__dataloader__(dataset)
         
         # L N D
-        features = np.empty(shape=(len(dataloader), num_features, self.out_dim))
+        features = []
         imids = []
 
         # time
@@ -246,13 +250,12 @@ class FeatureExtractor():
             img = data['img']
             
             # prepare inputs
-            img  = self.__prepare_input__(img) 
+            img  = self.__prepare_input__(img, normalize=normalize) 
             img  = self.__cuda__(img) 
             
             # N D
-            desc = torch.zeros(num_features, self.out_dim)
-            desc = self.__cuda__(desc) 
-
+            desc = None
+            
             # counter 
             num_scales = 0. 
             
@@ -273,14 +276,16 @@ class FeatureExtractor():
                 desc_s  = preds['feats']
 
                 # add
-                desc += desc_s
+                if desc is None:
+                    desc = desc_s
+                else:
+                    desc += desc_s
             
             # normalize
             desc = (1.0 / num_scales) * desc
-            desc = functional.normalize(desc, dim=-1)
 
             # numpy
-            features[it]    = self.__to_numpy__(desc)
+            features.append(self.__to_numpy__(desc))
             imids.append(np.full((desc.shape[0],), it))
             
             # write
@@ -302,7 +307,7 @@ class FeatureExtractor():
         logger.info(f'extraction done {end_time:.4} seconds saved {save_path}')
         
         #
-        features    = features.reshape((-1, self.out_dim))
+        features    = np.vstack(features)
         ids         = np.hstack(imids)
         
         #

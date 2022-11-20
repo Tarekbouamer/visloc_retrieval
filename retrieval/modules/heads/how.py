@@ -5,7 +5,6 @@ import torch.nn as nn
 import torch.nn.functional as functional
 
 
-from retrieval.modules.pools import GeM
 from .registry import register_head, model_entrypoint, is_model
 
 from .base import Head
@@ -95,6 +94,10 @@ class HowHead(Head):
              
         # init 
         self.reset_parameters()
+        
+        # not trainable  
+        for param in self.whiten.parameters():
+            param.requires_grad = False
     
     def forward(self, x, do_whitening=True):
         """ 
