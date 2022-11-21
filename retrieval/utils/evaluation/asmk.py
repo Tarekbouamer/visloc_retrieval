@@ -39,7 +39,7 @@ def asmk_init(params_path=None):
 
 
 
-def train_codebook(cfg, train_images, feature_extractor, asmk, save_path=None):
+def train_codebook(cfg, train_images, feature_extractor, asmk, scales=[1.0], save_path=None):
     """
         train_codebook
     """
@@ -57,7 +57,7 @@ def train_codebook(cfg, train_images, feature_extractor, asmk, save_path=None):
     train_data  = ImagesFromList(root='', images=train_images, transform=ImagesTransform(**trans_opt) )                 
     train_dl    = DataLoader(train_data,  **dl_opt )
     
-    train_out   = feature_extractor.extract_locals(train_dl, save_path=None)
+    train_out   = feature_extractor.extract_locals(train_dl, scales=scales, save_path=None)
     train_vecs  = train_out["features"]
 
     # run  training
@@ -69,12 +69,12 @@ def train_codebook(cfg, train_images, feature_extractor, asmk, save_path=None):
     return asmk
   
 
-def index_database(db_dl, feature_extractor, asmk, distractors_path=None):
+def index_database(db_dl, feature_extractor, asmk, scales=[1.0], distractors_path=None):
     """ 
         Asmk aggregate database and build ivf
     """
     
-    db_out = feature_extractor.extract_locals(db_dl)
+    db_out = feature_extractor.extract_locals(db_dl, scales=scales)
     
     # stack
     db_vecs  = db_out["features"]
@@ -89,12 +89,12 @@ def index_database(db_dl, feature_extractor, asmk, distractors_path=None):
     return asmk_db
   
  
-def query_ivf(query_dl, feature_extractor, asmk_db, cache_path=None, imid_offset=0):
+def query_ivf(query_dl, feature_extractor, asmk_db, scales=[1.0], cache_path=None, imid_offset=0):
     """ 
         asmk aggregate query and build ivf
     """
 
-    q_out = feature_extractor.extract_locals(query_dl)
+    q_out = feature_extractor.extract_locals(query_dl, scales=scales)
 
     # stack
     q_vecs  = q_out["features"]

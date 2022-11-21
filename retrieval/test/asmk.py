@@ -11,7 +11,7 @@ import numpy as np
 import logging
 logger = logging.getLogger("retrieval")
 
-def test_asmk(dataset, query_dl, db_dl, feature_extractor, descriptor_size, ground_truth, asmk):
+def test_asmk(dataset, query_dl, db_dl, feature_extractor, scales, ground_truth, asmk):
              
     # 
     if dataset in ["roxford5k", "rparis6k"]:
@@ -24,11 +24,11 @@ def test_asmk(dataset, query_dl, db_dl, feature_extractor, descriptor_size, grou
             
     # database indexing 
     logger.info('{%s}: extracting descriptors for database images', dataset)
-    asmk_db = eval_asmk.index_database(db_dl, feature_extractor, asmk)
+    asmk_db = eval_asmk.index_database(db_dl, feature_extractor, asmk, scales=scales)
             
     # query indexing
     logger.info('{%s}: extracting descriptors for query images', dataset)
-    ranks = eval_asmk.query_ivf(query_dl, feature_extractor, asmk_db)
+    ranks = eval_asmk.query_ivf(query_dl, feature_extractor, asmk_db, scales=scales)
     
     # 
     assert ranks.shape[0] == len(db_dl) and ranks.shape[1] == len(query_dl)

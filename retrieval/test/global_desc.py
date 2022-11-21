@@ -67,7 +67,7 @@ def extract_ms(img, model, out_dim, scales=[1], min_size=100, max_size=2000):
     return desc
 
 
-def test_global_descriptor(dataset, query_dl, db_dl, feature_extractor, descriptor_size, ground_truth, scales=[1]):
+def test_global_descriptor(dataset, query_dl, db_dl, feature_extractor, descriptor_size, ground_truth, scales=[1.0]):
     
     # 
     if dataset in ["roxford5k", "rparis6k"]:

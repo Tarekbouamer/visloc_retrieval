@@ -255,34 +255,10 @@ class FeatureExtractor():
             
             # N D
             desc = None
-            
-            # counter 
-            num_scales = 0. 
-            
-            # scale -->
-            for scale in scales:
-                
-                # resize
-                img_s = self.__resize__(img, scale=scale)
-                
-                # assert size to boundaries
-                if self.__check_size__(img_s, min_size, max_size):
-                    continue
-                
-                num_scales += 1.0
-                 
-                # extract locals 
-                preds   = self.model.extract_locals(img_s, num_features=num_features)
-                desc_s  = preds['feats']
 
-                # add
-                if desc is None:
-                    desc = desc_s
-                else:
-                    desc += desc_s
-            
-            # normalize
-            desc = (1.0 / num_scales) * desc
+            # extract locals 
+            preds   = self.model.extract_locals(img, scales=scales, num_features=num_features)
+            desc    = preds['feats']
 
             # numpy
             features.append(self.__to_numpy__(desc))
@@ -313,7 +289,7 @@ class FeatureExtractor():
         #
         out = {
             'features':     features,
-            'ids':  ids,
+            'ids':          ids,
             'save_path':    save_path
             }
         

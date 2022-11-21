@@ -136,14 +136,11 @@ class ASMKEvaluator(DatasetEvaluator):
          
         # number of sampled image 
         self.num_samples = cfg["test"].getint("num_samples")
-                
-        # train and save the codebook for each test set
-        self.build_codebook()
-        
+                    
         #
         logger.info(f"init evaluator on ({self.test_mode}) mode")
         
-    def build_codebook(self, ):
+    def build_codebook(self, scales=[1.0]):
         
         # eval mode
         self.feature_extractor.eval()
@@ -160,7 +157,7 @@ class ASMKEvaluator(DatasetEvaluator):
         logger.info(f'train codebook {len(train_images)} :   {save_path}')
 
         # train_codebook
-        self.asmk = eval_asmk.train_codebook(self.cfg, train_images, self.feature_extractor, asmk)
+        self.asmk = eval_asmk.train_codebook(self.cfg, train_images, self.feature_extractor, asmk, scales=scales)
         
         return asmk
     
@@ -190,6 +187,9 @@ class ASMKEvaluator(DatasetEvaluator):
         
         data_path = self.args.data 
         
+        #train and save the codebook for each test set
+        self.build_codebook(scales)
+        
         # result dictionary
         results = OrderedDict()
 
@@ -202,7 +202,7 @@ class ASMKEvaluator(DatasetEvaluator):
             # test
             metrics = test_asmk(dataset, query_dl, database_dl, 
                                 self.feature_extractor, 
-                                self.descriptor_size, ground_truth, self.asmk)
+                                scales, ground_truth, self.asmk)
                 
             # write
             self.write_metrics(metrics, dataset, epoch, scale=100)
