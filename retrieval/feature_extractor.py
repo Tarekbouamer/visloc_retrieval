@@ -176,7 +176,7 @@ class FeatureExtractor():
                 
                 # resize
                 img_s = self.__resize__(img, scale=scale)
-                
+
                 # assert size within boundaries
                 if self.__check_size__(img_s, min_size, max_size):
                     continue

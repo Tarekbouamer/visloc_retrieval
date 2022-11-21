@@ -67,7 +67,7 @@ class GlobalEvaluator(DatasetEvaluator):
 
     """
 
-    def __init__(self, args, cfg, model, model_ema=None, writer=None):
+    def __init__(self, args, cfg, model, model_ema=None, writer=None, **kwargs):
         """
         Args:
             evaluators (list): the evaluators to combine.

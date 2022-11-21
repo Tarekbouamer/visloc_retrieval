@@ -76,10 +76,10 @@ def test_global_descriptor(dataset, query_dl, db_dl, feature_extractor, descript
         revisited = False
     
     # extract query
-    q_out   = feature_extractor.extract_global(query_dl, save_path=None)
+    q_out   = feature_extractor.extract_global(query_dl, save_path=None, scales=scales)
 
     # extract database
-    db_out  = feature_extractor.extract_global(db_dl, save_path=None)
+    db_out  = feature_extractor.extract_global(db_dl, save_path=None, scales=scales)
     
     #
     q_vecs  = q_out['features']
