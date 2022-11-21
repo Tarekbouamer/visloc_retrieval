@@ -120,10 +120,10 @@ python3 ./scripts/test.py \
 
 ## Results
 
-### 
+### :blue_square: Global Benchmark
 
-<details><summary> Global Benchmark</summary>
-  
+<details><summary> Single-Scale </summary>
+
   | Models                  | |     | ROxford5k |     | |     | RParis6k |      |
   |-------------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
   |                         | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
@@ -132,7 +132,20 @@ python3 ./scripts/test.py \
   | resnet101_gem_2048      | | 82.80 | 66.26 | 40.39 | | 91.29 | 75.23 | 53.21 |
   | resnet101_c4_gem_1024   | | 82.12 | 62.81 | 36.56 | | 90.44 | 74.64 | 52.67 |
   | gl18_resnet101_gem_2048 | | 81.79 | 65.58 | 40.72 | | 91.38 | 76.71 | 56.63 |
+    
+</details>
 
+<details><summary> Multi-Scale </summary>
+
+  | Models                  | |     | ROxford5k |     | |     | RParis6k |      |
+  |-------------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
+  |                         | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
+  | resnet50_gem_2048       | | 84.96 | 67.19 | 40.45 | | 92.67 | 78.39 | 57.84 |
+  | resnet50_c4_gem_1024    | | 80.99 | 61.90 | 34.90 | | 90.20 | 72.58 | 49.98 |
+  | resnet101_gem_2048      | | 83.65 | 66.88 | 40.60 | | 92.11 | 76.63 | 55.11 |
+  | resnet101_c4_gem_1024   | | 83.94 | 64.41 | 38.09 | | 91.66 | 76.70 | 55.28 |
+  | gl18_resnet101_gem_2048 | | 84.76 | 68.05 | 43.42 | | 93.25 | 79.75 | 61.14 |
+    
 </details>
 
 #### :blue_square: Single-Scale Benchmark
