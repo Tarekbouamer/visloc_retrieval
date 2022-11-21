@@ -212,9 +212,6 @@ python3 ./scripts/test.py \
 
 ## Licenses
 
-<p align="right"><a href="#content">:arrow_up:</a></p>
-
-
 ### Code
 The code here is licensed Apache 2.0. We have linked the sources and references for different third parties under permissive licenses such as MIT BSD, . If you think wehave missed anything please create an issue.
 
@@ -232,6 +229,8 @@ The code here is licensed Apache 2.0. We have linked the sources and references 
  3) Google Landmarks Dataset v1, The images listed in this dataset are publicly available on the web, and may have different licenses(https://www.kaggle.com/datasets/google/google-landmarks-dataset).
 
 In either case, refere to timm library for pretrained models licence and/or datasets providers with any question. 
+
+<p align="right"><a href="#content">:arrow_up:</a></p>
 
 ## Citing
 
