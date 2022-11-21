@@ -120,7 +120,7 @@ python3 ./scripts/test.py \
 
 ## Results
 
-### :blue_square: Single-Scale Benchmark
+#### :blue_square: Single-Scale Benchmark
 
   | Models                  | |     | ROxford5k |     | |     | RParis6k |      |
   |-------------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
@@ -131,7 +131,8 @@ python3 ./scripts/test.py \
   | resnet101_c4_gem_1024   | | 82.12 | 62.81 | 36.56 | | 90.44 | 74.64 | 52.67 |
   | gl18_resnet101_gem_2048 | | 81.79 | 65.58 | 40.72 | | 91.38 | 76.71 | 56.63 |
 
-### :orange_square: Multi-Scale Benchmark
+
+#### :orange_square: Multi-Scale Benchmark
 
   | Models                  | |     | ROxford5k |     | |     | RParis6k |      |
   |-------------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|

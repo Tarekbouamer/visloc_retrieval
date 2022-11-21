@@ -33,14 +33,13 @@ def _cfg(url='', drive='', out_dim=128, **kwargs):
         **kwargs
     }
  
- 
+         
 default_cfgs = {
     #sfm resnet50
-    'resnet18_how':     _cfg(),
+    'resnet18_how':     _cfg(drive='https://drive.google.com/uc?id=1w7sb1yP3_Y-I64aWg57NR10fDhiAOtg4'),
     
-    'resnet50_c4_how':  _cfg(),
+    'resnet50_c4_how':  _cfg(drive='https://drive.google.com/uc?id=16elpsWQGOLq_Xmd8od6k5DpCy3ou0a9S'),
     }
-
 
 @torch.no_grad()
 def _init_model(args, cfg, model, sample_dl):
