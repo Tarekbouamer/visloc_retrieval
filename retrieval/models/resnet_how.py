@@ -35,11 +35,12 @@ def _cfg(url='', drive='', out_dim=128, **kwargs):
  
          
 default_cfgs = {
-    #sfm resnet50
-    'resnet18_how':     _cfg(drive='https://drive.google.com/uc?id=1w7sb1yP3_Y-I64aWg57NR10fDhiAOtg4'),
+    #sfm resnet
+    'sfm_resnet18_how_128':     _cfg(drive='https://drive.google.com/uc?id=1w7sb1yP3_Y-I64aWg57NR10fDhiAOtg4'),
     
-    'resnet50_c4_how':  _cfg(drive='https://drive.google.com/uc?id=16elpsWQGOLq_Xmd8od6k5DpCy3ou0a9S'),
+    'sfm_resnet50_c4_how_128':  _cfg(drive='https://drive.google.com/uc?id=16elpsWQGOLq_Xmd8od6k5DpCy3ou0a9S'),
     }
+
 
 @torch.no_grad()
 def _init_model(args, cfg, model, sample_dl):
@@ -290,7 +291,7 @@ class HowNet(BaseNet):
     
 # SfM-120k
 @register_model
-def resnet18_how(cfg=None, pretrained=True, **kwargs):
+def sfm_resnet18_how_128(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-18 with GeM model.
     """
     model_args = dict(**kwargs)
@@ -298,7 +299,7 @@ def resnet18_how(cfg=None, pretrained=True, **kwargs):
 
 
 @register_model
-def resnet50_c4_how(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+def sfm_resnet50_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
     """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales
     """   
     model_args = dict(**kwargs)

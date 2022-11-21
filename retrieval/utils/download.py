@@ -253,6 +253,7 @@ def download_revisited1m(data_dir):
             logger.info(f'downloading dataset {dataset} image list file')
             urllib.request.urlretrieve(gnd_src_file, gnd_dst_file)                
 
+
 if __name__ == '__main__':
   
     
