@@ -148,7 +148,32 @@ python3 ./scripts/test.py \
     
 </details>
 
-#### :blue_square: Single-Scale Benchmark
+
+## Results
+
+### :blue_square: Local Feature Aggregation Benchmark
+
+<details><summary> Single-Scale </summary>
+
+  | Models                | | Algo  | |     | ROxford5k |     | |     | RParis6k |      |
+  |-----------------------|-|:-----:|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
+  |                       | |       | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
+  | resnet50_gem_2048     | |       | | 83.83 | 66.01 | 38.96 | | 91.83 | 77.16 | 55.82 |
+
+    
+</details>
+
+<details><summary> Multi-Scale </summary>
+
+  | Models                | | Algo  | |     | ROxford5k |     | |     | RParis6k |      |
+  |-----------------------|-|:-----:|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
+  |                       | |       | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
+  | resnet50_gem_2048     | |       | | 83.83 | 66.01 | 38.96 | | 91.83 | 77.16 | 55.82 |
+
+    
+</details>
+
+<!-- #### :blue_square: Single-Scale Benchmark
 
   | Models                  | |     | ROxford5k |     | |     | RParis6k |      |
   |-------------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
@@ -169,7 +194,7 @@ python3 ./scripts/test.py \
   | resnet50_c4_gem_1024    | | 80.99 | 61.90 | 34.90 | | 90.20 | 72.58 | 49.98 |
   | resnet101_gem_2048      | | 83.65 | 66.88 | 40.60 | | 92.11 | 76.63 | 55.11 |
   | resnet101_c4_gem_1024   | | 83.94 | 64.41 | 38.09 | | 91.66 | 76.70 | 55.28 |
-  | gl18_resnet101_gem_2048 | | 84.76 | 68.05 | 43.42 | | 93.25 | 79.75 | 61.14 |
+  | gl18_resnet101_gem_2048 | | 84.76 | 68.05 | 43.42 | | 93.25 | 79.75 | 61.14 | -->
 
   :information_source: Moreover, we use 3 image scales `[ 0.7071, 1.0, 1.4142 ]` to extract global discriptors to benchmark our trained model, with a minimum size `100` and a maximum area `2000*2000`.
 
