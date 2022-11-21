@@ -153,7 +153,7 @@ python3 ./scripts/test.py \
 </details>
 
 
-#### :blue_square: Local Feature Aggregation Benchmark
+#### :green_square: Local Feature Aggregation Benchmark
 
 <details><summary> Single-Scale </summary>
 
