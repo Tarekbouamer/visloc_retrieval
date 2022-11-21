@@ -120,7 +120,7 @@ python3 ./scripts/test.py \
 
 ## Results
 
-### :blue_square: Global Benchmark
+#### :blue_square: Global Benchmark
 
 <details><summary> Single-Scale </summary>
 
@@ -153,9 +153,10 @@ python3 ./scripts/test.py \
 </details>
 
 
-### :blue_square: Local Feature Aggregation Benchmark
+#### :blue_square: Local Feature Aggregation Benchmark
 
 <details><summary> Single-Scale </summary>
+
 
   | Models                    | | Algo      | |  N   | |     | ROxford5k |     | |     | RParis6k |      |
   |---------------------------|-|:---------:|-|:----:|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
