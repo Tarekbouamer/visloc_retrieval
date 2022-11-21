@@ -123,9 +123,11 @@ python3 ./scripts/test.py \
 ### 
 
 Markup : <details>
-           <summary> Global Benchmark</summary>
+           <summary> Global Benchmark
+           </summary>
            <p>
            #### :blue_square: Single-Scale Benchmark
+           </p>
 
             | Models                  | |     | ROxford5k |     | |     | RParis6k |      |
             |-------------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
@@ -136,7 +138,6 @@ Markup : <details>
             | resnet101_c4_gem_1024   | | 82.12 | 62.81 | 36.56 | | 90.44 | 74.64 | 52.67 |
             | gl18_resnet101_gem_2048 | | 81.79 | 65.58 | 40.72 | | 91.38 | 76.71 | 56.63 |
            
-           </p>
          </details>
 
 #### :blue_square: Single-Scale Benchmark
