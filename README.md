@@ -114,7 +114,7 @@ python3 ./scripts/test.py \
 
 - [ ] Add Changelog
 - [ ] Add shield IO
-- [ ] Add results on roxford5k rparis6k.
+- [x] Add results on roxford5k rparis6k.
 
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
