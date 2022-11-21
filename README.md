@@ -120,6 +120,25 @@ python3 ./scripts/test.py \
 
 ## Results
 
+### 
+
+Markup : <details>
+           <summary> Global Benchmark</summary>
+           <p>
+           #### :blue_square: Single-Scale Benchmark
+
+            | Models                  | |     | ROxford5k |     | |     | RParis6k |      |
+            |-------------------------|-|:-----:|:-----:|:-----:|-|:-----:|:-----:|:-----:|
+            |                         | | Easy  | Medium| Hard  | | Easy  | Medium| Hard  |
+            | resnet50_gem_2048       | | 83.83 | 66.01 | 38.96 | | 91.83 | 77.16 | 55.82 |
+            | resnet50_c4_gem_1024    | | 79.22 | 60.53 | 34.30 | | 89.24 | 71.77 | 49.14 |
+            | resnet101_gem_2048      | | 82.80 | 66.26 | 40.39 | | 91.29 | 75.23 | 53.21 |
+            | resnet101_c4_gem_1024   | | 82.12 | 62.81 | 36.56 | | 90.44 | 74.64 | 52.67 |
+            | gl18_resnet101_gem_2048 | | 81.79 | 65.58 | 40.72 | | 91.38 | 76.71 | 56.63 |
+           
+           </p>
+         </details>
+
 #### :blue_square: Single-Scale Benchmark
 
   | Models                  | |     | ROxford5k |     | |     | RParis6k |      |
