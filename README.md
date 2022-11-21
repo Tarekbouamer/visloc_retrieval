@@ -216,4 +216,24 @@ python3 ./scripts/test.py \
 
 ## Citing
 
+### Code
+
+The code here is licensed Apache 2.0. We have linked the sources and references for different third parties under permissive licenses such as MIT,BSD, . If you think wehave missed anything please create an issue.
+
+### Timm Weights
+ So far Timm library weights are pretrained: 
+ (1) ImageNet released for non-commercial research purposes only (https://image-net.org/download).
+ (2) Facebook models WSL, SSL, SWSL ResNe(Xt), ... and the Google Noisy Student EfficientNet have an explicit non-commercial license (CC-BY-NC 4.0, https://github.com/facebookresearch/semi-supervised-ImageNet1K-models, https://github.com/facebookresearch/WSL-Images).
+ (3) Google models do not appear to have any restriction beyond the Apache 2.0 license (and ImageNet concerns). 
+ 
+ Please, refere to Timm library for pretrained models licence. 
+
+ ### Visloc_retrieval Weights
+ Different datasets are used to train our models:
+ (1) SFM Dataset (120k and 30k), Licence not mentioned in (http://cmp.felk.cvut.cz/cnnimageretrieval/).
+ (2) Google Landmarks Dataset v2 images have CC-BY licenses without the NonDerivs (ND) restriction. To verify the license for a particular image, please refer to `train_attribution.csv` file (https://github.com/cvdfoundation/google-landmark#train-image-licenses).
+ (3) Google Landmarks Dataset v1, The images listed in this dataset are publicly available on the web, and may have different licenses(https://www.kaggle.com/datasets/google/google-landmarks-dataset).
+
+In either case, refere to timm library for pretrained models licence and/or datasets providers with any question. 
+
 <p align="right"><a href="#content">:arrow_up:</a></p>
