@@ -191,7 +191,35 @@ class GemNet(BaseNet):
     """ ImageRetrievalNet
         General image retrieval model, consists of backbone and head
     """
+    
+    def parameter_groups(self, optim_cfg):
+        """
+            Return torch parameter groups
+        """
         
+        # base 
+        LR              = optim_cfg.getfloat("lr")
+        WEIGHT_DECAY    = optim_cfg.getfloat("weight_decay")
+
+        # base layer
+        layers = [self.body, self.head.whiten]
+        
+        # base params 
+        params = [{
+                    'params':          [p for p in x.parameters() if p.requires_grad],
+                    'lr':              LR,
+                    'weight_decay':    WEIGHT_DECAY }   for x in layers]
+        
+        # 10x faster, no regularization
+        if self.head.pool:
+            params.append({
+                            'params':       [p for p in self.head.pool.parameters() if p.requires_grad], 
+                            'lr':           10*LR,
+                            'weight_decay': 0.}
+                          )
+            
+        return params
+            
     def forward(self, img=None, do_whitening=True):
           
         # body

@@ -17,80 +17,19 @@ logger = logging.getLogger("retrieval")
 
 def build_optimizer(cfg, model):
     
-    body_config = cfg["body"]
     optim_cfg   = cfg["optimizer"]
-
-    # Base learning rate and weight decay
-    LR              = optim_cfg.getfloat("lr")
-    WEIGHT_DECAY    = optim_cfg.getfloat("weight_decay")
-
-    # body 
-    body_norm_params, body_other_params = [], []
     
-    for _, m_layer in model.body.named_modules():        
-    
-        if any(isinstance(m_layer, layer) for layer in NORM_LAYERS):
-            body_norm_params  += [p for p in m_layer.parameters() if p.requires_grad]
-                
-        elif any(isinstance(m_layer, layer) for layer in OTHER_LAYERS + RET_LAYERS ):
-            body_other_params += [p for p in m_layer.parameters() if p.requires_grad]
+    # params groups
+    params = model.parameter_groups(optim_cfg)
 
-    # head
-    attn_params, pool_params, whiten_params = [], [], []
+   
+    all_params = []
+    for x in params:
+        all_params.extend(x['params'])
         
-    for k, v in model.head.named_children():  
-        
-        if k.find("attention") != -1:
-            attn_params += [p for p in v.parameters() if p.requires_grad]
-        elif k.find("pool") != -1:
-            pool_params += [p for p in v.parameters() if p.requires_grad]
-        elif k.find("whiten")!= -1:
-            whiten_params += [p for p in v.parameters() if p.requires_grad] 
 
-    print(len(attn_params))
-    print(len(pool_params))
-    print(len(whiten_params))
-
-    assert len(body_norm_params) + len(body_other_params) + len(attn_params) + len(pool_params) + len(whiten_params)== \
-        len([p for p in model.parameters() if p.requires_grad]), \
-          "not all parameters that require grad are accounted for in the optimizer"
-    
-    # hyper-parameters
-    params = [
-        # norm 
-        {
-            "params":       body_norm_params,
-            "lr":           LR              if not body_config.getboolean("bn_frozen")  else 0.,
-            "weight_decay": WEIGHT_DECAY    if optim_cfg.getboolean("weight_decay_norm") else 0     
-        },
-        # other 
-        {
-            "params":       body_other_params,
-            "lr":           LR        ,
-            "weight_decay": WEIGHT_DECAY    
-        },
-        # attn
-        {
-            "params":       attn_params,
-            "lr":           LR,
-            "weight_decay": WEIGHT_DECAY
-        },
-        # pool
-        {
-            "params":       pool_params,
-            "lr":           LR ,
-            "weight_decay": WEIGHT_DECAY  
-
-            # "lr":           LR * 10,
-            # "weight_decay": 0.  
-        },
-        # whiten
-        {
-            "params":       whiten_params,
-            "lr":           0,
-            "weight_decay": 0
-        }
-        ]
+    assert len(all_params) == len([p for p in model.parameters() if p.requires_grad]), \
+          "not all parameters that require grad are accounted for in the optimizer" 
     
     # optimizer
     if optim_cfg.get("type") == 'SGD':
@@ -101,7 +40,8 @@ def build_optimizer(cfg, model):
         optimizer   = optim.AdamW(params)
     else:
         raise KeyError("unrecognized optimizer {}".format(optim_cfg["type"]))
-    
+
+
     return optimizer
 
 
@@ -147,7 +87,7 @@ class _LRScheduler(object):
         self.last_epoch = epoch
         for param_group, lr in zip(self.optimizer.param_groups, self.get_lr()):
             param_group['lr'] = lr
-            
+     
                        
 class BurnInLR(_LRScheduler):
     def __init__(self, base, steps, start):
@@ -206,5 +146,5 @@ def build_lr_scheduler(cfg, optimizer):
         scheduler = BurnInLR(scheduler,
                              scheduler_cfg.getint("burn_in_steps"),
                              scheduler_cfg.getfloat("burn_in_start"))
-
+    print(scheduler.optimizer)
     return scheduler

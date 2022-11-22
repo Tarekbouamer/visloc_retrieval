@@ -175,6 +175,33 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
 # HowNet
 class HowNet(BaseNet):
     
+    def parameter_groups(self, optim_cfg):
+        """
+            Return torch parameter groups
+        """
+        
+        # base 
+        LR              = optim_cfg.getfloat("lr")
+        WEIGHT_DECAY    = optim_cfg.getfloat("weight_decay")
+
+        # base layer
+        layers = [ self.body, self.head.attention, self.head.pool]
+        
+        # base params 
+        params = [{
+                    'params':          [p for p in x.parameters() if p.requires_grad],
+                    'lr':              LR,
+                    'weight_decay':    WEIGHT_DECAY }   for x in layers]
+        
+        # freeze whiten
+        if self.head.whiten:
+            params.append({
+                            'params':       [p for p in self.head.whiten.parameters() if p.requires_grad], 
+                            'lr':           0.0
+                            })
+            
+        return params
+    
     def how_select_local(self, ms_feats, ms_masks, scales, num_features):
         """
             Convert multi-scale feature maps with attentions to a list of local descriptors
@@ -297,8 +324,6 @@ class HowNet(BaseNet):
 # models 
 @register_model
 def sfm_resnet18_how_128(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k ResNet-18 with How model.
-def sfm_resnet18_how_128(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-18 with GeM model.
     """
     model_args = dict(**kwargs)
@@ -323,8 +348,6 @@ def sfm_resnet50_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3],
 
 @register_model
 def sfm_resnet101_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
-    """Constructs a SfM-120k ResNet-101 with How model, only 4 features scales
-def sfm_resnet50_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
     """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales
     """   
     model_args = dict(**kwargs)
