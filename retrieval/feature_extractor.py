@@ -49,12 +49,18 @@ class FeatureExtractor():
             self.out_dim    = self.cfg.pop('out_dim', 0)
         #
         else:
-            self.model  = None
-            self.cfg    = None
+            self.model   = None
+            self.cfg     = None
+            self.out_dim = 0
         
-        # device        
+        # 
+        
+           
+        # set to device
+        print(self.model.device)
         self.model = self.__cuda__(self.model)
-          
+        print(self.model.device)
+
         # set to eval mode
         self.eval()
 
@@ -128,7 +134,7 @@ class FeatureExtractor():
         if isinstance(x, DataLoader):
             return x
         else:
-            return DataLoader(x, num_workers=10, shuffle=False, drop_last=False, pin_memory=True)
+            return DataLoader(x, num_workers=1, shuffle=False, drop_last=False, pin_memory=True)
     
     @torch.no_grad()     
     def extract_global(self, dataset, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000, **kwargs):
@@ -190,7 +196,7 @@ class FeatureExtractor():
             desc = functional.normalize(desc, dim=-1)
             
             # numpy
-            desc         = self.__to_numpy__(desc) 
+            desc         = self.__to_numpy__(desc)
             features[it] = desc
             
             # write
