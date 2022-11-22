@@ -1,10 +1,5 @@
-[11/22 12:05 retrieval]: loading images from /media/loc/Elements/revisitop/data/datasets/revisitop1m/jpg
-[11/22 12:08 retrieval]: #images 1064732 img_size 1024
-[11/22 12:08 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5)
-[11/22 12:08 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/sfm_resnet50_gem_2048.pth'
-[11/22 12:08 retrieval]: body channels:[256, 512, 1024, 2048]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']
-[11/21 22:09 retrieval]: loading images from /media/dl/Elements/revisitop/data/datasets/revisitop1m/jpg
-[11/21 22:09 retrieval]: #images 1064732 img_size 1024
-[11/21 22:09 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5)
-[11/21 22:09 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/resnet50_gem_2048.pth'
-[11/21 22:09 retrieval]: body channels:[256, 512, 1024, 2048]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']
+[11/23 01:56 retrieval]: loading images from /media/dl/Elements/revisitop/data/datasets/revisitop1m/jpg
+[11/23 01:56 retrieval]: #images 1064732 img_size 1024
+[11/23 01:56 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5)
+[11/23 01:56 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/sfm_resnet50_gem_2048.pth'
+[11/23 01:56 retrieval]: body channels:[256, 512, 1024, 2048]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']
