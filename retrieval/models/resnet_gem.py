@@ -26,7 +26,7 @@ import logging
 logger = logging.getLogger("retrieval")
 
 
-
+# default cfg          
 def _cfg(url='', drive='', out_dim=1024, **kwargs):
     return {
         'url': url,
@@ -40,17 +40,17 @@ def _cfg(url='', drive='', out_dim=1024, **kwargs):
  
 default_cfgs = {
     #sfm resnet50
-    'resnet50_gem_2048':        
+    'sfm_resnet50_gem_2048':        
         _cfg(drive='https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5', out_dim=2048),
     
-    'resnet50_c4_gem_1024':     
+    'sfm_resnet50_c4_gem_1024':     
         _cfg(drive='https://drive.google.com/uc?id=1ber3PbTF4ZWAmnBuJu5AEp2myVJFNM7F'),
     
     # sfm resnet101
-    'resnet101_gem_2048':       
+    'sfm_resnet101_gem_2048':       
         _cfg(drive='https://drive.google.com/uc?id=10CqmzZE_XwRCyoiYlZh03tfYk1jzeziz', out_dim=2048),
    
-    'resnet101_c4_gem_1024':       
+    'sfm_resnet101_c4_gem_1024':       
         _cfg(drive='https://drive.google.com/uc?id=1uYYuLqqE9TNgtmQtY7Mg2YEIF9VkqAYz'),
        
         
@@ -60,6 +60,7 @@ default_cfgs = {
     }
 
 
+# init model function
 @torch.no_grad()
 def _init_model(args, cfg, model, sample_dl):
     
@@ -128,7 +129,8 @@ def _init_model(args, cfg, model, sample_dl):
     
     return 
     
- 
+    
+# create model function   
 def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feature_scales=[1, 2, 3, 4], **kwargs):
     
     # assert
@@ -184,7 +186,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
  
     return model
 
-##
+# GemNet 
 class GemNet(BaseNet):
     """ ImageRetrievalNet
         General image retrieval model, consists of backbone and head
@@ -210,56 +212,54 @@ class GemNet(BaseNet):
     def extract_global(self, img, do_whitening=True):
         return self.forward(img, do_whitening=do_whitening)
         
-        
-    
     
 # SfM-120k
 @register_model
-def resnet10t_gem(cfg=None, pretrained=True, **kwargs):
+def sfm_resnet10t_gem(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-10-T with GeM model.
     """    
     model_args = dict(**kwargs)
-    return _create_model('resnet10t_gem', 'resnet10t', 'gem_linear' , cfg, pretrained, **model_args)
+    return _create_model('sfm_resnet10t_gem', 'resnet10t', 'gem_linear' , cfg, pretrained, **model_args)
 
 
 @register_model
-def resnet18_gem_512(cfg=None, pretrained=True, **kwargs):
+def sfm_resnet18_gem_512(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-18 with GeM model.
     """
     model_args = dict(**kwargs)
-    return _create_model('resnet18_gem_512', 'resnet18', 'gem_linear', cfg, pretrained, **model_args)
+    return _create_model('sfm_resnet18_gem_512', 'resnet18', 'gem_linear', cfg, pretrained, **model_args)
 
 
 @register_model
-def resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
+def sfm_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-50 with GeM model.
     """  
     model_args = dict(**kwargs)
-    return _create_model('resnet50_gem_2048', 'resnet50', 'gem_linear', cfg, pretrained, **model_args)
+    return _create_model('sfm_resnet50_gem_2048', 'resnet50', 'gem_linear', cfg, pretrained, **model_args)
 
 
 @register_model
-def resnet50_c4_gem_1024(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+def sfm_resnet50_c4_gem_1024(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
     """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales
     """   
     model_args = dict(**kwargs)
-    return _create_model('resnet50_c4_gem_1024', 'resnet50', 'gem_linear', cfg, pretrained, feature_scales, **model_args)
+    return _create_model('sfm_resnet50_c4_gem_1024', 'resnet50', 'gem_linear', cfg, pretrained, feature_scales, **model_args)
 
 
 @register_model
-def resnet101_gem_2048(cfg=None, pretrained=True, **kwargs):
+def sfm_resnet101_gem_2048(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-101 with GeM model.
     """    
     model_args = dict(**kwargs)
-    return _create_model('resnet101_gem_2048', 'resnet101', 'gem_linear', cfg, pretrained, **model_args)
+    return _create_model('sfm_resnet101_gem_2048', 'resnet101', 'gem_linear', cfg, pretrained, **model_args)
 
 
 @register_model
-def resnet101_c4_gem_1024(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+def sfm_resnet101_c4_gem_1024(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
     """Constructs a SfM-120k ResNet-101 with GeM model, only 4 features scales
     """    
     model_args = dict(**kwargs)
-    return _create_model('resnet101_c4_gem_1024', 'resnet101', 'gem_linear', cfg, pretrained, feature_scales, **model_args)
+    return _create_model('sfm_resnet101_c4_gem_1024', 'resnet101', 'gem_linear', cfg, pretrained, feature_scales, **model_args)
 
 # TODO: Google Landmark 18
 @register_model

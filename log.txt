@@ -1,5 +1,5 @@
-[11/16 15:04 retrieval]: found 5063 images in /media/loc/ssd_5127/tmp/how/how_data/test/oxford5k/jpg
-[11/16 15:04 retrieval]: No pretrained weights exist or were found for this model. Using random initialization.
-[11/16 15:04 retrieval]: body channels:[256, 512, 1024]  reductions:[4, 8, 16]   layer_names: ['layer1', 'layer2', 'layer3']
-[11/16 15:07 retrieval]: extraction done 183.5 seconds saved db.h5
-[11/16 15:10 retrieval]: extraction done 178.7 seconds saved db.h5
+[11/22 12:05 retrieval]: loading images from /media/loc/Elements/revisitop/data/datasets/revisitop1m/jpg
+[11/22 12:08 retrieval]: #images 1064732 img_size 1024
+[11/22 12:08 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5)
+[11/22 12:08 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/sfm_resnet50_gem_2048.pth'
+[11/22 12:08 retrieval]: body channels:[256, 512, 1024, 2048]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']

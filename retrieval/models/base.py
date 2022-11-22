@@ -2,7 +2,7 @@ from typing import List
 import torch.nn as nn
 
 class BaseNet(nn.Module):
-    """ ImageRetrievalNet
+    """ BaseNet
 
         General image retrieval model, consists of backbone and head
     
@@ -13,7 +13,7 @@ class BaseNet(nn.Module):
         self.body   = body
         self.head   = head
         
-        #
+        # initializing the model, mainly the head
         self._init_model = init_model
     
     def device(self):
@@ -23,4 +23,7 @@ class BaseNet(nn.Module):
         raise NotImplementedError
 
     def extract_global(self, img=None, do_whitening=True):
+        raise NotImplementedError
+    
+    def extract_locals(self, img, num_features=1000, do_whitening=True):
         raise NotImplementedError

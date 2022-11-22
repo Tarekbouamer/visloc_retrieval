@@ -39,27 +39,28 @@ class FeatureExtractor():
         
         # 
         if model is not None:
-            self.model  = model
-            self.cfg    = cfg
+            self.model      = model
+            self.cfg        = cfg
+            self.out_dim    = self.cfg['global'].getint('out_dim')
         #
         elif model_name is not None:
-            self.cfg    = get_pretrained_cfg(model_name)
-            self.model  = create_model(model_name, pretrained=True)
+            self.cfg        = get_pretrained_cfg(model_name)
+            self.model      = create_model(model_name, pretrained=True)
+            self.out_dim    = self.cfg.pop('out_dim', 0)
         #
         else:
-            self.model  = None
-            self.cfg    = None
+            self.model   = None
+            self.cfg     = None
+            self.out_dim = 0
         
         # 
-        self.out_dim = self.cfg['global'].getint('out_dim')
+        
            
         # set to device
         print(self.model.device)
+        self.model = self.__cuda__(self.model)
+        print(self.model.device)
 
-        # self.model = self.__cuda__(self.model)
-        # print(self.model.device)
-        # input()
-        
         # set to eval mode
         self.eval()
 
@@ -133,7 +134,7 @@ class FeatureExtractor():
         if isinstance(x, DataLoader):
             return x
         else:
-            return DataLoader(x, num_workers=1, shuffle=False, drop_last=False, pin_memory=True)
+            return DataLoader(x, num_workers=10, shuffle=False, drop_last=False, pin_memory=True)
     
     @torch.no_grad()     
     def extract_global(self, dataset, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
@@ -195,11 +196,12 @@ class FeatureExtractor():
             desc = functional.normalize(desc, dim=-1)
             
             # numpy
-            features[it]    = self.__to_numpy__(desc) 
+            desc         = self.__to_numpy__(desc)
+            features[it] = desc
             
             # write
             if hasattr(self, 'writer'):
-                name = data['img_name'][0]
+                name = data['name'][0]
                 self.__write__(name, desc)
             
             # clear cache  

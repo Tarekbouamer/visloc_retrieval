@@ -23,6 +23,7 @@ import logging
 logger = logging.getLogger("retrieval")
 
 
+# default cfg          
 def _cfg(url='', drive='', out_dim=128, **kwargs):
     return {
         'url': url,
@@ -33,14 +34,16 @@ def _cfg(url='', drive='', out_dim=128, **kwargs):
         **kwargs
     }
  
-         
+ 
 default_cfgs = {
-    #sfm resnet50
-    'resnet18_how':     _cfg(drive='https://drive.google.com/uc?id=1w7sb1yP3_Y-I64aWg57NR10fDhiAOtg4'),
-    
-    'resnet50_c4_how':  _cfg(drive='https://drive.google.com/uc?id=16elpsWQGOLq_Xmd8od6k5DpCy3ou0a9S'),
+    'sfm_resnet18_how_128':         _cfg(drive='https://drive.google.com/uc?id=1w7sb1yP3_Y-I64aWg57NR10fDhiAOtg4'),
+    'sfm_resnet18_c4_how_128':      _cfg(),
+    'sfm_resnet50_c4_how_128':      _cfg(drive='https://drive.google.com/uc?id=16elpsWQGOLq_Xmd8od6k5DpCy3ou0a9S'),
+    'sfm_resnet101_c4_how_128':     _cfg(),
     }
 
+
+# init model function
 @torch.no_grad()
 def _init_model(args, cfg, model, sample_dl):
     
@@ -66,7 +69,7 @@ def _init_model(args, cfg, model, sample_dl):
   
         # upload batch
         batch   = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
-        pred    = model.extract_locals(**batch, do_whitening=False)
+        pred    = model.extract_locals(**batch, do_whitening=False, num_features=400)
 
         vecs.append(pred['feats'].cpu().numpy())
             
@@ -109,7 +112,8 @@ def _init_model(args, cfg, model, sample_dl):
     #        
     logger.info("pca done")
 
- 
+
+# create model function  
 def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feature_scales=[1, 2, 3, 4], **kwargs):
     
     # assert
@@ -166,7 +170,8 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
  
     return model
 
-# 
+
+# HowNet
 class HowNet(BaseNet):
     
     def how_select_local(self, ms_feats, ms_masks, scales, num_features):
@@ -288,21 +293,37 @@ class HowNet(BaseNet):
         return self.extract_global(img, do_whitening=do_whitening)
             
     
-# SfM-120k
+# models 
 @register_model
-def resnet18_how(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k ResNet-18 with GeM model.
+def sfm_resnet18_how_128(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-18 with How model.
     """
     model_args = dict(**kwargs)
-    return _create_model('resnet18_how', 'resnet18', 'how', cfg, pretrained, **model_args)
+    return _create_model('sfm_resnet18_how_128', 'resnet18', 'how', cfg, pretrained, **model_args)
 
 
 @register_model
-def resnet50_c4_how(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
-    """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales
+def sfm_resnet18_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+    """Constructs a SfM-120k ResNet-18 with How model, only 4 features scales
     """   
     model_args = dict(**kwargs)
-    return _create_model('resnet50_c4_how', 'resnet50', 'how', cfg, pretrained, feature_scales, **model_args)
+    return _create_model('sfm_resnet18_c4_how_128', 'resnet18', 'how', cfg, pretrained, feature_scales, **model_args)
+
+
+@register_model
+def sfm_resnet50_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+    """Constructs a SfM-120k ResNet-50 with How model, only 4 features scales
+    """   
+    model_args = dict(**kwargs)
+    return _create_model('sfm_resnet50_c4_how_128', 'resnet50', 'how', cfg, pretrained, feature_scales, **model_args)
+
+
+@register_model
+def sfm_resnet101_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
+    """Constructs a SfM-120k ResNet-101 with How model, only 4 features scales
+    """   
+    model_args = dict(**kwargs)
+    return _create_model('sfm_resnet101_c4_how_128', 'resnet101', 'how', cfg, pretrained, feature_scales, **model_args)
 
 
 if __name__ == '__main__':    
