@@ -425,7 +425,7 @@ class ImageRetrievalTrainer(TrainerBase):
         if hasattr(self.model, '_init_model'):
             #
             logger.info("init model layers")
-            sample_dl = build_sample_dataloader(self.cfg, self.get_dataset())
+            sample_dl = build_sample_dataloader(self.get_dataset(), cfg=self.cfg)
 
             # 
             self.model._init_model(self.args, self.cfg,  self.model, sample_dl)

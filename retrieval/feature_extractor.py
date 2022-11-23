@@ -52,14 +52,9 @@ class FeatureExtractor():
             self.model   = None
             self.cfg     = None
             self.out_dim = 0
-        
-        # 
-        
-           
+          
         # set to device
-        print(self.model.device)
         self.model = self.__cuda__(self.model)
-        print(self.model.device)
 
         # set to eval mode
         self.eval()
@@ -94,7 +89,10 @@ class FeatureExtractor():
         else: # cpu
             return x
         
-    def __prepare_input__(self, x, normalize=False):
+    def __prepare_input__(self, x, **kwargs):
+        
+        #
+        normalize = kwargs.pop('normalize', False)
         
         # normalize
         if normalize:
@@ -113,23 +111,6 @@ class FeatureExtractor():
             
         return x.numpy()
     
-    def __check_size__(self, x, min_size=100, max_size=2000):
-        # too large (area)
-        if not (x.size(-1) * x.size(-2) <= max_size * max_size):
-            return True
-        
-        # too small
-        if not (x.size(-1) >= min_size and x.size(-2) >= min_size):
-            return True
-        
-        return False
-    
-    def __resize__(self, x, scale=1.0, mode='bilinear'):
-        if scale == 1.0:
-            return x
-        else:
-            return functional.interpolate(x, scale_factor=scale, mode=mode, align_corners=False)
-    
     def __dataloader__(self, x, **kwargs):
         if isinstance(x, DataLoader):
             return x
@@ -137,7 +118,18 @@ class FeatureExtractor():
             return DataLoader(x, num_workers=1, shuffle=False, drop_last=False, pin_memory=True)
     
     @torch.no_grad()     
-    def extract_global(self, dataset, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000, **kwargs):
+    def extract_global(self, dataset, scales=[1.0], save_path=None, **kwargs):
+        """
+            global features extractor
+            
+            dataset:        ImageFromList or data.Dataloader    list of images 
+            scales:         List        extraction scales
+            save_path:      str         path to write and save features hdf5 format
+            normalize:      boolean     to normalize input data if not normalized 
+            min_size:       int         min size of images, skip if less than min_size
+            max_size:       int         max area of images, skip if more than max_size square 
+
+        """
         
         # to eval
         self.eval()
@@ -149,8 +141,8 @@ class FeatureExtractor():
         # dataloader
         dataloader = self.__dataloader__(dataset, **kwargs)
 
-        # L D
-        features = np.empty(shape=(len(dataloader), self.out_dim))
+        # L D size
+        features = []
 
         # time
         start_time = time.time()
@@ -162,42 +154,16 @@ class FeatureExtractor():
             img = data['img']
             
             # prepare inputs
-            img  = self.__prepare_input__(img, normalize=normalize) 
+            img  = self.__prepare_input__(img, **kwargs) 
             img  = self.__cuda__(img) 
             
-            # D
-            desc = torch.zeros(self.out_dim)
-            desc = self.__cuda__(desc) 
-            
-            #
-            num_scales = 0. 
-            
-            # extract --> 
-            for scale in scales:
-                
-                # resize
-                img_s = self.__resize__(img, scale=scale)
-
-                # assert size within boundaries
-                if self.__check_size__(img_s, min_size, max_size):
-                    continue
-                
-                num_scales += 1.0
-                 
-                # extract globals
-                preds   = self.model.extract_global(img_s, do_whitening=True)
-                desc_s  = preds['feats'].squeeze(0)
-                
-                # add
-                desc +=  desc_s
-            
-            # normalize
-            desc = (1.0 / num_scales) * desc
-            desc = functional.normalize(desc, dim=-1)
+            # extract 
+            desc = self.model.extract_global(img, scales=scales, do_whitening=True, **kwargs)
+            desc = desc['features']
             
             # numpy
-            desc         = self.__to_numpy__(desc)
-            features[it] = desc
+            desc = self.__to_numpy__(desc)
+            features.append(desc)
             
             # write
             if hasattr(self, 'writer'):
@@ -212,22 +178,35 @@ class FeatureExtractor():
         if hasattr(self, 'writer'):  
             self.writer.close()  
         
+        # stack         
+        features    = np.vstack(features)
+        
         # end time
         end_time = time.time() - start_time  
         
         logger.info(f'extraction done {end_time:.4} seconds saved {save_path}')
         
-        #
+        # 
         out = {
             'features':     features,
-            'save_path':    save_path
-            }
+            'save_path':    save_path   }
         
         return out
     
     @torch.no_grad()     
-    def extract_locals(self, dataset, num_features=1000, scales=[1.0], save_path=None, normalize=False, min_size=100, max_size=2000):
+    def extract_locals(self, dataset, num_features=1000, scales=[1.0], save_path=None, **kwargs):
+        """
+            local features extractor
+            
+            dataset:        ImageFromList or data.Dataloader    list of images 
+            scales:         List        extraction scales
+            num_features:   int         max number of local features
+            save_path:      str         path to write and save features hdf5 format
+            normalize:      boolean     to normalize input data if not normalized 
+            min_size:       int         min size of images, skip if less than min_size
+            max_size:       int         max area of images, skip if more than max_size square 
 
+        """
         # to eval
         self.eval()
         
@@ -236,11 +215,10 @@ class FeatureExtractor():
             self.writer = h5py.File(str(save_path), 'a')
         
         # dataloader
-        dataloader = self.__dataloader__(dataset)
+        dataloader = self.__dataloader__(dataset,)
         
         # L N D
-        features = []
-        imids = []
+        features, imids = [], []
 
         # time
         start_time = time.time()
@@ -252,15 +230,12 @@ class FeatureExtractor():
             img = data['img']
             
             # prepare inputs
-            img  = self.__prepare_input__(img, normalize=normalize) 
+            img  = self.__prepare_input__(img, **kwargs) 
             img  = self.__cuda__(img) 
             
-            # N D
-            desc = None
-
             # extract locals 
-            preds   = self.model.extract_locals(img, scales=scales, num_features=num_features)
-            desc    = preds['feats']
+            preds   = self.model.extract_locals(img, scales=scales, num_features=num_features, **kwargs)
+            desc    = preds['features']
 
             # numpy
             features.append(self.__to_numpy__(desc))
@@ -278,15 +253,16 @@ class FeatureExtractor():
         # close writer    
         if hasattr(self, 'writer'):  
             self.writer.close()  
+    
+        # stack
+        features    = np.vstack(features)
+        ids         = np.hstack(imids)    
         
         # end time
         end_time = time.time() - start_time  
         
-        logger.info(f'extraction done {end_time:.4} seconds saved {save_path}')
-        
         #
-        features    = np.vstack(features)
-        ids         = np.hstack(imids)
+        logger.info(f'extraction done {end_time:.4} seconds saved {save_path}')  
         
         #
         out = {
@@ -313,14 +289,13 @@ if __name__ == '__main__':
     feature_extractor = FeatureExtractor("resnet50_c4_how")
 
     scales = [0.707, 1.0, 1.424]
-    print(feature_extractor.model)
     
     global_feat, pth = feature_extractor.extract_global(dataset,    scales=scales, save_path=save_path)
     local_feat, pth = feature_extractor.extract_locals(dataset,     scales=scales, save_path=save_path)
     
-    print("features path", pth)
-    print("global features shape", global_feat.shape)
-    print("global features shape", local_feat.shape)
+    logger.info("features path", pth)
+    logger.info("global features shape", global_feat.shape)
+    logger.info("global features shape", local_feat.shape)
 
         
   

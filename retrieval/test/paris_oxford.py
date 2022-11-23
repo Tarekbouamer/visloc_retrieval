@@ -1,8 +1,8 @@
 from os import path
 
 from retrieval.datasets import ImagesFromList, ImagesTransform, INPUTS, ParisOxfordTestDataset
-
 from torch.utils.data import DataLoader
+
 
 # logger
 import logging
@@ -26,11 +26,13 @@ def build_paris_oxford_dataset(data_path, name_dataset, cfg):
                 "pin_memory":   True }  
     
     # query loader
-    query_data  = ImagesFromList(root='', images=db['query_names'], bbxs=db['query_bbx'], transform=ImagesTransform(**trans_opt) )
+    query_data  = ImagesFromList(root='', images=db['query_names'], bbxs=db['query_bbx'], 
+                                 transform=ImagesTransform(**trans_opt) )
     query_dl    = DataLoader( query_data, **dl_opt)
     
     # database loader
-    db_data     = ImagesFromList( root='', images=db['img_names'], transform=ImagesTransform(**trans_opt) )  
+    db_data     = ImagesFromList( root='', images=db['img_names'], 
+                                 transform=ImagesTransform(**trans_opt) )  
     db_dl       = DataLoader(  db_data,  **dl_opt )
     
     # ground

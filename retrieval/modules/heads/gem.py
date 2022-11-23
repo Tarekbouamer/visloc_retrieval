@@ -76,7 +76,7 @@ class GemHead(Head):
         
         #    
         preds = {
-            'feats': x
+            'features': x
         }
             
         return preds     

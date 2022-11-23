@@ -1,18 +1,19 @@
 from collections import OrderedDict
 
 import torch
-from torch import nn
-
 import os
-from retrieval.test import  build_paris_oxford_dataset, test_asmk, test_global_descriptor
-import retrieval.utils.evaluation.asmk as eval_asmk
 
+from .dataloader            import build_sample_dataloader
+
+from retrieval.test         import  build_paris_oxford_dataset, test_asmk, test_global_descriptor
 from retrieval.feature_extractor import FeatureExtractor
+import retrieval.utils.evaluation.asmk as eval_asmk
 
 # logger
 import logging
 
 logger = logging.getLogger("retrieval")
+
 
 class DatasetEvaluator:
     """
@@ -23,8 +24,10 @@ class DatasetEvaluator:
         # mode
         self.test_mode = cfg['test'].get('mode')
         
-        # features extractor
+        # if ema_model use ema_model, else model
         model = model if model_ema is None else model_ema.module
+        
+        # features extractor
         self.feature_extractor = FeatureExtractor(model=model, cfg=cfg)
                 
         # writer
@@ -56,7 +59,7 @@ class DatasetEvaluator:
         # write to board
         self.writer.write(step)
         
-    def evaluate(self, epoch=0):
+    def evaluate(self):
         """
         """
         raise NotImplementedError
@@ -74,7 +77,7 @@ class GlobalEvaluator(DatasetEvaluator):
         """
         super().__init__(args, cfg, model, model_ema, writer)
         
-        logger.info(f"init evaluator on ({self.test_mode}) mode")
+        logger.info(f"set evaluator on ({self.test_mode}) mode")
           
     def build_test_dataset(self, data_path, dataset):
         
@@ -92,16 +95,14 @@ class GlobalEvaluator(DatasetEvaluator):
         # eval mode
         self.feature_extractor.eval()
         
-        #
+        # writer on test mode
         if self.writer is not None:
             self.writer.test()
         
         # data path
         if not os.path.exists(self.args.data):
             logger.error("path not found: {self.args.data}")   
-        
-        data_path = self.args.data 
-        
+                
         # result dictionary
         results = OrderedDict()
 
@@ -109,12 +110,11 @@ class GlobalEvaluator(DatasetEvaluator):
         for dataset in self.test_datasets:
             
             # build dataset
-            query_dl, database_dl, ground_truth = self.build_test_dataset(data_path, dataset)
+            query_dl, database_dl, ground_truth = self.build_test_dataset( self.args.data, dataset)
             
             # test
-            metrics = test_global_descriptor(dataset, query_dl, database_dl, 
-                                             self.feature_extractor, self.descriptor_size, 
-                                             ground_truth,
+            metrics = test_global_descriptor(dataset, query_dl, database_dl, self.feature_extractor,
+                                             ground_truth=ground_truth,
                                              scales=scales)
                 
             # write
@@ -132,13 +132,13 @@ class ASMKEvaluator(DatasetEvaluator):
         super().__init__(args, cfg, model, model_ema, writer)
 
         # train dataset
-        self.train_dataset = kwargs.pop('train_dataset', None)
+        self.train_dl = kwargs.pop('train_dl', None)
          
         # number of sampled image 
         self.num_samples = cfg["test"].getint("num_samples")
                     
         #
-        logger.info(f"init evaluator on ({self.test_mode}) mode")
+        logger.info(f"set evaluator on ({self.test_mode}) mode")
         
     def build_codebook(self, scales=[1.0]):
         
@@ -150,14 +150,18 @@ class ASMKEvaluator(DatasetEvaluator):
         
         # train codebook
         save_path =  os.path.join(self.args.directory, self.cfg["dataloader"].get("dataset") + "_codebook.pkl")
- 
-        idxs = torch.randperm(len(self.train_dataset))[ :self.num_samples]
-        train_images  = [self.train_dataset[i] for i in idxs] 
+
+        # sample loader
+        sample_dl = build_sample_dataloader(self.train_dl,
+                                            num_samples=self.num_samples,
+                                            cfg=self.cfg)
         
-        logger.info(f'train codebook {len(train_images)} :   {save_path}')
+        logger.info(f'train codebook {len(sample_dl)} :   {save_path}')
 
         # train_codebook
-        self.asmk = eval_asmk.train_codebook(self.cfg, train_images, self.feature_extractor, asmk, scales=scales)
+        self.asmk = eval_asmk.train_codebook(self.cfg, sample_dl, self.feature_extractor, asmk, 
+                                             scales=scales,
+                                             save_path=save_path)
         
         return asmk
     
@@ -187,7 +191,7 @@ class ASMKEvaluator(DatasetEvaluator):
         
         data_path = self.args.data 
         
-        #train and save the codebook for each test set
+        # train and save asmk codebook
         self.build_codebook(scales)
         
         # result dictionary

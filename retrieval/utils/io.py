@@ -1,4 +1,5 @@
 from os import makedirs, path
+from argparse import ArgumentError
 
 
 def create_folder(dir, logger=None):
@@ -15,6 +16,7 @@ def create_experiment_file(dir, extension="", logger=None):
     create_folder(dir)
     
     return dir
+
 
 def create_experiment_file_from_cfg(cfg, directory, logger=None):
     
@@ -68,3 +70,16 @@ def create_withen_file_from_cfg(cfg, directory,logger=None):
                               ".pth"
                             )
     return whithen_path
+
+def csv_float(seq, sep=','):
+    ''' Convert a string of comma separated values to floats
+        @returns iterable of floats
+    '''
+    values = []
+    for v0 in seq.split(sep):
+        try:
+            v = float(v0)
+            values.append(v)
+        except ValueError as err:
+            raise ArgumentError('Invalid value %s, values must be a number' % v)
+    return values

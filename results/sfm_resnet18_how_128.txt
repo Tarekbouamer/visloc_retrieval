@@ -1,0 +1,10 @@
+[11/23 15:27 retrieval]: build train dataloader
+[11/23 15:27 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1w7sb1yP3_Y-I64aWg57NR10fDhiAOtg4)
+[11/23 15:27 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/sfm_resnet18_how_128.pth'
+[11/23 15:27 retrieval]: body channels:[64, 128, 256, 512]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']
+[11/23 15:27 retrieval]: set evaluator on (asmk) mode
+[11/23 15:27 retrieval]: init asmk
+[11/23 15:27 retrieval]: train codebook 1000 :   results/retrieval-SfM-120k_codebook.pkl
+[11/23 15:28 retrieval]: extraction done 13.76 seconds saved None
+[11/23 15:28 retrieval]: [roxford5k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
+[11/23 15:28 retrieval]: {roxford5k}: extracting descriptors for database images

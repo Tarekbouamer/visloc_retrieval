@@ -1,6 +1,5 @@
 # General
 import argparse
-from argparse import ArgumentError
 
 from os import makedirs, path
 import numpy as np
@@ -14,22 +13,10 @@ from retrieval.tools.events            import EventWriter
 from retrieval.tools.dataloader        import build_train_dataloader
 
 import retrieval.datasets as data
-from retrieval import  build_evaluator, create_model
-from  retrieval.utils.logging import  setup_logger
 
-
-def csv_float(seq, sep=','):
-    ''' Convert a string of comma separated values to floats
-        @returns iterable of floats
-    '''
-    values = []
-    for v0 in seq.split(sep):
-        try:
-            v = float(v0)
-            values.append(v)
-        except ValueError as err:
-            raise ArgumentError('Invalid value %s, values must be a number' % v)
-    return values
+from retrieval                  import  build_evaluator, create_model
+from retrieval.utils.logging    import  setup_logger
+from retrieval.utils.io         import  csv_float
 
 
 def make_parser():
@@ -68,34 +55,29 @@ def make_parser():
 def main(args):
     
     args.directory = 'results'
-    
-    writer = EventWriter(directory='results', print_freq=1)
-    
-    logger = setup_logger(output='results', name="retrieval", suffix=args.model)
 
-    args.save_path = path.join(args.save_path, args.name + '.h5')
-    args.directory = args.save_path
-    
+    #
+    logger = setup_logger(output=args.directory , name="retrieval", suffix=args.model)
+
     # load cfg file 
     cfg = make_config(args.config, defauls=DEFAULT_CONFIG["default"])
     
     # train data
     train_dl = build_train_dataloader(args=args, cfg=cfg)
-    meta = {}
-    meta['train_dataset']= train_dl.dataset.images
-
     
-    # model
+    # evaluation meta 
+    meta = {}
+    meta['train_dl']= train_dl
+
+    # create model
     model = create_model(args.model, cfg, pretrained=True)
-    model.to(torch.device("cuda"))
         
-    # 
+    # evaluate
     evaluator = build_evaluator(args, cfg, model, None, None, **meta)
     evaluator.evaluate(scales=args.scales)
 
     #
     logger.info(f"extraction scales {args.scales}")
-    logger.info(f"feature saved {args.save_path}")
 
 if __name__ == '__main__':
 

@@ -72,7 +72,7 @@ def _init_model(args, cfg, model, sample_dl):
         batch   = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
         pred    = model.extract_locals(**batch, do_whitening=False, num_features=400)
 
-        vecs.append(pred['feats'].cpu().numpy())
+        vecs.append(pred['features'].cpu().numpy())
             
         del pred
     
@@ -202,28 +202,28 @@ class HowNet(BaseNet):
             
         return params
     
-    def how_select_local(self, ms_feats, ms_masks, scales, num_features):
+    def how_select_local(self, ms_features, ms_masks, scales, num_features):
         """
             Convert multi-scale feature maps with attentions to a list of local descriptors
-                :param list ms_feats: A list of feature maps, each at a different scale
+                :param list ms_features: A list of feature maps, each at a different scale
                 :param list ms_masks: A list of attentions, each at a different scale
                 :param list scales: A list of scales (floats)
                 :param int features_num: Number of features to be returned (sorted by attenions)
                 :return tuple: A list of descriptors, attentions, locations (x_coor, y_coor) and scales where
                         elements from each list correspond to each other
         """
-        device = ms_feats[0].device
+        device = ms_features[0].device
         
         size = sum(x.shape[0] * x.shape[1] for x in ms_masks)
 
-        desc = torch.zeros(size, ms_feats[0].shape[1], dtype=torch.float32, device=device)
+        desc = torch.zeros(size, ms_features[0].shape[1], dtype=torch.float32, device=device)
         atts = torch.zeros(size, dtype=torch.float32, device=device)
         locs = torch.zeros(size, 2, dtype=torch.int16, device=device)
         scls = torch.zeros(size, dtype=torch.float16, device=device)
 
         pointer = 0
         
-        for sc, vs, ms in zip(scales, ms_feats, ms_masks):
+        for sc, vs, ms in zip(scales, ms_features, ms_masks):
             
             #
             if len(ms.shape) == 0:
@@ -250,7 +250,7 @@ class HowNet(BaseNet):
 
         #
         preds = {
-            'feats':    desc[idx],
+            'features':    desc[idx],
             'attns':    atts[idx],
             'locs':     locs[idx],
             'cls':      scls[idx]
@@ -262,30 +262,30 @@ class HowNet(BaseNet):
     def l2n(self, x, eps=1e-6):
       return x / (torch.norm(x, p=2, dim=1, keepdim=True) + eps).expand_as(x)
     
-    def weighted_spoc(self, ms_feats, ms_weights):
+    def weighted_spoc(self, ms_features, ms_weights):
         """
             Weighted SPoC pooling, summed over scales.
-                :param list ms_feats: A list of feature maps, each at a different scale
+                :param list ms_features: A list of feature maps, each at a different scale
                 :param list ms_weights: A list of weights, each at a different scale
                 :return torch.Tensor: L2-normalized global descriptor
         """
         
-        desc = torch.zeros((1, ms_feats[0].shape[1]), dtype=torch.float32, device=ms_feats[0].device)
+        desc = torch.zeros((1, ms_features[0].shape[1]), dtype=torch.float32, device=ms_features[0].device)
         
-        for feats, weights in zip(ms_feats, ms_weights):
-            desc += (feats * weights).sum((-2, -1)).squeeze()
+        for features, weights in zip(ms_features, ms_weights):
+            desc += (features * weights).sum((-2, -1)).squeeze()
         
         desc = self.l2n(desc)
         
         preds = {
-            'feats' : desc
+            'features' : desc
         }
         
         return preds
 
     def __forward__(self, img, scales=[1], do_whitening=True):
         
-        feats_list, attns_list = [], []
+        features_list, attns_list = [], []
 
         for s in scales:
             #
@@ -299,7 +299,7 @@ class HowNet(BaseNet):
             preds = self.head(x, do_whitening=do_whitening)
             
             # 
-            feats_list.append(preds['feats'])
+            features_list.append(preds['features'])
             attns_list.append(preds['attns'])
          
         # normalize to max weight
@@ -307,7 +307,7 @@ class HowNet(BaseNet):
         attns_list  = [x/mx         for x in attns_list]
         
         #
-        return feats_list, attns_list
+        return features_list, attns_list
    
     def extract_global(self, img, scales=[1], do_whitening=True):
         feat_list, attns_list = self.__forward__(img, scales=scales, do_whitening=do_whitening)

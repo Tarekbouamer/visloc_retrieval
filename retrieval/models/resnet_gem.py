@@ -7,6 +7,7 @@ from typing import List
 import os
 import torch 
 import torch.nn as nn
+import torch.nn.functional as functional
 
 from tqdm import tqdm
 import numpy as np
@@ -88,7 +89,7 @@ def _init_model(args, cfg, model, sample_dl):
         batch   = {k: batch[k].cuda(device=device, non_blocking=True) for k in INPUTS}
         pred    = model(**batch, do_whitening=False)
                 
-        vecs.append(pred['feats'].cpu().numpy())
+        vecs.append(pred['features'].cpu().numpy())
             
         del pred
     
@@ -133,12 +134,16 @@ def _init_model(args, cfg, model, sample_dl):
 # create model function   
 def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feature_scales=[1, 2, 3, 4], **kwargs):
     
+    #
+    print(kwargs)
+    
     # assert
     assert body_name in timm.list_models(pretrained=True), f"model: {body_name}  not implemented timm models yet!"
 
-    # get flags
-    reduction   = kwargs.pop("reduction", False)
-    frozen      = kwargs.pop("frozen", [])
+    # 
+    pretrained_cfg = get_pretrained_cfg(variant)
+    out_dim = pretrained_cfg.pop("out_dim", 0)
+    frozen  = kwargs.pop("frozen", [])
     
     # body
     body = timm.create_model(body_name, 
@@ -151,7 +156,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
     body_module_names       = body.feature_info.module_name()
     
     # output dim
-    body_dim = out_dim = body_channels[-1]
+    body_dim = body_channels[-1]
    
    # freeze layers
     if len(frozen) > 0:
@@ -160,9 +165,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
         freeze(body, frozen_layers) 
     
     # reduction 
-    if reduction:
-        assert reduction < out_dim, (f"reduction {reduction} has to be less than input dim {out_dim}")
-        out_dim = reduction
+    assert out_dim <= body_dim, (f"reduction {out_dim} has to be less than or equal to input dim {body_dim}")
     
     # head
     head = create_head(head_name, 
@@ -175,7 +178,6 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
     
     # 
     if pretrained:
-        pretrained_cfg = get_pretrained_cfg(variant)
         load_pretrained(model, variant, pretrained_cfg) 
         
     logger.info(f"body channels:{body_channels}  reductions:{body_reductions}   layer_names: {body_module_names}")
@@ -185,6 +187,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
         cfg.set('global', 'global_dim', str(out_dim))
  
     return model
+
 
 # GemNet 
 class GemNet(BaseNet):
@@ -237,8 +240,49 @@ class GemNet(BaseNet):
 
         return preds
     
-    def extract_global(self, img, do_whitening=True):
-        return self.forward(img, do_whitening=do_whitening)
+    def __sum_scales(self, features):
+        """ sum over scales """
+        #
+        desc = torch.zeros((1, features[0].shape[1]), dtype=torch.float32, device=features[0].device)
+        
+        # 
+        for vec in features:
+            desc += vec 
+
+        # normalize
+        desc = functional.normalize(desc, dim=-1)
+        
+        preds = {
+            'features': desc
+        }
+        return preds
+
+    def __forward__(self, img, scales=[1], do_whitening=True):
+        
+        # 
+        features = []
+
+        # --> 
+        for scale in scales:
+            
+            # resize
+            img_s = self.__resize__(img, scale=scale)
+
+            # assert size within boundaries
+            if self.__check_size__(img_s):
+                continue
+            
+            # -->
+            preds = self.forward(img_s, do_whitening)
+            
+            # 
+            features.append(preds['features'])
+        
+        # sum over scales
+        return self.__sum_scales(features)
+        
+    def extract_global(self, img, scales=[1], do_whitening=True):
+        return self.__forward__(img, scales=scales, do_whitening=do_whitening)
         
     
 # SfM-120k

@@ -3,14 +3,14 @@ __pycache__/
 *.py[cod]
 *$py.class
 
-# 
+#  
 experiments
 pretrained_models
 pretrained_drive
 image_retrieval
-results
 *h5
 *h5py
+*out.tfevents*
 
 # C extensions
 *.so

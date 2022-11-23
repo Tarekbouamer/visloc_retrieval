@@ -117,7 +117,7 @@ class HowHead(Head):
         
         #
         preds = {
-            'feats': x ,
+            'features': x ,
             'attns': attn
         }
             

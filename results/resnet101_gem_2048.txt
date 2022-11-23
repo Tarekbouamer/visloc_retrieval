@@ -1,0 +1,20 @@
+[11/17 12:16 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=10CqmzZE_XwRCyoiYlZh03tfYk1jzeziz)
+[11/17 12:16 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/resnet101_gem_2048.pth'
+[11/17 12:16 retrieval]: body channels:[256, 512, 1024, 2048]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']
+[11/17 12:16 retrieval]: init evaluator on (global) mode
+[11/17 12:16 retrieval]: [roxford5k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
+[11/17 12:16 retrieval]: extraction done 5.591 seconds saved None
+[11/17 12:18 retrieval]: extraction done 136.3 seconds saved None
+[11/17 12:18 retrieval]: mAP     E: 82.7957  M: 66.2555   H: 40.3874
+[11/17 12:18 retrieval]: mP@k1   E: 98.5294  M: 97.1429   H: 78.5714
+[11/17 12:18 retrieval]: mP@k5   E: 90.5882  M: 90.8571   H: 64.0000
+[11/17 12:18 retrieval]: mP@k10   E: 84.6989  M: 84.1429   H: 53.2857
+[11/17 12:18 retrieval]: [rparis6k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
+[11/17 12:18 retrieval]: extraction done 2.559 seconds saved None
+[11/17 12:21 retrieval]: extraction done 174.0 seconds saved None
+[11/17 12:21 retrieval]: mAP     E: 91.2898  M: 75.2250   H: 53.2096
+[11/17 12:21 retrieval]: mP@k1   E: 98.5714  M: 98.5714   H: 95.7143
+[11/17 12:21 retrieval]: mP@k5   E: 98.0000  M: 98.8571   H: 92.2857
+[11/17 12:21 retrieval]: mP@k10   E: 96.1429  M: 98.5714   H: 88.4286
+[11/17 12:21 retrieval]: extraction scales [1.0]
+[11/17 12:21 retrieval]: feature saved ./db.h5

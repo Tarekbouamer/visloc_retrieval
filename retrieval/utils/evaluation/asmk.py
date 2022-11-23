@@ -39,30 +39,22 @@ def asmk_init(params_path=None):
 
 
 
-def train_codebook(cfg, train_images, feature_extractor, asmk, scales=[1.0], save_path=None):
+def train_codebook(cfg, sample_dl, extractor, asmk, scales=[1.0], save_path=None):
     """
         train_codebook
     """
+
+    # remove old book
+    if os.path.exists(save_path):
+        os.remove(save_path)
     #
-    trans_opt = {   "max_size":     cfg["test"].getint("max_size")}
-     
-    dl_opt = { 
-              "batch_size":   1,      
-              "shuffle":      False, 
-              "num_workers":  cfg["test"].getint("num_workers"), 
-              "pin_memory":   True }  
-    
-    
-    # train dataloader
-    train_data  = ImagesFromList(root='', images=train_images, transform=ImagesTransform(**trans_opt) )                 
-    train_dl    = DataLoader(train_data,  **dl_opt )
-    
-    train_out   = feature_extractor.extract_locals(train_dl, scales=scales, save_path=None)
+    train_out   = extractor.extract_locals(sample_dl, scales=scales, save_path=None)
     train_vecs  = train_out["features"]
 
-    # run  training
+    # run training
     asmk = asmk.train_codebook(train_vecs, cache_path=save_path)
     
+    3
     train_time = asmk.metadata['train_codebook']['train_time']
     logger.debug(f"codebook trained in {train_time:.2f}s")
     

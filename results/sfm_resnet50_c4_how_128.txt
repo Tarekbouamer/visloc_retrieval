@@ -1,0 +1,7 @@
+[11/23 13:52 retrieval]: build train dataloader
+[11/23 13:52 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=16elpsWQGOLq_Xmd8od6k5DpCy3ou0a9S)
+[11/23 13:52 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/sfm_resnet50_c4_how_128.pth'
+[11/23 13:52 retrieval]: body channels:[256, 512, 1024]  reductions:[4, 8, 16]   layer_names: ['layer1', 'layer2', 'layer3']
+[11/23 13:52 retrieval]: set evaluator on (global) mode
+[11/23 13:52 retrieval]: [roxford5k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
+[11/23 13:52 retrieval]: extraction done 3.978 seconds saved None

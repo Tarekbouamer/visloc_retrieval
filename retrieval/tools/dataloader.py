@@ -53,10 +53,14 @@ def build_dataset(args, cfg, transform, mode='train'):
     
     return train_db  
     
-def build_sample_dataloader(cfg, images):
+def build_sample_dataloader(train_dl, num_samples=None, cfg=None):
 
     #
-    num_samples = cfg["global"].getint("num_samples")
+    images = train_dl.dataset.images
+    
+    #
+    if num_samples is None:
+        num_samples = cfg["global"].getint("num_samples")
     
     if num_samples > len(images):
         num_samples = len(images)
@@ -68,13 +72,15 @@ def build_sample_dataloader(cfg, images):
     
     # transform
     transform = build_transforms(cfg)["test"]
-             
+    
+    # loader        
     sample_dl   = DataLoader(dataset=ImagesFromList("", images, transform=transform),
                             num_workers=cfg["dataloader"].getint("num_workers"), 
                             pin_memory=True,
                             sampler=sampler)
     
     return sample_dl
+
 
 def build_train_dataloader(args, cfg):
     data_cfg    = cfg["dataloader"]
