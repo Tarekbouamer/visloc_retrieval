@@ -25,13 +25,16 @@ setup(
     long_description=readme,
     long_description_content_type="text/markdown",
     url='https://github.com/Tarekbouamer',
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.4",
-        "Programming Language :: Python :: 3.5",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-    ],
+    
+    install_requires=['opencv-contrib-python==4.6.0.66',
+                      'opencv-python==4.6.0.66',
+                      'h5py',
+                      'scipy',
+                      'matplotlib',
+                      'tqdm',
+                      'tensorboardX==2.5.1',
+                      'gdown==4.5.1',
+                      'timm==0.6.12',
 
-
+                      ],
 )

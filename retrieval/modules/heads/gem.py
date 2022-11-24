@@ -9,18 +9,11 @@ from .base import BaseHead
 from  retrieval.modules.pools import GeM
 
 
-# TODO: only one implementioan for gem no conv gem
 @register_head
-def gem_linear(inp_dim, out_dim, **kwargs):
+def gem(inp_dim, out_dim, **kwargs):
     return GemHead(inp_dim, out_dim, layer="linear", **kwargs)
     
 
-@register_head
-def gem_conv(inp_dim, out_dim, **kwargs):  
-    return GemHead(inp_dim, out_dim, layer="conv", **kwargs)    
-
-
-    
 class GemHead(BaseHead):
     """ Generalized Mean Pooling Head
     
@@ -36,23 +29,21 @@ class GemHead(BaseHead):
         kwargs      dict        GeM pooling coefficient p=3.0    
                 
     """
-    def __init__(self, inp_dim, out_dim, layer="linear", **kwargs):
+    def __init__(self, inp_dim, out_dim, **kwargs):
         super(GemHead, self).__init__(inp_dim, out_dim)
 
+        #
         self.inp_dim = inp_dim
         self.out_dim = out_dim
 
         #
         p       = kwargs.pop("p", 3.0)
-               
-        # layer
-        layer = nn.Linear if layer=="linear" else partial(nn.Conv2d, kernel_size=(1,1), padding=0)
-
+            
         # pooling
         self.pool = GeM(p=p)
 
         # whitening
-        self.whiten = layer(inp_dim, out_dim, bias=True)
+        self.whiten = nn.Linear(inp_dim, out_dim, bias=True)
              
         # init 
         self.reset_parameters()

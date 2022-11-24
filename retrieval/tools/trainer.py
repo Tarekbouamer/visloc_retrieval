@@ -125,7 +125,7 @@ class TrainerBase:
                 for n in range(len(tuple_i)):
 
                     pred = self.model(tuple_i[n].cuda(), do_whitening=True)
-                    vecs[n, :]  = pred['feats']
+                    vecs[n, :]  = pred['features']
     
                 # compute loss 
                 loss = self.loss(vecs, target_i.cuda())
@@ -202,7 +202,7 @@ class TrainerBase:
                     # extract vectors
                     for n in range(len(tuple_i)):
                         pred = self.model(tuple_i[n].cuda(), do_whitening=True)
-                        vecs[n, :]  = pred['feats']
+                        vecs[n, :]  = pred['features']
         
                     # compute loss 
                     loss = self.loss(vecs, target_i.cuda())
@@ -226,21 +226,6 @@ class TrainerBase:
                 #
                 data_time = time.time()
                 
-    def state_dict(self):
-        ret = {"iteration": self.epoch}
-        hooks_state = {}
-        for h in self._hooks:
-            sd = h.state_dict()
-            if sd:
-                name = type(h).__qualname__
-                if name in hooks_state:
-                    # TODO handle repetitive stateful hooks
-                    continue
-                hooks_state[name] = sd
-        if hooks_state:
-            ret["hooks"] = hooks_state
-        return ret
-
     def load_state_dict(self, state_dict):
         logger = logging.getLogger(__name__)
         
@@ -425,7 +410,7 @@ class ImageRetrievalTrainer(TrainerBase):
         if hasattr(self.model, '_init_model'):
             #
             logger.info("init model layers")
-            sample_dl = build_sample_dataloader(self.get_dataset(), cfg=self.cfg)
+            sample_dl = build_sample_dataloader(self.train_dl , cfg=self.cfg)
 
             # 
             self.model._init_model(self.args, self.cfg,  self.model, sample_dl)

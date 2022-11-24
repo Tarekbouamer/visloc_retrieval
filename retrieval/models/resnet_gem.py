@@ -57,7 +57,17 @@ default_cfgs = {
         
     # gl18
     'gl18_resnet50_gem_2048':      
-        _cfg(drive='https://drive.google.com/uc?id=1AaS4aXe2FYyi-iiLetF4JAo0iRqKHQ2Z', out_dim=2048)
+        _cfg(drive='https://drive.google.com/uc?id=1AaS4aXe2FYyi-iiLetF4JAo0iRqKHQ2Z', out_dim=2048),
+    
+    # mobile 
+    'sfm_mobilenetv3_large_100_gem':  _cfg(out_dim=960),
+    
+    #
+    'sfm_tf_efficientnet_l2_ns_gem':  _cfg(out_dim=960),
+
+    #
+    'sfm_regnetz_e8_gem':  _cfg(out_dim=2048)
+
     }
 
 
@@ -146,6 +156,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
                              features_only=True, 
                              out_indices=feature_scales, 
                              pretrained=True) # always pretrained
+ 
     
     body_channels           = body.feature_info.channels()
     body_reductions         = body.feature_info.reduction()
@@ -282,11 +293,28 @@ class GemNet(BaseNet):
     
 # SfM-120k
 @register_model
-def sfm_resnet10t_gem(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k ResNet-10-T with GeM model.
+def sfm_mobilenetv3_large_100_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k mobilenetv3_large_100 with GeM model.
     """    
     model_args = dict(**kwargs)
-    return _create_model('sfm_resnet10t_gem', 'resnet10t', 'gem_linear' , cfg, pretrained, **model_args)
+    return _create_model('sfm_mobilenetv3_large_100_gem', 'mobilenetv3_large_100', 'gem' , cfg, pretrained, **model_args)
+
+@register_model
+def sfm_tf_efficientnet_l2_ns_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k mobilenetv3_large_100 with GeM model.
+    """    
+    model_args = dict(**kwargs)
+    return _create_model('sfm_tf_efficientnet_l2_ns_gem', 'tf_efficientnet_l2_ns', 'gem' , cfg, pretrained, **model_args)
+
+@register_model
+def sfm_regnetz_e8_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k regnetz_e8 with GeM model.
+    """    
+    model_args = dict(**kwargs)
+    return _create_model('sfm_regnetz_e8_gem', 'regnetz_e8', 'gem' , cfg, pretrained, **model_args)
+
+
+
 
 
 @register_model
@@ -294,7 +322,7 @@ def sfm_resnet18_gem_512(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-18 with GeM model.
     """
     model_args = dict(**kwargs)
-    return _create_model('sfm_resnet18_gem_512', 'resnet18', 'gem_linear', cfg, pretrained, **model_args)
+    return _create_model('sfm_resnet18_gem_512', 'resnet18', 'gem', cfg, pretrained, **model_args)
 
 
 @register_model
@@ -302,7 +330,7 @@ def sfm_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-50 with GeM model.
     """  
     model_args = dict(**kwargs)
-    return _create_model('sfm_resnet50_gem_2048', 'resnet50', 'gem_linear', cfg, pretrained, **model_args)
+    return _create_model('sfm_resnet50_gem_2048', 'resnet50', 'gem', cfg, pretrained, **model_args)
 
 
 @register_model
@@ -310,7 +338,7 @@ def sfm_resnet50_c4_gem_1024(cfg=None, pretrained=True, feature_scales=[1, 2, 3]
     """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales
     """   
     model_args = dict(**kwargs)
-    return _create_model('sfm_resnet50_c4_gem_1024', 'resnet50', 'gem_linear', cfg, pretrained, feature_scales, **model_args)
+    return _create_model('sfm_resnet50_c4_gem_1024', 'resnet50', 'gem', cfg, pretrained, feature_scales, **model_args)
 
 
 @register_model
@@ -318,7 +346,7 @@ def sfm_resnet101_gem_2048(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-101 with GeM model.
     """    
     model_args = dict(**kwargs)
-    return _create_model('sfm_resnet101_gem_2048', 'resnet101', 'gem_linear', cfg, pretrained, **model_args)
+    return _create_model('sfm_resnet101_gem_2048', 'resnet101', 'gem', cfg, pretrained, **model_args)
 
 
 @register_model
@@ -326,7 +354,7 @@ def sfm_resnet101_c4_gem_1024(cfg=None, pretrained=True, feature_scales=[1, 2, 3
     """Constructs a SfM-120k ResNet-101 with GeM model, only 4 features scales
     """    
     model_args = dict(**kwargs)
-    return _create_model('sfm_resnet101_c4_gem_1024', 'resnet101', 'gem_linear', cfg, pretrained, feature_scales, **model_args)
+    return _create_model('sfm_resnet101_c4_gem_1024', 'resnet101', 'gem', cfg, pretrained, feature_scales, **model_args)
 
 #Google Landmark 18
 @register_model
@@ -334,7 +362,7 @@ def gl18_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
     """Constructs a gl18 ResNet-50 with GeM model.
     """  
     model_args = dict(**kwargs)
-    return _create_model('gl18_resnet50_gem_2048', 'resnet50', 'gem_linear', cfg, pretrained, **model_args)
+    return _create_model('gl18_resnet50_gem_2048', 'resnet50', 'gem', cfg, pretrained, **model_args)
 
 # Google Landmark 20
 

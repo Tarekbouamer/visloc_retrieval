@@ -115,6 +115,7 @@ python3 ./scripts/test.py \
 - [ ] Add Changelog
 - [ ] Add shield IO
 - [x] Add results on roxford5k rparis6k.
+- [ ] Knowledge distillation smaller models and shorter sizes.
 
 <p align="right"><a href="#content">:arrow_up:</a></p>
 
