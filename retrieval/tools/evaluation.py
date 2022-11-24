@@ -7,7 +7,7 @@ from .dataloader            import build_sample_dataloader
 
 from retrieval.test         import  build_paris_oxford_dataset, test_asmk, test_global_descriptor
 from retrieval.feature_extractor import FeatureExtractor
-import retrieval.utils.evaluation.asmk as eval_asmk
+import retrieval.test.asmk as eval_asmk
 
 # logger
 import logging

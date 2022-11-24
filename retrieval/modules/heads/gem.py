@@ -2,11 +2,11 @@ from functools import partial
 
 import torch.nn as nn
 
-from  retrieval.modules.pools import GeM
-from .base import Head
-
-from .registry import register_head, model_entrypoint, is_model
+from .registry import register_head
 from .factory import create_head
+
+from .base import BaseHead
+from  retrieval.modules.pools import GeM
 
 
 # TODO: only one implementioan for gem no conv gem
@@ -21,7 +21,7 @@ def gem_conv(inp_dim, out_dim, **kwargs):
 
 
     
-class GemHead(Head):
+class GemHead(BaseHead):
     """ Generalized Mean Pooling Head
     
     references:

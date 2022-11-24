@@ -6,13 +6,13 @@ import numpy as np
 from pathlib import Path
 import cv2
 
-
 # logger
 import logging
 logger = logging.getLogger("retrieval")
 
 
 _EXT = ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']
+
 
 class ImagesListDataset(Dataset):
   

@@ -1,18 +1,16 @@
-
 import torch.nn as nn
 
 
-class Head(nn.Module):
+class BaseHead(nn.Module):
     """ Global Image Descriptor Head 
-   
-    Args:
 
         inp_dim:    int         the input features size  
         out_dim:    int         the final descriptor size
+        
     """
 
     def __init__(self, inp_dim, out_dim):
-        super(Head, self).__init__()
+        super(BaseHead, self).__init__()
 
         self.inp_dim = inp_dim
         self.out_dim = out_dim
@@ -32,9 +30,8 @@ class Head(nn.Module):
                 
     def forward(self, x, do_whitening=True):
         """ 
-        Args:
-                x:              torch.Tensor    input tensor [B, C, H, W] 
-                do_whitening:   boolean         do or skip whithening 
+            x:              torch.Tensor    input tensor [B, C, H, W] 
+            do_whitening:   boolean         do or skip whithening 
         """
                 
         raise NotImplementedError

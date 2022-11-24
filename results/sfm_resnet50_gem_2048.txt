@@ -1,21 +1,20 @@
-[11/23 13:53 retrieval]: build train dataloader
-[11/23 13:53 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5)
-[11/23 13:53 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/sfm_resnet50_gem_2048.pth'
-[11/23 13:53 retrieval]: body channels:[256, 512, 1024, 2048]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']
-[11/23 13:53 retrieval]: set evaluator on (global) mode
-[11/23 13:53 retrieval]: [roxford5k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
-[11/23 13:53 retrieval]: extraction done 6.328 seconds saved None
-[11/23 13:57 retrieval]: extraction done 253.7 seconds saved None
-[11/23 13:57 retrieval]: mAP     E: 84.9617  M: 67.1895   H: 40.4516
-[11/23 13:57 retrieval]: mP@k1   E: 98.5294  M: 97.1429   H: 81.4286
-[11/23 13:57 retrieval]: mP@k5   E: 93.8235  M: 92.8571   H: 66.0000
-[11/23 13:57 retrieval]: mP@k10   E: 89.9574  M: 86.7143   H: 54.5714
-[11/23 13:57 retrieval]: [rparis6k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
-[11/23 13:57 retrieval]: extraction done 3.79 seconds saved None
-[11/23 14:03 retrieval]: extraction done 320.0 seconds saved None
-[11/23 14:03 retrieval]: mAP     E: 92.6719  M: 78.3940   H: 57.8420
-[11/23 14:03 retrieval]: mP@k1   E: 98.5714  M: 100.0000   H: 98.5714
-[11/23 14:03 retrieval]: mP@k5   E: 97.7143  M: 99.7143   H: 93.7143
-[11/23 14:03 retrieval]: mP@k10   E: 96.2857  M: 98.5714   H: 90.1429
-[11/23 14:03 retrieval]: extraction scales [0.7071, 1.0, 1.4142]
-[11/23 14:03 retrieval]: feature saved ./db.h5
+[11/24 11:38 retrieval]: build train dataloader
+[11/24 11:38 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5)
+[11/24 11:38 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/sfm_resnet50_gem_2048.pth'
+[11/24 11:38 retrieval]: body channels:[256, 512, 1024, 2048]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']
+[11/24 11:38 retrieval]: set evaluator on (global) mode
+[11/24 11:38 retrieval]: [roxford5k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
+[11/24 11:39 retrieval]: extraction done 4.456 seconds saved None
+[11/24 11:40 retrieval]: extraction done 84.74 seconds saved None
+[11/24 11:40 retrieval]: mAP     E: 83.8319  M: 66.0149   H: 38.9579
+[11/24 11:40 retrieval]: mP@k1   E: 97.0588  M: 95.7143   H: 80.0000
+[11/24 11:40 retrieval]: mP@k5   E: 93.2353  M: 92.0952   H: 64.1429
+[11/24 11:40 retrieval]: mP@k10   E: 88.0882  M: 85.0952   H: 53.7143
+[11/24 11:40 retrieval]: [rparis6k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
+[11/24 11:40 retrieval]: extraction done 1.815 seconds saved None
+[11/24 11:42 retrieval]: extraction done 106.5 seconds saved None
+[11/24 11:42 retrieval]: mAP     E: 91.8250  M: 77.1550   H: 55.8243
+[11/24 11:42 retrieval]: mP@k1   E: 98.5714  M: 100.0000   H: 97.1429
+[11/24 11:42 retrieval]: mP@k5   E: 97.7143  M: 99.4286   H: 92.2857
+[11/24 11:42 retrieval]: mP@k10   E: 96.2381  M: 98.5714   H: 89.7143
+[11/24 11:42 retrieval]: extraction scales [1.0]

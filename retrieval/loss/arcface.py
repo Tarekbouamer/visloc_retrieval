@@ -9,12 +9,12 @@ import math
 class ArcMarginProduct(nn.Module):
     """
         Implement of large margin arc distance: :
-        Args:
-            in_features: size of each input sample
-            out_features: size of each output sample
-            s: norm of input feature
-            m: margin
-            cos(theta + m)
+        
+        in_features:        size of each input sample
+        out_features:       size of each output sample
+        s:                  norm of input feature
+        m:                  margin
+        cos(theta + m)
     """
     def __init__(self, in_features, out_features, s=30.0, m=0.50, easy_margin=False):
         super(ArcMarginProduct, self).__init__()

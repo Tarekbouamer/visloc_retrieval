@@ -1,33 +1,19 @@
 import os
 from  torch.utils.data import Dataset
 
-import numpy as np
-from PIL import Image, ImageFile
-
-from pathlib import Path
-from PIL import Image, ImageFile
-
-from pathlib import Path
+from PIL        import Image, ImageFile
+from pathlib    import Path
 
 INPUTS = ["img"]
+
+
 _EXT = ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']
-_EXT = ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']
+
 
 class ImagesFromList(Dataset):
     """ImagesFromList
         generic dataset from list of images
     """
-
-    def __init__(self, root, images=None, bbxs=None, transform=None):
-
-        if images is not None:
-            images_fn = [os.path.join(root, images[i]) for i in range(len(images))]
-        else:
-            # Load images
-            images_fn = []
-            for ext in _EXT:
-                images_fn += list(Path(root).glob('**/'+ ext)) 
-        #
     def __init__(self, root, images=None, bbxs=None, transform=None):
         
         if images is not None:
@@ -57,20 +43,10 @@ class ImagesFromList(Dataset):
         # for truncated images
         ImageFile.LOAD_TRUNCATED_IMAGES = True     
         
-        # 
-        
-        # corrupted files 
-        ImageFile.LOAD_TRUNCATED_IMAGES = True
-        
-        3
         with open(img_path, 'rb') as f:
             img = Image.open(f).convert('RGB')
           
         return img
-    
-    def get_name(self, _path):
-        return os.path.basename(_path)
-    
     
     def get_name(self,  _path):
         return os.path.basename(_path)
@@ -79,13 +55,8 @@ class ImagesFromList(Dataset):
 
         # image path and image name
         img_path    = self.images_fn[item]
-        img_name    = self.get_name(img_path)        
+        img_name        = self.get_name(img_path)
         
-        # image path and image name
-        img_path    = self.images_fn[item]
-        name        = self.get_name(img_path)
-        
-        # load image
         # load image
         img = self.load_img(img_path)
         
@@ -94,16 +65,11 @@ class ImagesFromList(Dataset):
             img = img.crop(self.bbxs[item])
 
         # transform
-        # transform
         if self.transform is not None:
             out = self.transform(img)
 
         #
         out['name'] = img_name
-        
-
-        # 
-        out['name'] = name        
         
         #
         return out

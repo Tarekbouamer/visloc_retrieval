@@ -148,7 +148,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
         freeze(body, frozen_layers) 
     
     # assert 
-    assert out_dim <= body_dim, (f"reduction {out_dim} has to be less than input dim {body_dim}")
+    assert out_dim <= body_dim, (f"reduction {out_dim} has to be less than or equal to input dim {body_dim}")
     
     # head
     head = create_head(head_name, 

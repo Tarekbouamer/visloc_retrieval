@@ -2,27 +2,26 @@ import sys
 
 from collections import defaultdict
 
-__all__ = ['list_models', 'is_model', 'model_entrypoint', 'list_modules', 'is_model_in_modules',
-           'is_pretrained_cfg_key', 'has_pretrained_cfg_key', 'get_pretrained_cfg_value', 'is_model_pretrained']
+__all__ = ['list_heads', 'is_head', 'head_entrypoint', 'list_modules', 'is_head_in_modules',
+           'is_pretrained_cfg_key', 'has_pretrained_cfg_key', 'get_pretrained_cfg_value', 'is_head_pretrained']
 
 
-_module_to_models = defaultdict(set)    # dict of sets to check membership of model in module
-_model_to_module = {}                   # mapping of model names to module names
-_model_entrypoints = {}                 # mapping of model names to entrypoint fns
-# _model_has_pretrained = set()           # set of model names that have pretrained weight url present
-# _model_pretrained_cfgs = dict()         # central repo for model default_cfgs
+_module_to_heads = defaultdict(set)     # dict of sets to check membership of head in module
+_head_to_module = {}                    # mapping of head names to module names
+_head_entrypoints = {}                  # mapping of head names to entrypoint fns
 
 
-def is_model(model_name):
-    """ Check if a model name exists
+
+def is_head(head_name):
+    """ Check if a head name exists
     """
-    return model_name in _model_entrypoints
+    return head_name in _head_entrypoints
 
 
-def model_entrypoint(model_name):
-    """Fetch a model entrypoint for specified model name
+def head_entrypoint(head_name):
+    """Fetch a head entrypoint for specified head name
     """
-    return _model_entrypoints[model_name]
+    return _head_entrypoints[head_name]
   
 
 def register_head(fn):
@@ -32,16 +31,16 @@ def register_head(fn):
     module_name_split = fn.__module__.split('.')
     module_name = module_name_split[-1] if len(module_name_split) else ''
 
-    # add model to __all__ in module
-    model_name = fn.__name__
+    # add head to __all__ in module
+    head_name = fn.__name__
     if hasattr(mod, '__all__'):
-        mod.__all__.append(model_name)
+        mod.__all__.append(head_name)
     else:
-        mod.__all__ = [model_name]
+        mod.__all__ = [head_name]
     
     # add entries to registry dict/sets
-    _model_entrypoints[model_name] = fn
-    _model_to_module[model_name] = module_name
-    _module_to_models[module_name].add(model_name)
+    _head_entrypoints[head_name] = fn
+    _head_to_module[head_name] = module_name
+    _module_to_heads[module_name].add(head_name)
        
     return fn

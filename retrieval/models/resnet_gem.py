@@ -40,14 +40,14 @@ def _cfg(url='', drive='', out_dim=1024, **kwargs):
  
  
 default_cfgs = {
-    #sfm resnet50
+    #resnet50
     'sfm_resnet50_gem_2048':        
         _cfg(drive='https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5', out_dim=2048),
     
     'sfm_resnet50_c4_gem_1024':     
         _cfg(drive='https://drive.google.com/uc?id=1ber3PbTF4ZWAmnBuJu5AEp2myVJFNM7F'),
     
-    # sfm resnet101
+    # resnet101
     'sfm_resnet101_gem_2048':       
         _cfg(drive='https://drive.google.com/uc?id=10CqmzZE_XwRCyoiYlZh03tfYk1jzeziz', out_dim=2048),
    
@@ -95,8 +95,7 @@ def _init_model(args, cfg, model, sample_dl):
     
     # stack
     vecs  = np.vstack(vecs)
-    print(vecs.shape)
-    
+
     logger.info('compute PCA')
     
     m, P  = PCA(vecs)
@@ -133,18 +132,15 @@ def _init_model(args, cfg, model, sample_dl):
     
 # create model function   
 def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feature_scales=[1, 2, 3, 4], **kwargs):
-    
-    #
-    print(kwargs)
-    
+        
     # assert
     assert body_name in timm.list_models(pretrained=True), f"model: {body_name}  not implemented timm models yet!"
 
-    # 
-    pretrained_cfg = get_pretrained_cfg(variant)
-    out_dim = pretrained_cfg.pop("out_dim", 0)
-    frozen  = kwargs.pop("frozen", [])
-    
+    # default cfg
+    default_cfg = get_pretrained_cfg(variant)
+    out_dim     = default_cfg.pop('out_dim', None)
+    frozen      = default_cfg.pop("frozen", [])
+
     # body
     body = timm.create_model(body_name, 
                              features_only=True, 
@@ -178,7 +174,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
     
     # 
     if pretrained:
-        load_pretrained(model, variant, pretrained_cfg) 
+        load_pretrained(model, variant, default_cfg) 
         
     logger.info(f"body channels:{body_channels}  reductions:{body_reductions}   layer_names: {body_module_names}")
     
@@ -191,8 +187,7 @@ def _create_model(variant, body_name, head_name, cfg=None, pretrained=True, feat
 
 # GemNet 
 class GemNet(BaseNet):
-    """ ImageRetrievalNet
-        General image retrieval model, consists of backbone and head
+    """ Gem Model
     """
     
     def parameter_groups(self, optim_cfg):
@@ -333,7 +328,7 @@ def sfm_resnet101_c4_gem_1024(cfg=None, pretrained=True, feature_scales=[1, 2, 3
     model_args = dict(**kwargs)
     return _create_model('sfm_resnet101_c4_gem_1024', 'resnet101', 'gem_linear', cfg, pretrained, feature_scales, **model_args)
 
-# TODO: Google Landmark 18
+#Google Landmark 18
 @register_model
 def gl18_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
     """Constructs a gl18 ResNet-50 with GeM model.
@@ -341,7 +336,7 @@ def gl18_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
     model_args = dict(**kwargs)
     return _create_model('gl18_resnet50_gem_2048', 'resnet50', 'gem_linear', cfg, pretrained, **model_args)
 
-# TODO: Google Landmark 20
+# Google Landmark 20
 
 
 if __name__ == '__main__':    

@@ -5,7 +5,7 @@ clear
 
 DATA_DIR='/media/dl/Data/datasets/'
 DATA_DIR='/media/loc/ssd_5127/tmp/how/how_data/'
-MODEL='sfm_resnet18_how_128'
+MODEL='sfm_resnet50_gem_2048'
 
 SCALES=1.0
 # SCALES=0.7071,1.0,1.4142

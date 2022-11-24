@@ -14,6 +14,7 @@ logger = logging.getLogger("retrieval")
 
 # inspired timm.models
 
+
 def load_state_dict(checkpoint_path, use_ema=True):
     """ load weights """
     
@@ -82,6 +83,7 @@ def load_pretrained(model, variant, pretrained_cfg, strict=True):
   
         #  load from drive
         state_dict = load_state_dict(save_path)
+    
     else:
         logger.warning("No pretrained weights exist or were found for this model. Using random initialization.")
         return
@@ -99,7 +101,7 @@ def create_model(model_name, cfg=None, pretrained=False, pretrained_cfg=None, **
         pretrained:         boolean         load model weights 
         pretrained_cfg:     dict            default config 
     """
-
+    # 
     kwargs = {k: v for k, v in kwargs.items() if v is not None}
     
     # check if model exsists

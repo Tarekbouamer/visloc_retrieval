@@ -103,8 +103,8 @@ def _natural_key(string_):
 def list_models(module='', pretrained=False, name_matches_cfg=False):
     """ list available model names, sorted alphabetically
     
-        pretrained:     bool        include only models with pretrained weights
-        name_matches_cfg (bool) - Include only models w/ model_name matching default_cfg name (excludes some aliases)
+        pretrained:         bool        include only models with pretrained weights
+        name_matches_cfg:   bool        include only models w/ model_name matching default_cfg name (excludes some aliases)
     """
     #
     if module:
@@ -120,4 +120,5 @@ def list_models(module='', pretrained=False, name_matches_cfg=False):
     if name_matches_cfg:
         models = set(_model_pretrained_cfgs).intersection(models)
     
+    #
     return list(sorted(models, key=_natural_key))
