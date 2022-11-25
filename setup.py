@@ -14,11 +14,10 @@ with open(str(root / 'requirements.txt'), 'r') as f:
     dependencies = f.read().split('\n')
     
 setup(
-    name='visloc_retrieval',
+    name='retrieval',
     version=version,
     packages=find_packages(),
     python_requires='>=3.7',
-    # install_requires=dependencies,
     author='Tarek BOUAMER',
     author_email="tarekbouamer1788@gmail.com",
     description=description,
@@ -35,6 +34,5 @@ setup(
                       'tensorboardX==2.5.1',
                       'gdown==4.5.1',
                       'timm==0.6.12',
-
                       ],
 )
