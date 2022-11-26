@@ -69,6 +69,7 @@ default_cfgs = {
     'sfm_regnetz_e8_gem':  _cfg(out_dim=2048),
     
     'sfm_tf_efficientnet_b7_ns_gem':  _cfg(out_dim=640),
+    'sfm_tf_efficientnet_b6_ns_gem':  _cfg(out_dim=576),
 
     }
 
@@ -322,6 +323,12 @@ def sfm_tf_efficientnet_b7_ns_gem(cfg=None, pretrained=True, **kwargs):
     model_args = dict(**kwargs)
     return _create_model('sfm_tf_efficientnet_b7_ns_gem', 'tf_efficientnet_b7_ns', 'gem' , cfg, pretrained, **model_args)
 
+@register_model
+def sfm_tf_efficientnet_b6_ns_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k tf_efficientnet_b6_ns	with GeM model.
+    """    
+    model_args = dict(**kwargs)
+    return _create_model('sfm_tf_efficientnet_b6_ns_gem', 'tf_efficientnet_b6_ns', 'gem' , cfg, pretrained, **model_args)
 
 
 @register_model

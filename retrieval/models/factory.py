@@ -79,7 +79,7 @@ def load_pretrained(model, variant, pretrained_cfg, strict=True):
         
         # download from gdrive if weights not found    
         if not os.path.exists(save_path):
-            save_path = gdown.download(pretrained_drive, save_path, quiet=False, use_cookies=False)
+            save_path = gdown.download(pretrained_drive, save_path, quiet=False, use_cookies=True)
   
         #  load from drive
         state_dict = load_state_dict(save_path)
