@@ -19,7 +19,7 @@ class BaseNet(nn.Module):
     def __check_size__(self, x, **kwargs):
         
         #
-        min_size = kwargs.pop('min_size', 100)
+        min_size = kwargs.pop('min_size', 0)
         max_size = kwargs.pop('max_size', 2000)
 
         # too large (area)
