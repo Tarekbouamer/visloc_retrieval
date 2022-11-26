@@ -67,10 +67,16 @@ default_cfgs = {
 
     #
     'sfm_regnetz_e8_gem':  _cfg(out_dim=2048),
-    
+    #
     'sfm_tf_efficientnet_b7_ns_gem':  _cfg(out_dim=640),
+    'sfm_tf_efficientnet_b7_gem':   _cfg(out_dim=640),
+    
+    #
     'sfm_tf_efficientnet_b6_ns_gem':  _cfg(out_dim=576),
 
+
+    #
+    'sfm_tf_efficientnet_b5_gem':   _cfg(out_dim=512),
     }
 
 
@@ -302,12 +308,14 @@ def sfm_mobilenetv3_large_100_gem(cfg=None, pretrained=True, **kwargs):
     model_args = dict(**kwargs)
     return _create_model('sfm_mobilenetv3_large_100_gem', 'mobilenetv3_large_100', 'gem' , cfg, pretrained, **model_args)
 
+
 @register_model
 def sfm_tf_efficientnet_l2_ns_gem(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k mobilenetv3_large_100 with GeM model.
     """    
     model_args = dict(**kwargs)
     return _create_model('sfm_tf_efficientnet_l2_ns_gem', 'tf_efficientnet_l2_ns', 'gem' , cfg, pretrained, **model_args)
+
 
 @register_model
 def sfm_regnetz_e8_gem(cfg=None, pretrained=True, **kwargs):
@@ -316,12 +324,30 @@ def sfm_regnetz_e8_gem(cfg=None, pretrained=True, **kwargs):
     model_args = dict(**kwargs)
     return _create_model('sfm_regnetz_e8_gem', 'regnetz_e8', 'gem' , cfg, pretrained, **model_args)
 
+
 @register_model
 def sfm_tf_efficientnet_b7_ns_gem(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k tf_efficientnet_b7_ns	with GeM model.
     """    
     model_args = dict(**kwargs)
     return _create_model('sfm_tf_efficientnet_b7_ns_gem', 'tf_efficientnet_b7_ns', 'gem' , cfg, pretrained, **model_args)
+
+
+@register_model
+def sfm_tf_efficientnet_b7_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k tf_efficientnet_b7	with GeM model.
+    """    
+    model_args = dict(**kwargs)
+    return _create_model('sfm_tf_efficientnet_b7_gem', 'tf_efficientnet_b7', 'gem' , cfg, pretrained, **model_args)
+
+
+@register_model
+def sfm_tf_efficientnet_b5_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k tf_efficientnet_b5	with GeM model.
+    """    
+    model_args = dict(**kwargs)
+    return _create_model('sfm_tf_efficientnet_b5_gem', 'tf_efficientnet_b5', 'gem' , cfg, pretrained, **model_args)
+
 
 @register_model
 def sfm_tf_efficientnet_b6_ns_gem(cfg=None, pretrained=True, **kwargs):

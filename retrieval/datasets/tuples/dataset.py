@@ -55,7 +55,7 @@ class ImagesFromList(Dataset):
 
         # image path and image name
         img_path    = self.images_fn[item]
-        img_name        = self.get_name(img_path)
+        img_name    = self.get_name(img_path)
         
         # load image
         img = self.load_img(img_path)
