@@ -1,0 +1,32 @@
+[11/21 14:22 retrieval]: build train dataloader
+[11/21 14:22 retrieval]: Loading pretrained weights from google drive (https://drive.google.com/uc?id=1w7sb1yP3_Y-I64aWg57NR10fDhiAOtg4)
+[11/21 14:22 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/resnet18_how.pth'
+[11/21 14:22 retrieval]: body channels:[64, 128, 256, 512]  reductions:[4, 8, 16, 32]   layer_names: ['layer1', 'layer2', 'layer3', 'layer4']
+[11/21 14:22 retrieval]: init evaluator on (asmk) mode
+[11/21 14:22 retrieval]: init asmk
+[11/21 14:22 retrieval]: train codebook 20000 :   ./db.h5/retrieval-SfM-120k_codebook.pkl
+[11/21 14:33 retrieval]: extraction done 642.2 seconds saved None
+[11/21 14:37 retrieval]: [roxford5k]: loading test dataset from /media/dl/Data/datasets/
+[11/21 14:37 retrieval]: {roxford5k}: extracting descriptors for database images
+[11/21 14:40 retrieval]: extraction done 182.2 seconds saved None
+[11/21 14:41 retrieval]: {roxford5k}: extracting descriptors for query images
+[11/21 14:41 retrieval]: extraction done 3.376 seconds saved None
+[11/21 14:41 retrieval]: average query time (quant + aggr + search) is 0.039s
+[11/21 14:41 retrieval]: mAP     E: 91.5131  M: 74.9449   H: 51.6735
+[11/21 14:41 retrieval]: mP@k1   E: 100.0000  M: 100.0000   H: 92.8571
+[11/21 14:41 retrieval]: mP@k5   E: 95.2941  M: 96.8571   H: 82.5714
+[11/21 14:41 retrieval]: mP@k10   E: 92.3950  M: 94.0000   H: 70.8571
+[11/21 14:41 retrieval]: {roxford5k}: running time = 3m 49s
+[11/21 14:41 retrieval]: [rparis6k]: loading test dataset from /media/dl/Data/datasets/
+[11/21 14:41 retrieval]: {rparis6k}: extracting descriptors for database images
+[11/21 14:45 retrieval]: extraction done 229.1 seconds saved None
+[11/21 14:46 retrieval]: {rparis6k}: extracting descriptors for query images
+[11/21 14:46 retrieval]: extraction done 3.258 seconds saved None
+[11/21 14:46 retrieval]: average query time (quant + aggr + search) is 0.037s
+[11/21 14:46 retrieval]: mAP     E: 93.3544  M: 79.9174   H: 59.6328
+[11/21 14:46 retrieval]: mP@k1   E: 100.0000  M: 100.0000   H: 97.1429
+[11/21 14:46 retrieval]: mP@k5   E: 96.8571  M: 99.7143   H: 95.7143
+[11/21 14:46 retrieval]: mP@k10   E: 95.8571  M: 99.0000   H: 93.1429
+[11/21 14:46 retrieval]: {rparis6k}: running time = 4m 44s
+[11/21 14:46 retrieval]: extraction scales [2.0, 1.414, 1.0, 0.707, 0.5, 0.353, 0.25]
+[11/21 14:46 retrieval]: feature saved ./db.h5

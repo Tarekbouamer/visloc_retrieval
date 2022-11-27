@@ -1,0 +1,6 @@
+[11/24 22:33 retrieval]: build train dataloader
+[11/24 22:33 retrieval]: No pretrained weights exist or were found for this model. Using random initialization.
+[11/24 22:33 retrieval]: body channels:[104, 176, 480, 1376]  reductions:[4, 8, 16, 32]   layer_names: ['blocks.1.10', 'blocks.2.10', 'blocks.4.15', 'blocks.6.5']
+[11/24 22:33 retrieval]: set evaluator on (global) mode
+[11/24 22:33 retrieval]: [roxford5k]: loading test dataset from /media/dl/Data/datasets/sfm
+[11/24 22:34 retrieval]: extraction done 8.384 seconds saved None

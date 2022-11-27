@@ -74,9 +74,15 @@ default_cfgs = {
     #
     'sfm_tf_efficientnet_b6_ns_gem':  _cfg(out_dim=576),
 
-
     #
     'sfm_tf_efficientnet_b5_gem':   _cfg(out_dim=512),
+    
+    #
+    'sfm_regnety_160_gem':   _cfg(out_dim=2048),
+
+    #
+    'sfm_regnety_120_gem':   _cfg(out_dim=2048),
+  
     }
 
 
@@ -355,6 +361,22 @@ def sfm_tf_efficientnet_b6_ns_gem(cfg=None, pretrained=True, **kwargs):
     """    
     model_args = dict(**kwargs)
     return _create_model('sfm_tf_efficientnet_b6_ns_gem', 'tf_efficientnet_b6_ns', 'gem' , cfg, pretrained, **model_args)
+
+
+@register_model
+def sfm_regnety_160_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k regnety_160 with GeM model.
+    """    
+    model_args = dict(**kwargs)
+    return _create_model('sfm_regnety_160_gem', 'regnety_160', 'gem' , cfg, pretrained, **model_args)
+
+
+@register_model
+def sfm_regnety_120_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k regnety_120 with GeM model.
+    """    
+    model_args = dict(**kwargs)
+    return _create_model('sfm_regnety_120_gem', 'regnety_120', 'gem' , cfg, pretrained, **model_args)
 
 
 @register_model
