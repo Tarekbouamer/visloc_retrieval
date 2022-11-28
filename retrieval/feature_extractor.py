@@ -239,7 +239,7 @@ class FeatureExtractor():
             self.writer = h5py.File(str(save_path), 'a')
         
         # dataloader
-        dataloader = self.__dataloader__(dataset,)
+        dataloader = self.__dataloader__(dataset)
         
         # L N D
         features, imids = [], []
