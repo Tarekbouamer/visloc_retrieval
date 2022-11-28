@@ -124,12 +124,9 @@ class FeatureExtractor():
         
         descs = []
         for it, name in enumerate(tqdm(names, total=len(names), colour='magenta', desc='load global'.rjust(15))):
-            x = fd[name]['desc'].__array__()
-            print(x.shape)
             descs.append(fd[name]['desc'].__array__())
          
         #   
-        print(np.stack(descs).shape)
         features = torch.from_numpy(np.stack(descs)).float()
         
         #
@@ -186,7 +183,7 @@ class FeatureExtractor():
             
             # extract 
             desc = self.model.extract_global(img, scales=scales, do_whitening=True, **kwargs)
-            desc = desc['features']
+            desc = desc['features'][0]
             
             # numpy
             desc = self.__to_numpy__(desc)
