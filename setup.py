@@ -32,7 +32,7 @@ setup(
                       'matplotlib',
                       'tqdm',
                       'tensorboardX==2.5.1',
-                      'gdown==4.5.1',
+                      'gdown==4.5.4',
                       'timm==0.6.12',
                       ],
 )
