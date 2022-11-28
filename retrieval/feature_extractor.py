@@ -117,6 +117,26 @@ class FeatureExtractor():
         else:
             return DataLoader(x, num_workers=1, shuffle=False, drop_last=False, pin_memory=True)
     
+    def load_global(self, save_path):
+        
+        fd      = h5py.File(save_path, 'r')
+        names   = list(fd.keys())
+        
+        descs = []
+        for it, name in enumerate(tqdm(names, total=len(names), colour='magenta', desc='load global'.rjust(15))):
+            descs.append(fd[name]['desc'].__array__())
+         
+        #   
+        features = torch.from_numpy(np.stack(descs, 0)).float()
+        
+        #
+        out = {
+            'features': features,
+            'save_path': save_path,
+        }
+        
+        return out 
+    
     @torch.no_grad()     
     def extract_global(self, dataset, scales=[1.0], save_path=None, **kwargs):
         """
@@ -134,9 +154,13 @@ class FeatureExtractor():
         # to eval
         self.eval()
         
-        # file writer
         if save_path is not None:
-            self.writer = h5py.File(str(save_path), 'a')
+            # load, no extaction 
+            if kwargs.pop('override', False):
+                return self.load_global(save_path)
+            else:
+                # writer
+                self.writer = h5py.File(str(save_path), 'a')
 
         # dataloader
         dataloader = self.__dataloader__(dataset, **kwargs)
@@ -279,7 +303,6 @@ if __name__ == '__main__':
     
     
     logger = setup_logger(output=".", name="retrieval")
-    # DATA_DIR='/media/dl/Data/datasets/test/oxford5k/jpg'
     DATA_DIR='/media/loc/ssd_5127/tmp/how/how_data/test/oxford5k/jpg'
     save_path='db.h5'
     
