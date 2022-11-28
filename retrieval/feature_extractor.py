@@ -127,7 +127,7 @@ class FeatureExtractor():
             descs.append(fd[name]['desc'].__array__())
          
         #   
-        features = torch.from_numpy(np.stack(descs, 0)).float()
+        features = torch.from_numpy(np.stack(descs)).float()
         
         #
         out = {
