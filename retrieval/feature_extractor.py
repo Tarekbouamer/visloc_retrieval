@@ -96,7 +96,7 @@ class FeatureExtractor():
         
         # normalize
         if normalize:
-            x = transforms(x)
+            x = self.transform(x)
 
         # BCHW
         if len(x.shape) < 4:
