@@ -66,7 +66,7 @@ default_cfgs = {
     'sfm_tf_efficientnet_l2_ns_gem':  _cfg(out_dim=1024),
 
     #
-    'sfm_regnetz_e8_gem':  _cfg(out_dim=2048),
+    'sfm_regnetz_d8_gem':  _cfg(out_dim=2048),
     #
     'sfm_tf_efficientnet_b7_ns_gem':  _cfg(out_dim=640),
     'sfm_tf_efficientnet_b7_gem':   _cfg(out_dim=640),
@@ -82,6 +82,8 @@ default_cfgs = {
 
     #
     'sfm_regnety_120_gem':   _cfg(out_dim=2048),
+
+    'sfm_resnet200d_gem':   _cfg(out_dim=2048),
   
     }
 
@@ -324,11 +326,19 @@ def sfm_tf_efficientnet_l2_ns_gem(cfg=None, pretrained=True, **kwargs):
 
 
 @register_model
-def sfm_regnetz_e8_gem(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k regnetz_e8 with GeM model.
+def sfm_regnetz_d8_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k regnetz_d8	with GeM model.
     """    
     model_args = dict(**kwargs)
-    return _create_model('sfm_regnetz_e8_gem', 'regnetz_e8', 'gem' , cfg, pretrained, **model_args)
+    return _create_model('sfm_regnetz_d8_gem', 'regnetz_d8', 'gem' , cfg, pretrained, **model_args)
+
+
+@register_model
+def sfm_resnet200d_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k resnet200d	with GeM model.
+    """    
+    model_args = dict(**kwargs)
+    return _create_model('sfm_resnet200d_gem', 'resnet200d', 'gem' , cfg, pretrained, **model_args)
 
 
 @register_model

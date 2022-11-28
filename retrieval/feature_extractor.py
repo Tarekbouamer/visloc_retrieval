@@ -182,7 +182,7 @@ class FeatureExtractor():
             img  = self.__cuda__(img) 
             
             # extract 
-            desc = self.model.extract_global(img, scales=scales, do_whitening=True, **kwargs)
+            desc = self.model.extract_global(img, scales=scales, do_whitening=True)
             desc = desc['features'][0]
             
             # numpy
@@ -258,7 +258,7 @@ class FeatureExtractor():
             img  = self.__cuda__(img) 
             
             # extract locals 
-            preds   = self.model.extract_locals(img, scales=scales, num_features=num_features, **kwargs)
+            preds   = self.model.extract_locals(img, scales=scales, num_features=num_features)
             desc    = preds['features']
 
             # numpy
