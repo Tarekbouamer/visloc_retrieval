@@ -57,7 +57,6 @@ class FeatureExtractor():
         self.model = self.__cuda__(self.model)
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model.to(device=device) 
-        print(device)
 
         # set to eval mode
         self.eval()
