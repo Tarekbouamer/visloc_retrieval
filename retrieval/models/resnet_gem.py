@@ -59,6 +59,9 @@ default_cfgs = {
     'gl18_resnet50_gem_2048':      
         _cfg(drive='https://drive.google.com/uc?id=1AaS4aXe2FYyi-iiLetF4JAo0iRqKHQ2Z', out_dim=2048),
     
+    
+    'sfm_ig_resnext101_32x8d_gem':  _cfg(out_dim=960),
+
     # mobile 
     'sfm_mobilenetv3_large_100_gem':  _cfg(out_dim=960),
     
@@ -387,6 +390,16 @@ def sfm_regnety_120_gem(cfg=None, pretrained=True, **kwargs):
     """    
     model_args = dict(**kwargs)
     return _create_model('sfm_regnety_120_gem', 'regnety_120', 'gem' , cfg, pretrained, **model_args)
+
+
+
+
+@register_model
+def sfm_ig_resnext101_32x8d_gem(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-18 with GeM model.
+    """
+    model_args = dict(**kwargs)
+    return _create_model('sfm_ig_resnext101_32x8d_gem', 'ig_resnext101_32x8d', 'gem', cfg, pretrained, **model_args)
 
 
 @register_model
