@@ -58,7 +58,10 @@ default_cfgs = {
     # gl18
     'gl18_resnet50_gem_2048':      
         _cfg(drive='https://drive.google.com/uc?id=1AaS4aXe2FYyi-iiLetF4JAo0iRqKHQ2Z', out_dim=2048),
-    
+
+    # gl20
+    'gl20_resnet50_gem_2048':      
+        _cfg(out_dim=2048),    
     
     'sfm_ig_resnext101_32x8d_gem':  _cfg(out_dim=960),
 
@@ -450,7 +453,12 @@ def gl18_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
     return _create_model('gl18_resnet50_gem_2048', 'resnet50', 'gem', cfg, pretrained, **model_args)
 
 # Google Landmark 20
-
+@register_model
+def gl20_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
+    """Constructs a gl20 ResNet-50 with GeM model.
+    """  
+    model_args = dict(**kwargs)
+    return _create_model('gl20_resnet50_gem_2048', 'resnet50', 'gem', cfg, pretrained, **model_args)
 
 if __name__ == '__main__':    
     create_fn = create_model("resnet50_c4_gem_1024", pretrained=True, p=1.234)

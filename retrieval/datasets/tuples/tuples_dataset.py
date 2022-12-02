@@ -3,6 +3,8 @@ from PIL import Image
 import numpy as np
 import pickle
 from tqdm import tqdm
+import random
+
 
 import torch
 import torch.utils.data as data
@@ -45,6 +47,8 @@ def load_gl_images(root_dir, name, mode):
     
     # loading db
     db_fn = path.join(root_dir, '{}.pkl'.format(name))
+    
+    print(db_fn)
     
     if not path.exists(db_fn):
         return [], {}
@@ -122,8 +126,13 @@ class TuplesDataset(data.Dataset):
         return rec["img"]
 
     def _load_positive(self, item):
-
-        positive_img_desc = self.images[self.positive_indices[item]]
+        
+        idx = self.positive_indices[item]
+        
+        if isinstance(idx, list):
+            idx = random.choice(idx)
+            
+        positive_img_desc = self.images[idx]
         positive_img = self.load_img_from_desc(positive_img_desc)
 
         rec = self.transform(positive_img)

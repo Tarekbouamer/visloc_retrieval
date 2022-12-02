@@ -261,8 +261,9 @@ class ImageRetrievalTrainer(TrainerBase):
         self.model              = self.build_model(cfg)
         
         self.train_dl           = self.build_train_loader(args, cfg)       
-        self.val_dl             = self.build_val_loader(args, cfg)         
-
+        # self.val_dl             = self.build_val_loader(args, cfg)         
+        self.val_dl = None
+        
         # params 
         self.start_epoch  = 1
         self.global_step  = 0

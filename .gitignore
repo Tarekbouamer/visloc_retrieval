@@ -12,7 +12,7 @@ image_retrieval
 *h5py
 *out.tfevents*
 *.pkl
-
+data
 # C extensions
 *.so
 

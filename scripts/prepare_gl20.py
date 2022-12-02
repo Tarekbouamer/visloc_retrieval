@@ -21,9 +21,9 @@ def _id_to_qid(_id_list, _id_dict_):
     
 def make_parser():
     # ArgumentParser
-    parser = argparse.ArgumentParser(description='Prepare Google Landmark 2018')
+    parser = argparse.ArgumentParser(description='Prepare Google Landmark 2020')
 
-    parser.add_argument('--data', metavar='EXPORT_DIR', help='path to train / val GL18 dataste')
+    parser.add_argument('--data', metavar='EXPORT_DIR', help='path to train / val GL20 dataste')
 
     args = parser.parse_args()
 
@@ -177,18 +177,19 @@ def main(args):
             continue
         
         # center key
-        m_key    = int( len(positive_keys) / 2.0)
-        pos_name = positive_keys[m_key]
+        # m_key    = int( len(positive_keys) / 2.0)
+        # pos_name = positive_keys[m_key]
         
-        # id 
-        pos_id  = name_to_id[pos_name]
-        
+        pos_ids = []
+        for pos_name in positive_keys:
+            pos_ids.append(name_to_id[pos_name])
+                
         # 
         rel_cid = os.path.relpath(cid, os.path.join(args.data, "train")).split(".")[0]
         
         # 
         db_dict['train']['qidxs'].append(it)
-        db_dict['train']['pidxs'].append(pos_id)        
+        db_dict['train']['pidxs'].append(pos_ids)        
         db_dict['train']['cluster'].append(cls)
         db_dict['train']['cids'].append(rel_cid)
         db_dict['train']['bbxs'].append(None)
