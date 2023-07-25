@@ -9,3 +9,4 @@ scikit-learn
 pyyaml
 flake8
 tensorboardX
+loguru>=0.5.3

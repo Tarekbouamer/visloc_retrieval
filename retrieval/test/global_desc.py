@@ -10,8 +10,7 @@ from retrieval.datasets import INPUTS
 import torch.nn.functional as functional
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 
 

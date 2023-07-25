@@ -5,8 +5,7 @@ from torch.utils.data import DataLoader
 
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 
 def build_paris_oxford_dataset(data_path, name_dataset, cfg):

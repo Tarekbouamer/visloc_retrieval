@@ -3,8 +3,7 @@ from collections import OrderedDict
 
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 
 def compute_ap(ranks, nres):

@@ -1,20 +1,16 @@
-import logging
-from math import log10
-from os import path
-
 import atexit
 import functools
 import logging
 import os
 import sys
-import time
-from collections import Counter
+from math import log10
+
 import torch
+from loguru import logger
 from tabulate import tabulate
 from termcolor import colored
 
 # from detectron2.utils.file_io import PathManager
-
 from .meters import AverageMeter
 
 
@@ -38,8 +34,7 @@ class _ColorfulFormatter(logging.Formatter):
         return prefix + " " + log
 
 
-@functools.lru_cache()  # so that calling setup_logger multiple times won't add many handlers
-
+@functools.lru_cache()
 def setup_logger(output=None, *, color=True, name="visloc", abbrev_name=None, suffix=None):
     """
     Initialize the detectron2 logger and set its verbosity level to "DEBUG".
@@ -58,15 +53,16 @@ def setup_logger(output=None, *, color=True, name="visloc", abbrev_name=None, su
     logger = logging.getLogger(name)
     logger.setLevel(logging.DEBUG)
     logger.propagate = False
-    
-    # Formaters 
-     
-    plain_formatter = logging.Formatter("[%(asctime)s %(name)s]: %(message)s", datefmt="%m/%d %H:%M")
+
+    # Formaters
+
+    plain_formatter = logging.Formatter(
+        "[%(asctime)s %(name)s]: %(message)s", datefmt="%m/%d %H:%M")
     color_formatter = _ColorfulFormatter(
-                        colored("[%(asctime)s %(name)s]: ", "green") + "%(message)s",
-                        datefmt="%m/%d %H:%M",
-                        root_name=name,
-                        abbrev_name=str(abbrev_name),)
+        colored("[%(asctime)s %(name)s]: ", "green") + "%(message)s",
+        datefmt="%m/%d %H:%M",
+        root_name=name,
+        abbrev_name=str(abbrev_name),)
 
     # console logging
     console_handler = logging.StreamHandler(stream=sys.stdout)
@@ -80,13 +76,14 @@ def setup_logger(output=None, *, color=True, name="visloc", abbrev_name=None, su
             filename = os.path.join(output, suffix + ".txt")
         else:
             filename = os.path.join(output, "log.txt")
-        
+
         file_handler = logging.FileHandler(filename, mode="w")
         file_handler.setFormatter(plain_formatter)
         file_handler.setLevel(logging.INFO)
         logger.addHandler(file_handler)
 
     return logger
+
 
 @functools.lru_cache(maxsize=None)
 def _cached_log_stream(filename):
@@ -96,28 +93,9 @@ def _cached_log_stream(filename):
     return io
 
 
-def create_small_table(small_dict):
-    """
-    Create a small table using the keys of small_dict as headers. This is only
-    suitable for small dictionaries.
-    Args:
-        small_dict (dict): a result dictionary of only a few items.
-    Returns:
-        str: the table as a string.
-    """
-    keys, values = tuple(zip(*small_dict.items()))
-    table = tabulate(
-        [values],
-        headers=keys,
-        tablefmt="pipe",
-        floatfmt=".3f",
-        stralign="center",
-        numalign="center",
-    )
-    return 
-
 # def get_logger():
 #     return logging.getLogger(_NAME)
+
 
 def _current_total_formatter(current, total):
     width = int(log10(total)) + 1
@@ -125,14 +103,17 @@ def _current_total_formatter(current, total):
 
 
 def iteration(logger, summary, phase, global_step, epoch, num_epochs, step, num_steps, values, multiple_lines=False):
-    
+
     # Build message and write summary
-    msg = _current_total_formatter(epoch, num_epochs) + " " + _current_total_formatter(step, num_steps)
+    msg = _current_total_formatter(
+        epoch, num_epochs) + " " + _current_total_formatter(step, num_steps)
     for k, v in values.items():
         if isinstance(v, AverageMeter):
-            msg += "\n" if multiple_lines else "" + "\t{}={:.3f} ({:.3f})".format(k, v.value.item(), v.mean.item())
+            msg += "\n" if multiple_lines else "" + \
+                "\t{}={:.3f} ({:.3f})".format(k, v.value.item(), v.mean.item())
             if summary is not None:
-                summary.add_scalar("{}/{}".format(phase, k), v.value.item(), global_step)
+                summary.add_scalar("{}/{}".format(phase, k),
+                                   v.value.item(), global_step)
         else:
             msg += "\n" if multiple_lines else "" + "\t{}={:.3f}".format(k, v)
             if summary is not None:
@@ -148,3 +129,47 @@ def _log_api_usage(identifier: str):
     inside facebook's infra.
     """
     torch._C._log_api_usage_once("detectron2." + identifier)
+
+
+def init_loguru(name="log", app_name="VisLoc", log_file=None, file_name="logging"):
+
+    # if log_file is directory then create a file name
+    if os.path.isdir(log_file):
+        log_file = os.path.join(log_file, file_name + ".log")
+
+    logger_format = (
+        "<g>{time:YYYY-MM-DD HH:mm}</g>|"
+        f"<m>{app_name}</m>|"
+        "<level>{level: <8}</level>|"
+        "<c>{name}</c>:<c>{function}</c>:<c>{line}</c>|"
+        "{extra[ip]} {extra[user]} <level>{message}</level>")
+
+    # ip and user
+    logger.configure(extra={"ip": "", "user": ""})  # Default values
+
+    # Remove the default logger configuration
+    logger.remove()
+    logger.add(log_file, enqueue=True)  # Add a file sink for logging
+
+    # You can add additional sinks for logging, such as console output
+    logger.add(sys.stderr, format=logger_format, colorize=True)
+
+    logger.success("init logger")
+
+    return logger
+
+
+def create_small_table(small_dict, fmt=".2f"):
+    """
+    """
+    keys, values = tuple(zip(*small_dict.items()))
+
+    table = tabulate(
+        [values],
+        headers=keys,
+        tablefmt="pipe",
+        floatfmt=fmt,
+        stralign="center",
+        numalign="center",
+    )
+    return table

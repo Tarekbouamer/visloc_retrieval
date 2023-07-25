@@ -14,8 +14,7 @@ from retrieval.utils.io   import create_withen_file_from_cfg
 from retrieval.utils.pca   import PCA
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 #
 def set_batchnorm_eval(m):

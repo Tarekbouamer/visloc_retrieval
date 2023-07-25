@@ -1,25 +1,19 @@
 import time
+
 import h5py
 import numpy as np
-from PIL import Image
-from tqdm import tqdm
-
 import torch
-import torch.nn.functional as functional
-from torch.utils.data import DataLoader
-
-from torchvision import transforms
-
-from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-
-from retrieval.utils.logging import setup_logger
-from retrieval.datasets import ImagesListDataset
-from retrieval.models import create_model, get_pretrained_cfg
-
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
+from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
+from torch.utils.data import DataLoader
+from torchvision import transforms
+from tqdm import tqdm
+
+from retrieval.datasets import ImagesListDataset
+from retrieval.models import create_model, get_pretrained_cfg
+from retrieval.utils.logging import init_loguru
 
 __DEBUG__ = False
 
@@ -303,8 +297,7 @@ class FeatureExtractor():
             
 if __name__ == '__main__':
     
-    
-    logger = setup_logger(output=".", name="retrieval")
+    logger = init_loguru(name="retrieval", log_file="retrieval.log")
     DATA_DIR='/media/loc/ssd_5127/tmp/how/how_data/test/oxford5k/jpg'
     save_path='db.h5'
     

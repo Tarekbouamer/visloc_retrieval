@@ -1,12 +1,10 @@
 # General
 import argparse
-from os import makedirs, path
-import numpy as np
-import torch 
+from os import path
 
 import retrieval
 import retrieval.datasets as data
-from  retrieval.utils.logging import  setup_logger
+from retrieval.utils.logging import init_loguru
 
 MODES = ['global', 'locals']
 
@@ -50,7 +48,8 @@ def make_parser():
 
 def main(args):
     
-    logger = setup_logger(output=".", name="retrieval")
+    # init retrieval logger
+    logger = init_loguru(name="retrieval", log_file=".", file_name="testing")    
     
     args.save_path = path.join(args.save_path, args.name + '.h5')
 

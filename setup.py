@@ -33,6 +33,7 @@ setup(
                       'tqdm',
                       'tensorboardX==2.5.1',
                       'gdown==4.5.4',
-                      'timm==0.6.12',
+                      'timm==0.5.4',
+                      'loguru>=0.5.3'
                       ],
 )

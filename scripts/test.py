@@ -1,22 +1,12 @@
 # General
 import argparse
 
-from os import makedirs, path
-import numpy as np
-import torch 
-
-import retrieval
-from retrieval.configuration            import DEFAULTS as DEFAULT_CONFIG
-from retrieval.utils.configurations     import make_config
-from retrieval.tools.events            import EventWriter
-
-from retrieval.tools.dataloader        import build_train_dataloader
-
-import retrieval.datasets as data
-
-from retrieval                  import  build_evaluator, create_model
-from retrieval.utils.logging    import  setup_logger
-from retrieval.utils.io         import  csv_float
+from retrieval import build_evaluator, create_model
+from retrieval.configuration import DEFAULTS as DEFAULT_CONFIG
+from retrieval.tools.dataloader import build_train_dataloader
+from retrieval.utils.configurations import make_config
+from retrieval.utils.io import csv_float
+from retrieval.utils.logging import init_loguru
 
 
 def make_parser():
@@ -57,7 +47,7 @@ def main(args):
     args.directory = 'results'
 
     #
-    logger = setup_logger(output=args.directory , name="retrieval", suffix=args.model)
+    logger = init_loguru(name="retrieval", log_file=args.directory, file_name="testing")
 
     # load cfg file 
     cfg = make_config(args.config, defauls=DEFAULT_CONFIG["default"])

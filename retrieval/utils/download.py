@@ -1,11 +1,11 @@
 import argparse
 import os
-import urllib.request
 import tarfile
+import urllib.request
 
+from retrieval.utils.logging import init_loguru
 
-from retrieval.utils.logging import setup_logger
-logger = setup_logger(name="retrieval")
+logger = init_loguru(name="retrieval")
 
 
 def create_dir(_dir):
@@ -155,7 +155,7 @@ def download_sfm120(data_dir):
     if not os.path.isdir(dst_dir):
         os.makedirs(os.path.join(datasets_dir, 'retrieval-SfM-30k'))
         os.system('ln -s {} {}'.format(dst_dir_old, dst_dir))
-        logger.info(f'created symbolic link to retrieval-SfM-30k/ims')
+        logger.info('created symbolic link to retrieval-SfM-30k/ims')
 
     # download db files
     src_dir = os.path.join('https://cmp.felk.cvut.cz/cnnimageretrieval/data', 'train', 'dbs')
@@ -225,7 +225,7 @@ def download_revisited1m(data_dir):
                         os.rename(dst_file_tmp, dst_file)
                         break
                     except:
-                        logger.warning(f'download failed. try this one again')
+                        logger.warning('download failed. try this one again')
 
         for dfi in range(nfiles):
             dl_file = dl_files.format(dfi+1)

@@ -11,8 +11,7 @@ from asmk import asmk_method, io_helpers, ASMKMethod, kernel as kern_pkg
 
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 PARAM_PATH="./retrieval/configuration/defaults/asmk.yml"
 

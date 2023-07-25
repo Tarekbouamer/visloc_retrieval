@@ -2,8 +2,7 @@
 from retrieval.loss import TripletLoss, ContrastiveLoss
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 def build_loss(cfg):
     

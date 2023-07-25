@@ -1,8 +1,7 @@
 from .registry import is_head, head_entrypoint
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 
 def create_head(head_name, inp_dim, out_dim, **kwargs):

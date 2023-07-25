@@ -1,6 +1,6 @@
 
 
-import logging
+from loguru import logger
 
 from collections import defaultdict, OrderedDict
 
@@ -9,8 +9,7 @@ import tensorboardX as tensorboard
 from torchvision.utils import make_grid
 import  torchvision.transforms as transforms
 # logger 
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 from math import log10     
  
@@ -102,7 +101,6 @@ class EventWriter(Writer):
     def __init__(self, directory, print_freq=10):
         
         self.summray    = tensorboard.SummaryWriter(directory, max_queue=5, flush_secs=10)
-        self.logger     = logging.getLogger(__name__)
         
         # 
         self.print_freq = print_freq

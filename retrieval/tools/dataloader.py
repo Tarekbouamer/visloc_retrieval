@@ -1,5 +1,5 @@
 import numpy as np
-import logging
+from loguru import logger
 
 from  torch.utils.data import DataLoader, SubsetRandomSampler
 
@@ -14,8 +14,7 @@ from retrieval.datasets import SatDataset
 from retrieval.datasets.misc  import collate_tuples
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")  
+from loguru import logger
 
 def build_dataset(args, cfg, transform, mode='train'):
     

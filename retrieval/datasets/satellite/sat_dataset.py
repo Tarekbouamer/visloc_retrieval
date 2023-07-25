@@ -10,8 +10,7 @@ import torch.utils.data as data
 from retrieval.datasets import ImagesFromList, ImagesTransform, INPUTS
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 
 NETWORK_INPUTS = ["q", "p", "ns"]

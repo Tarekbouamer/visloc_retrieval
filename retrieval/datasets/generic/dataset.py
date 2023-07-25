@@ -7,8 +7,7 @@ from pathlib import Path
 import cv2
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 
 _EXT = ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']

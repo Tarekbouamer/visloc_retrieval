@@ -22,8 +22,7 @@ from retrieval.utils.snapshot     import save_snapshot, resume_from_snapshot
 
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 
 class TrainerBase:

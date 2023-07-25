@@ -10,9 +10,8 @@ from retrieval.feature_extractor import FeatureExtractor
 import retrieval.test.asmk as eval_asmk
 
 # logger
-import logging
+from loguru import logger
 
-logger = logging.getLogger("retrieval")
 
 
 class DatasetEvaluator:

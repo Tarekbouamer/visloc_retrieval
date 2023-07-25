@@ -19,8 +19,7 @@ from retrieval.datasets     import  INPUTS
 from retrieval.utils.pca    import PCA
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 
 # default cfg          

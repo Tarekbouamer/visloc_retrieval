@@ -15,8 +15,7 @@ from .dataset import ImagesFromList, INPUTS
 from .transform import ImagesTransform
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 NETWORK_INPUTS = ["q", "p", "ns"]
 All_INPUTS     = ["q", "p", "ns"]

@@ -11,8 +11,7 @@ from  torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 from  torch.optim import Optimizer
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 
 def build_optimizer(cfg, model):

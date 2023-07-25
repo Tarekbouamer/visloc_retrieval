@@ -9,8 +9,7 @@ from .registry import is_model, model_entrypoint
 from torch.hub import load_state_dict_from_url
 
 # logger
-import logging
-logger = logging.getLogger("retrieval")
+from loguru import logger
 
 # inspired timm.models
 
