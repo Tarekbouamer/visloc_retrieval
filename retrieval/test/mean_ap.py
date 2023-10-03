@@ -1,20 +1,17 @@
+
 import numpy as np
-from collections import OrderedDict
-
-
-# logger
 from loguru import logger
 
 
 def compute_ap(ranks, nres):
     """
     Computes average precision for given ranked indexes.
-    
+
     Arguments
     ---------
     ranks : zerro-based ranks of positive images
     nres  : number of positive images
-    
+
     Returns
     -------
     ap    : average precision
@@ -50,11 +47,11 @@ def map(ranks, gnd, kappas=[]):
          Usage: 
            map = compute_map (ranks, gnd) 
                  computes mean average precsion (map) only
-        
+
            map, aps, pr, prs = compute_map (ranks, gnd, kappas) 
                  computes mean average precision (map), average precision (aps) for each query
                  computes mean precision at kappas (pr), precision at kappas (prs) for each query
-        
+
          Notes:
          1) ranks starts from 0, ranks.shape = db_size X #queries
          2) The junk results (e.g., the query itself) should be declared in the gnd stuct array
@@ -62,7 +59,7 @@ def map(ranks, gnd, kappas=[]):
     """
 
     map = 0.
-    nq = len(gnd) # number of queries
+    nq = len(gnd)  # number of queries
     aps = np.zeros(nq)
     pr = np.zeros(len(kappas))
     prs = np.zeros((nq, len(kappas)))
@@ -80,15 +77,15 @@ def map(ranks, gnd, kappas=[]):
 
         try:
             qgndj = np.array(gnd[i]['junk'])
-        except:
+        except Exception:
             qgndj = np.empty(0)
 
         # sorted positions of positive and junk images (0 based)
-        pos  = np.arange(ranks.shape[0])[np.in1d(ranks[:,i], qgnd)]
-        junk = np.arange(ranks.shape[0])[np.in1d(ranks[:,i], qgndj)]
+        pos = np.arange(ranks.shape[0])[np.in1d(ranks[:, i], qgnd)]
+        junk = np.arange(ranks.shape[0])[np.in1d(ranks[:, i], qgndj)]
 
-        k = 0;
-        ij = 0;
+        k = 0
+        ij = 0
         if len(junk):
             # decrease positions of positives based on the number of
             # junk images appearing before them
@@ -106,9 +103,9 @@ def map(ranks, gnd, kappas=[]):
         aps[i] = ap
 
         # compute precision @ k
-        pos += 1 # get it to 1-based
+        pos += 1  # get it to 1-based
         for j in np.arange(len(kappas)):
-            kq = min(max(pos), kappas[j]); 
+            kq = min(max(pos), kappas[j])
             prs[i, j] = (pos <= kq).sum() / kq
         pr = pr + prs[i, :]
 
@@ -119,21 +116,21 @@ def map(ranks, gnd, kappas=[]):
 
 
 def compute_map(ranks, gnd, kappas=[1, 5, 10]):
-      
+
     map_score, ap_scores, prk, pr_scores = map(ranks, gnd, kappas=kappas)
 
     logger.info(f"mAP {map_score*100:.4f}")
-    
+
     msg = "mP@k:"
     for k in range(len(kappas)):
         msg += " k@{}: {:.4f}".format(kappas[k], prk[k]*100)
-    
+
     logger.info(msg)
-    
+
     score = {
         "map": map_score
-        }
-     
+    }
+
     return score
 
 
@@ -141,24 +138,24 @@ def compute_map_revisited(ranks, gnd, kappas=[1, 5, 10]):
     """
         compute easy medium and hard mAPs  
     """
-    # easy 
+    # easy
     gnd_t = []
     for i in range(len(gnd)):
         g = {}
-        g['ok']     = np.concatenate([gnd[i]['easy']])
-        g['junk']   = np.concatenate([gnd[i]['junk'], gnd[i]['hard']])
+        g['ok'] = np.concatenate([gnd[i]['easy']])
+        g['junk'] = np.concatenate([gnd[i]['junk'], gnd[i]['hard']])
         gnd_t.append(g)
 
     mapE, apsE, mprE, prsE = map(ranks, gnd_t, kappas)
-    
+
     # medium
     gnd_t = []
     for i in range(len(gnd)):
         g = {}
-  
-        g['ok']     = np.concatenate([gnd[i]['easy'], gnd[i]['hard']])
-        g['junk']   = np.concatenate([gnd[i]['junk']])
-            
+
+        g['ok'] = np.concatenate([gnd[i]['easy'], gnd[i]['hard']])
+        g['junk'] = np.concatenate([gnd[i]['junk']])
+
         gnd_t.append(g)
 
     mapM, apsM, mprM, prsM = map(ranks, gnd_t, kappas)
@@ -166,25 +163,26 @@ def compute_map_revisited(ranks, gnd, kappas=[1, 5, 10]):
     # hard
     gnd_t = []
     for i in range(len(gnd)):
-        g = {} 
-        g['ok']     = np.concatenate([gnd[i]['hard']])
-        g['junk']   = np.concatenate([gnd[i]['junk'], gnd[i]['easy']])  
+        g = {}
+        g['ok'] = np.concatenate([gnd[i]['hard']])
+        g['junk'] = np.concatenate([gnd[i]['junk'], gnd[i]['easy']])
         gnd_t.append(g)
 
     mapH, apsH, mprH, prsH = map(ranks, gnd_t, kappas)
 
-
-    logger.info(f"mAP     E: {mapE*100:.4f}  M: {mapM*100:.4f}   H: {mapH*100:.4f}")
+    logger.info(
+        f"mAP     E: {mapE*100:.4f}  M: {mapM*100:.4f}   H: {mapH*100:.4f}")
 
     for k in range(len(kappas)):
-        logger.info(f"mP@k{kappas[k]}   E: {mprE[k]*100:.4f}  M: {mprM[k]*100:.4f}   H: {mprH[k]*100:.4f}")
+        logger.info(
+            f"mP@k{kappas[k]}   E: {mprE[k]*100:.4f}  M: {mprM[k]*100:.4f}   H: {mprH[k]*100:.4f}")
 
-    # score 
+    # score
     score = {
         "Easy":     mapE,
         "Medium":   mapM,
         "Hard":     mapH,
         "map": (mapE + mapM + mapH) / 3.0
-        }
-    
+    }
+
     return score

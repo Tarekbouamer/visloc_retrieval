@@ -6,7 +6,6 @@ import numpy as np
 from pathlib import Path
 import cv2
 
-# logger
 from loguru import logger
 
 

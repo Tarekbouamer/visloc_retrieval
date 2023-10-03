@@ -1,1 +1,0 @@
-from .oxford_paris import ParisOxfordTestDataset

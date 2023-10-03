@@ -1,45 +1,32 @@
-# core
-from retrieval.utils.misc        import OTHER_LAYERS, NORM_LAYERS
-from retrieval.utils.misc        import scheduler_from_config
 
-from retrieval.modules.pools import RET_LAYERS
-# 
-import torch
+#
 import torch.optim as optim
-import torch.nn as nn
-from  torch.optim.lr_scheduler import ExponentialLR, LambdaLR 
-from  torch.optim import Optimizer
-
-# logger
-from loguru import logger
+from torch.optim import Optimizer
+from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 
 
 def build_optimizer(cfg, model):
-    
-    optim_cfg   = cfg["optimizer"]
-    
     # params groups
-    params = model.parameter_groups(optim_cfg)
+    params = model.parameter_groups(cfg)
 
-   
     all_params = []
     for x in params:
         all_params.extend(x['params'])
-        
 
     assert len(all_params) == len([p for p in model.parameters() if p.requires_grad]), \
-          "not all parameters that require grad are accounted for in the optimizer" 
-    
-    # optimizer
-    if optim_cfg.get("type") == 'SGD':
-        optimizer   = optim.SGD(params, nesterov=optim_cfg.getboolean("nesterov"))
-    elif optim_cfg.get("type") == 'Adam':
-        optimizer   = optim.Adam(params)
-    elif optim_cfg.get("type") == 'AdamW':
-        optimizer   = optim.AdamW(params)
-    else:
-        raise KeyError("unrecognized optimizer {}".format(optim_cfg["type"]))
+        "not all parameters that require grad are accounted for in the optimizer"
 
+    # optimizer
+    if cfg.optimizer.type == 'SGD':
+        optimizer = optim.SGD(
+            params, nesterov=cfg.optimizer.getboolean("nesterov"))
+    elif cfg.optimizer.type == 'Adam':
+        optimizer = optim.Adam(params)
+    elif cfg.optimizer.type == 'AdamW':
+        optimizer = optim.AdamW(params)
+    else:
+        raise KeyError("unrecognized optimizer {}".format(
+            cfg.optimizer["type"]))
 
     return optimizer
 
@@ -58,7 +45,8 @@ class _LRScheduler(object):
                 if 'initial_lr' not in group:
                     raise KeyError("param 'initial_lr' is not specified "
                                    "in param_groups[{}] when resuming an optimizer".format(i))
-        self.base_lrs = list(map(lambda group: group['initial_lr'], optimizer.param_groups))
+        self.base_lrs = list(
+            map(lambda group: group['initial_lr'], optimizer.param_groups))
         self.step(last_epoch + 1)
         self.last_epoch = last_epoch
 
@@ -86,8 +74,8 @@ class _LRScheduler(object):
         self.last_epoch = epoch
         for param_group, lr in zip(self.optimizer.param_groups, self.get_lr()):
             param_group['lr'] = lr
-     
-                       
+
+
 class BurnInLR(_LRScheduler):
     def __init__(self, base, steps, start):
         self.base = base
@@ -110,40 +98,41 @@ class BurnInLR(_LRScheduler):
             return [base_lr * (self.last_epoch * alpha + beta) for base_lr in self.base_lrs]
         else:
             return self.base.get_lr()
-        
-        
+
+
 def build_lr_scheduler(cfg, optimizer):
     """
         Build a LR scheduler from config.
     """
-    
+
     scheduler_types = ["linear", "exp"]
-    
-    scheduler_cfg   = cfg["scheduler"]
-    
+
+    scheduler_cfg = cfg["scheduler"]
+
     assert scheduler_cfg["type"] in scheduler_types
 
-    params      = scheduler_cfg.getstruct("params")
-    num_epochs  = scheduler_cfg.getint("epochs")
+    params = scheduler_cfg.params
+    num_epochs = scheduler_cfg.epochs
 
     # linear
     if scheduler_cfg["type"] == "linear":
-        beta    = float(params["from"])
-        alpha   = float(params["to"] - beta) / num_epochs
+        beta = float(params["from"])
+        alpha = float(params["to"] - beta) / num_epochs
 
         scheduler = LambdaLR(optimizer, lambda it: it * alpha + beta)
-    
+
     # exponential
     elif scheduler_cfg["type"] == "exp":
         scheduler = ExponentialLR(optimizer,
-                                gamma=params["gamma"])
+                                  gamma=params["gamma"])
     else:
-        raise ValueError(f"unrecognized scheduler type {scheduler_cfg['type']}, valid options: {scheduler_types}")
-    
+        raise ValueError(
+            f"unrecognized scheduler type {scheduler_cfg['type']}, valid options: {scheduler_types}")
+
     # warm up
-    if scheduler_cfg.getint("burn_in_steps") != 0:
+    if scheduler_cfg.burn_in_steps != 0:
         scheduler = BurnInLR(scheduler,
-                             scheduler_cfg.getint("burn_in_steps"),
-                             scheduler_cfg.getfloat("burn_in_start"))
+                             scheduler_cfg.burn_in_steps,
+                             scheduler_cfg.burn_in_start)
     print(scheduler.optimizer)
     return scheduler

@@ -9,7 +9,6 @@ from retrieval.test         import  build_paris_oxford_dataset, test_asmk, test_
 from retrieval.feature_extractor import FeatureExtractor
 import retrieval.test.asmk as eval_asmk
 
-# logger
 from loguru import logger
 
 
@@ -33,11 +32,11 @@ class DatasetEvaluator:
         self.writer = writer
         
         #  
-        self.test_datasets  = cfg["test"].getstruct("datasets")
-        self.scales    = cfg["test"].getboolean("multi_scale")
+        self.test_datasets  = cfg.test.datasets
+        self.scales    = cfg.test.multi_scale
         
         #
-        self.descriptor_size = cfg["global"].getint("global_dim")
+        self.descriptor_size = cfg.body.out_dim
 
         # 
         self.cfg    = cfg
@@ -134,7 +133,7 @@ class ASMKEvaluator(DatasetEvaluator):
         self.train_dl = kwargs.pop('train_dl', None)
          
         # number of sampled image 
-        self.num_samples = cfg["test"].getint("num_samples")
+        self.num_samples = cfg.test.num_samples
                     
         #
         logger.info(f"set evaluator on ({self.test_mode}) mode")
@@ -148,7 +147,7 @@ class ASMKEvaluator(DatasetEvaluator):
         asmk, params = eval_asmk.asmk_init()
         
         # train codebook
-        save_path =  os.path.join(self.args.directory, self.cfg["dataloader"].get("dataset") + "_codebook.pkl")
+        save_path =  os.path.join(self.args.directory, self.cfg.dataloader.dataset + "_codebook.pkl")
 
         # sample loader
         sample_dl = build_sample_dataloader(self.train_dl,

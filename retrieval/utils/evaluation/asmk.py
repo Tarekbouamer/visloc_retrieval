@@ -16,8 +16,7 @@
 # from retrieval.utils.evaluation.ParisOxfordEval import compute_map
 
 
-# # logger
-# from loguru import logger
+# # from loguru import logger
 # 
 
 # PARAM_PATH="./retrieval/configuration/defaults/asmk.yml"

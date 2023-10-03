@@ -1,18 +1,16 @@
 
 
-from loguru import logger
+from collections import OrderedDict, defaultdict
+from math import log10
 
-from collections import defaultdict, OrderedDict
-
-import torch
 import tensorboardX as tensorboard
-from torchvision.utils import make_grid
-import  torchvision.transforms as transforms
-# logger 
+import torch
+import torchvision.transforms as transforms
+
+# logger
 from loguru import logger
 
-from math import log10     
- 
+
 def _current_total_formatter(current, total):
     width = int(log10(total)) + 1
     return ("[{:" + str(width) + "}/{:" + str(width) + "}]").format(current, total)
@@ -21,7 +19,6 @@ def _current_total_formatter(current, total):
 class Meter:
     def __init__(self):
         self._states = OrderedDict()
-        
 
     def register_state(self, name, tensor):
         if name not in self._states and isinstance(tensor, torch.Tensor):
@@ -65,28 +62,31 @@ class ConstantMeter(Meter):
 class AverageMeter(ConstantMeter):
     def __init__(self, shape=(), momentum=1.):
         super(AverageMeter, self).__init__(shape)
-        self.register_state("sum",      torch.zeros(shape,  dtype=torch.float32))
-        self.register_state("count",    torch.tensor(0,     dtype=torch.float32))
-        
+        self.register_state("sum",      torch.zeros(
+            shape,  dtype=torch.float32))
+        self.register_state("count",    torch.tensor(
+            0,     dtype=torch.float32))
+
         self.momentum = momentum
 
     def update(self, value):
         super(AverageMeter, self).update(value)
         self.sum.mul_(self.momentum).add_(value)
         self.count.mul_(self.momentum).add_(1.)
-  
+
     @property
     def mean(self):
         if self.count.item() == 0:
             return torch.tensor(0.)
         else:
             return self.sum / self.count.clamp(min=1)
-        
-        
+
+
 class Writer:
     """
         Base class for writers that obtain events from :class:`EventStorage` and process them.
     """
+
     def write(self):
         raise NotImplementedError
 
@@ -99,99 +99,101 @@ class EventWriter(Writer):
     """
 
     def __init__(self, directory, print_freq=10):
-        
-        self.summray    = tensorboard.SummaryWriter(directory, max_queue=5, flush_secs=10)
-        
-        # 
+
+        self.summray = tensorboard.SummaryWriter(
+            directory, max_queue=5, flush_secs=10)
+
+        #
         self.print_freq = print_freq
-        self.histories  = OrderedDict()
-        
-        # 
-        for mode in ["train", "eval", "test" ]:
-            self.histories[mode] = defaultdict(AverageMeter)       
-        
-        # 
+        self.histories = OrderedDict()
+
+        #
+        for mode in ["train", "eval", "test"]:
+            self.histories[mode] = defaultdict(AverageMeter)
+
+        #
         self.is_training = True
-        
-        self.inv_transform = transforms.Normalize( 
-                                    mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
-                                    std=[  1/0.229,       1/0.224,       1/0.225])
+
+        self.inv_transform = transforms.Normalize(
+            mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
+            std=[1/0.229,       1/0.224,       1/0.225])
+
     def train(self):
         self.mode = "train"
         self.is_training = True
-        
+
         self.history = self.histories["train"]
 
     def eval(self):
         self.mode = "eval"
         self.is_training = False
-        
+
         self.history = self.histories["eval"]
 
     def test(self):
         self.mode = "test"
         self.is_training = False
-        
+
         self.history = self.histories["test"]
 
     def add_scalar(self, name, value, iter):
         # summary board
         self.summray.add_scalar(name, value, iter)
-  
+
     def add_scalars(self, data, iter):
         print(data)
-        for k , v in data.items():
+        for k, v in data.items():
             self.add_scalar(self.mode + "/" + k, v, iter)
 
     def add_images(self, images, iter):
         if iter % self.print_freq == 0:
-            for id , im in enumerate(images):
+            for id, im in enumerate(images):
                 im = self.inv_transform(im)
                 self.summray.add_images(f'tuple/{id}', im, iter)
 
     def add_graph(self, model, images=None):
         images = images[0].cuda()
         self.summray.add_graph(model, images)
-        
+
     def put(self, name, value):
         # update history
         history = self.history[name]
         history.update(value)
-    
+
     def get(self):
         return dict(self.history)
-    
+
     def set(self, state_dicts):
-        
+
         self.train()
-        
+
         for key in ['loss', 'total_loss', 'data_time', 'batch_time']:
             self.history[key].load_state_dict(state_dicts[key])
-        
+
     def write(self, global_step):
         for k, v in self.history.items():
             if isinstance(v, AverageMeter):
-                self.summray.add_scalar(self.mode + "/" + k, v.value.item(), global_step)
-         
+                self.summray.add_scalar(
+                    self.mode + "/" + k, v.value.item(), global_step)
+
     def log(self, epoch, num_epochs, step, num_steps):
         """
             Print metrics and stats to terminal
         """
         # epoch and steps
-        msg  = _current_total_formatter(epoch, num_epochs) + " " + _current_total_formatter(step, num_steps)
+        msg = _current_total_formatter(
+            epoch, num_epochs) + " " + _current_total_formatter(step, num_steps)
 
         # metrics
         for k, v in self.history.items():
             if isinstance(v, AverageMeter):
-                msg += "\t{}={:.3f} ({:.3f})".format(k, v.value.item(), v.mean.item())
+                msg += "\t{}={:.3f} ({:.3f})".format(k,
+                                                     v.value.item(), v.mean.item())
 
         # memory usage megabites
         if torch.cuda.is_available():
-            max_mem_mb = torch.cuda.max_memory_allocated() / 1024.0 / 1024.0        
-            msg  += "\t mem={:.2f}".format(max_mem_mb)
+            max_mem_mb = torch.cuda.max_memory_allocated() / 1024.0 / 1024.0
+            msg += "\t mem={:.2f}".format(max_mem_mb)
 
         # log
-        logger.info(msg)        
-            
-
-
+        logger.info(msg)

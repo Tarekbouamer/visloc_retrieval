@@ -6,6 +6,7 @@ __pycache__/
 #  
 experiments
 pretrained_models
+hub
 pretrained_drive
 image_retrieval
 *h5

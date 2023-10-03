@@ -2,14 +2,14 @@
 [11/17 11:44 retrieval]: Loaded state_dict from checkpoint 'pretrained_drive/resnet101_c4_gem_1024.pth'
 [11/17 11:44 retrieval]: body channels:[256, 512, 1024]  reductions:[4, 8, 16]   layer_names: ['layer1', 'layer2', 'layer3']
 [11/17 11:44 retrieval]: init evaluator on (global) mode
-[11/17 11:44 retrieval]: [roxford5k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
+[11/17 11:44 retrieval]: [roxford5k]: loading test dataset from /media/loc/ssd_512/tmp/how/how_data/
 [11/17 11:45 retrieval]: extraction done 5.143 seconds saved None
 [11/17 11:47 retrieval]: extraction done 123.9 seconds saved None
 [11/17 11:47 retrieval]: mAP     E: 82.1185  M: 62.8067   H: 36.5599
 [11/17 11:47 retrieval]: mP@k1   E: 98.5294  M: 97.1429   H: 84.2857
 [11/17 11:47 retrieval]: mP@k5   E: 91.6912  M: 91.1429   H: 59.4286
 [11/17 11:47 retrieval]: mP@k10   E: 85.7458  M: 83.2857   H: 49.5714
-[11/17 11:47 retrieval]: [rparis6k]: loading test dataset from /media/loc/ssd_5127/tmp/how/how_data/
+[11/17 11:47 retrieval]: [rparis6k]: loading test dataset from /media/loc/ssd_512/tmp/how/how_data/
 [11/17 11:47 retrieval]: extraction done 2.258 seconds saved None
 [11/17 11:49 retrieval]: extraction done 156.7 seconds saved None
 [11/17 11:49 retrieval]: mAP     E: 90.4352  M: 74.6432   H: 52.6654

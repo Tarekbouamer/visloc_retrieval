@@ -1,12 +1,4 @@
-wheel
-Pillow
-numpy
-umsgpack
-Cython
-tqdm
-scikit-image
-scikit-learn 
-pyyaml
-flake8
+opencv-contrib-python==4.6.0.66
+opencv-python==4.6.0.66
+pandas
 tensorboardX
-loguru>=0.5.3

@@ -41,7 +41,7 @@ class BaseNet(nn.Module):
     def device(self):
         return next(self.parameters()).device
     
-    def parameter_groups(self, optim_cfg):
+    def parameter_groups(self, cfg):
         """Return torch parameter groups"""
         raise NotImplementedError
 

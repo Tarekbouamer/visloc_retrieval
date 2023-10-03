@@ -4,7 +4,7 @@ from os import path
 
 import retrieval
 import retrieval.datasets as data
-from retrieval.utils.logging import init_loguru
+from core.logging import init_loguru
 
 MODES = ['global', 'locals']
 

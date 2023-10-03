@@ -1,12 +1,9 @@
 import torch
 
-from retrieval.utils.misc import config_to_string
-
-
 
 def save_snapshot(file, config, epoch, last_score, best_score, global_step, **kwargs):
     data = {
-        "config": config_to_string(config),
+        "config": config,
         "state_dict": dict(kwargs),
         "training_meta": {
             "epoch": epoch,
@@ -31,24 +28,28 @@ def pre_train_from_snapshots(model, snapshots, modules):
         if module_name is None:
             for module_name in modules:
                 if module_name in state_dict:
-                    _load_pretraining_dict(getattr(model, module_name), state_dict[module_name])
+                    _load_pretraining_dict(
+                        getattr(model, module_name), state_dict[module_name])
         else:
             if module_name in modules:
-                _load_pretraining_dict(getattr(model, module_name), state_dict[module_name])
+                _load_pretraining_dict(
+                    getattr(model, module_name), state_dict[module_name])
             else:
-                raise ValueError("Unrecognized network module {}".format(module_name))
+                raise ValueError(
+                    "Unrecognized network module {}".format(module_name))
 
 
 def resume_from_snapshot(model, snapshot, modules):
     snapshot = torch.load(snapshot, map_location="cpu")
-    
+
     state_dict = snapshot["state_dict"]
 
     for module in modules:
         if module in state_dict:
             _load_pretraining_dict(getattr(model, module), state_dict[module])
         else:
-            raise KeyError("The given snapshot does not contain a state_dict for module '{}'".format(module))
+            raise KeyError(
+                "The given snapshot does not contain a state_dict for module '{}'".format(module))
 
     return snapshot
 

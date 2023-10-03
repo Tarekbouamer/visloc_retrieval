@@ -1,15 +1,10 @@
 import sys
-
 from collections import defaultdict
 
-__all__ = ['list_heads', 'is_head', 'head_entrypoint', 'list_modules', 'is_head_in_modules',
-           'is_pretrained_cfg_key', 'has_pretrained_cfg_key', 'get_pretrained_cfg_value', 'is_head_pretrained']
-
-
-_module_to_heads = defaultdict(set)     # dict of sets to check membership of head in module
+# dict of sets to check membership of head in module
+_module_to_heads = defaultdict(set)
 _head_to_module = {}                    # mapping of head names to module names
 _head_entrypoints = {}                  # mapping of head names to entrypoint fns
-
 
 
 def is_head(head_name):
@@ -22,10 +17,10 @@ def head_entrypoint(head_name):
     """Fetch a head entrypoint for specified head name
     """
     return _head_entrypoints[head_name]
-  
+
 
 def register_head(fn):
-    
+
     # lookup containing module
     mod = sys.modules[fn.__module__]
     module_name_split = fn.__module__.split('.')
@@ -37,10 +32,10 @@ def register_head(fn):
         mod.__all__.append(head_name)
     else:
         mod.__all__ = [head_name]
-    
+
     # add entries to registry dict/sets
     _head_entrypoints[head_name] = fn
     _head_to_module[head_name] = module_name
     _module_to_heads[module_name].add(head_name)
-       
+
     return fn

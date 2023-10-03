@@ -1,16 +1,12 @@
-# General
 import argparse
 from os import makedirs, path
 
 import numpy as np
 import torch
+from core.config import load_cfg
+from core.logging import init_loguru
 
-from retrieval.configuration import DEFAULTS as DEFAULT_CONFIG
-
-# Image Retrieval
 from retrieval.tools import ImageRetrievalTrainer
-from retrieval.utils.configurations import make_config
-from retrieval.utils.logging import init_loguru
 
 
 def make_parser():
@@ -25,7 +21,7 @@ def make_parser():
     parser.add_argument('--data',       metavar='EXPORT_DIR',
                         help='dataset folder')
     parser.add_argument("--config",     metavar="FILE",         type=str, help="cfg file",
-                        default='image_retrieval/configuration/defaults/default.ini')
+                        default='retrieval/configuration/default.yaml')
     parser.add_argument("--eval",       action="store_true",
                         help="do evaluation")
     parser.add_argument('--resume',     action="store_true",
@@ -36,29 +32,19 @@ def make_parser():
 
 def make_dir(cfg, directory):
 
-    extension = "{}".format(cfg["dataloader"].get("dataset"))
-    extension += "_{}".format(cfg["body"].get("arch"))
-    extension += "_{}_m{:.2f}".format(cfg["global"].get(
-        "loss"), cfg["global"].getfloat("loss_margin"))
+    extension = "{}".format(cfg.dataloader.dataset)
+    extension += "_{}".format(cfg.body.arch)
+    extension += "_{}_m{:.2f}".format(cfg.loss.type,
+                                      cfg.loss.margin)
 
-    if cfg["global"].getstruct("pooling"):
-        extension += "_{}".format(cfg["global"].getstruct("pooling")["name"])
+    extension += "_{}_lr{:.1e}_wd{:.1e}".format(cfg.optimizer.type,
+                                                cfg.optimizer.lr,
+                                                cfg.optimizer.weight_decay)
 
-    if cfg["global"].get("attention"):
-        extension += "_{}_encs{}_h{}".format(cfg["global"].get("attention"),
-                                             cfg["global"].getfloat(
-                                                 "num_encs"),
-                                             cfg["global"].getfloat("num_heads"))
+    extension += "_nnum{}".format(cfg.dataloader.neg_num)
 
-    extension += "_{}_lr{:.1e}_wd{:.1e}".format(cfg["optimizer"].get("type"),
-                                                cfg["optimizer"].getfloat(
-                                                    "lr"),
-                                                cfg["optimizer"].getfloat("weight_decay"))
-
-    extension += "_nnum{}".format(cfg["dataloader"].getint("neg_num"))
-
-    extension += "_bsize{}_imsize{}".format(cfg["dataloader"].getint("batch_size"),
-                                            cfg["dataloader"].getint("max_size"))
+    extension += "_bsize{}_imsize{}".format(cfg.dataloader.batch_size,
+                                            cfg.dataloader.max_size)
 
     # make directory
     directory = path.join(directory, extension)
@@ -72,7 +58,7 @@ def make_dir(cfg, directory):
 def main(args):
 
     # initialize device
-    device_id, device = args.local_rank, torch.device(args.local_rank)
+    device_id, device = args.local_rank, torch.device(args.local_rank)  # noqa: F841
     torch.cuda.set_device(device_id)
 
     # random seed
@@ -81,7 +67,7 @@ def main(args):
     np.random.seed(0)
 
     # load cfg file
-    cfg = make_config(args.config, defauls=DEFAULT_CONFIG["default"])
+    cfg = load_cfg(args.config)
 
     # create experiment folder
     args.directory = make_dir(cfg, args.directory)

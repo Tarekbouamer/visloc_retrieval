@@ -1,11 +1,13 @@
 from os import path
 
-from retrieval.datasets import ImagesFromList, ImagesTransform, INPUTS, ParisOxfordTestDataset
+from loguru import logger
 from torch.utils.data import DataLoader
 
-
-# logger
-from loguru import logger
+from retrieval.datasets import (
+    ImagesFromList,
+    ImagesTransform,
+    ParisOxfordTestDataset,
+)
 
 
 def build_paris_oxford_dataset(data_path, name_dataset, cfg):
@@ -17,11 +19,11 @@ def build_paris_oxford_dataset(data_path, name_dataset, cfg):
     db = ParisOxfordTestDataset(root_dir=data_path, name=name_dataset)
     
     # options 
-    trans_opt = {   "max_size":     cfg["test"].getint("max_size")}
+    trans_opt = {   "max_size":     cfg.test.max_size}
             
     dl_opt = {  "batch_size":   1, 
                 "shuffle":      False, 
-                "num_workers":  cfg["test"].getint("num_workers"), 
+                "num_workers":  cfg.test.num_workers, 
                 "pin_memory":   True }  
     
     # query loader

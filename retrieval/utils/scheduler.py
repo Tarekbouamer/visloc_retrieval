@@ -23,7 +23,8 @@ class _LRScheduler(object):
                 if 'initial_lr' not in group:
                     raise KeyError("param 'initial_lr' is not specified "
                                    "in param_groups[{}] when resuming an optimizer".format(i))
-        self.base_lrs = list(map(lambda group: group['initial_lr'], optimizer.param_groups))
+        self.base_lrs = list(
+            map(lambda group: group['initial_lr'], optimizer.param_groups))
         self.step(last_epoch + 1)
         self.last_epoch = last_epoch
 
@@ -92,7 +93,8 @@ class LambdaLR(_LRScheduler):
         The learning rate lambda functions will only be saved if they are callable objects
         and not if they are functions or lambdas.
         """
-        state_dict = {key: value for key, value in self.__dict__.items() if key not in ('optimizer', 'lr_lambdas')}
+        state_dict = {key: value for key, value in self.__dict__.items(
+        ) if key not in ('optimizer', 'lr_lambdas')}
         state_dict['lr_lambdas'] = [None] * len(self.lr_lambdas)
 
         for idx, fn in enumerate(self.lr_lambdas):
@@ -206,7 +208,8 @@ class ExponentialLR(_LRScheduler):
 
         return [base_lr * self.gamma ** self.last_epoch
                 for base_lr in self.base_lrs]
-        
+
+
 class BurnInLR(_LRScheduler):
     def __init__(self, base, steps, start):
         self.base = base
@@ -229,6 +232,3 @@ class BurnInLR(_LRScheduler):
             return [base_lr * (self.last_epoch * alpha + beta) for base_lr in self.base_lrs]
         else:
             return self.base.get_lr()
-
-
-

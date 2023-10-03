@@ -1,27 +1,25 @@
 
-from retrieval.loss import TripletLoss, ContrastiveLoss
-
-# logger
 from loguru import logger
 
+from retrieval.loss import ContrastiveLoss, TripletLoss
+
+LOSSES = ["triplet", "contrastive"]
+
+
 def build_loss(cfg):
-    
-    # parse params with default values
-    global_config = cfg["global"]
 
     # Create Loss
-    logger.debug("creating Loss function { %s }", global_config.get("loss"))
-    
-    loss_name       = global_config.get("loss")
-    loss_margin     = global_config.getfloat("loss_margin")
-    
+    logger.debug(f"creating Loss function {cfg.loss.type}")
+
+    loss_name = cfg.loss.type
+    loss_margin = cfg.loss.margin
+
     # Triplet
     if loss_name == 'triplet':
         return TripletLoss(margin=loss_margin)
-    
-    # Constractive   
+    # Constractive
     elif loss_name == 'contrastive':
         return ContrastiveLoss(margin=loss_margin)
-    
     else:
-        raise NotImplementedError(f"loss not implemented yet {global_config.get('loss') }" )
+        raise NotImplementedError(
+            f"Loss {loss_name} not implemented, available: {LOSSES}")
