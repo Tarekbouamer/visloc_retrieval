@@ -1,9 +1,9 @@
 general:
   seed: 0
   gpu_id: 0
-  log_interval: 40
-  val_interval: 1
-  test_interval: 1
+  log_interval: 20
+  val_interval: 2
+  test_interval: 2
   cudnn_benchmark: False
 
 body:
@@ -15,7 +15,7 @@ body:
 
 pca:
   num_samples: 3000
-  update: False
+  update: True
 
 loss:
   type: triplet
@@ -39,8 +39,8 @@ scheduler:
 dataloader:
   dataset: retrieval-SfM-120k
   neg_num: 5
-  query_size: 200
-  pool_size: 2000
+  query_size: 2000
+  pool_size: 20000
   max_size: 640
   num_workers: 6
   batch_size: 5

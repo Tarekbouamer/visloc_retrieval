@@ -3,6 +3,7 @@ import time
 import h5py
 import numpy as np
 import torch
+from core.device import get_device
 from core.registry.register import get_pretrained_cfg
 from loguru import logger
 from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
@@ -17,7 +18,7 @@ __DEBUG__ = False
 
 
 class FeatureExtractorOptions(object):
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    device = get_device()
 
 
 class FeatureExtractor():

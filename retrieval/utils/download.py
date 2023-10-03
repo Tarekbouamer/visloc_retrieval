@@ -46,15 +46,17 @@ def download_oxford_paris(data_dir):
             src_dir = 'https://www.robots.ox.ac.uk/~vgg/data/parisbuildings'
             dl_files = ['paris_1-v1.tgz', 'paris_2-v1.tgz']
         else:
-            raise ValueError('Unknown dataset: {}!'.format(dataset))
+            raise ValueError(f'Unknown dataset: {dataset}!')
 
         dst_dir = os.path.join(datasets_dir, dataset, 'jpg')
         if not os.path.isdir(dst_dir):
 
             # for oxford and paris download images
             if dataset == 'oxford5k' or dataset == 'paris6k':
-                print('>> Dataset {} directory does not exist. Creating: {}'.format(
-                    dataset, dst_dir))
+                print(
+                    f'>> Dataset {dataset} directory does not exist. \
+                        Creating: {dst_dir}')
+
                 os.makedirs(dst_dir)
                 for dli in range(len(dl_files)):
                     dl_file = dl_files[dli]
@@ -72,20 +74,21 @@ def download_oxford_paris(data_dir):
 
                     # create tmp folder
                     dst_dir_tmp = os.path.join(dst_dir, 'tmp')
-                    os.system('mkdir {}'.format(dst_dir_tmp))
+                    os.system(f'mkdir {dst_dir_tmp}')
 
                     # extract in tmp folder
-                    os.system('tar -zxf {} -C {}'.format(dst_file, dst_dir_tmp))
+                    os.system(f'tar -zxf {dst_file} -C {dst_dir_tmp}')
 
                     # remove all (possible) subfolders by moving only files in dst_dir
                     os.system(
                         'find {} -type f -exec mv -i {{}} {} \\;'.format(dst_dir_tmp, dst_dir))
 
                     # remove tmp folder
-                    os.system('rm -rf {}'.format(dst_dir_tmp))
+                    os.system(f'rm -rf {dst_dir_tmp}')
                     logger.info(
                         f'Extraction done, dataset {dataset} archive {dl_file}')
-                    os.system('rm {}'.format(dst_file))
+
+                    os.system(f'rm {dst_file}')
 
             # symbol links
             elif dataset == 'roxford5k' or dataset == 'rparis6k':
@@ -96,20 +99,20 @@ def download_oxford_paris(data_dir):
                 dst_dir_old = os.path.join(datasets_dir, dataset_old, 'jpg')
                 os.mkdir(os.path.join(datasets_dir, dataset))
 
-                os.system('ln -s {} {}'.format(dst_dir_old, dst_dir))
+                os.system(f'ln -s {dst_dir_old} {dst_dir}')
                 logger.info(
                     'created symbolic link from {dataset_old} jpg to {dataset} jpg')
 
         gnd_src_dir = os.path.join(
             'https://cmp.felk.cvut.cz/cnnimageretrieval/data', 'test', dataset)
         gnd_dst_dir = os.path.join(datasets_dir, dataset)
-        gnd_dl_file = 'gnd_{}.pkl'.format(dataset)
+        gnd_dl_file = f'gnd_{dataset}.pkl'
         gnd_src_file = os.path.join(gnd_src_dir, gnd_dl_file)
         gnd_dst_file = os.path.join(gnd_dst_dir, gnd_dl_file)
 
         if not os.path.exists(gnd_dst_file):
             logger.info('downloading dataset {dataset} ground truth file')
-            os.system('wget {} -O {}'.format(gnd_src_file, gnd_dst_file))
+            os.system(f'wget {gnd_src_file} -O {gnd_dst_file}')
 
 
 def download_sfm120(data_dir):
@@ -148,10 +151,10 @@ def download_sfm120(data_dir):
         os.system('wget {} -O {}'.format(src_file, dst_file))
 
         logger.info(f'extracting {dst_file}')
-        os.system('tar -zxf {} -C {}'.format(dst_file, dst_dir))
+        os.system(f'tar -zxf {dst_file} -C {dst_dir}')
 
         logger.info(f'extraction done, deleting {dst_file}')
-        os.system('rm {}'.format(dst_file))
+        os.system(f'rm {dst_file}')
 
     # symlink for train/retrieval-SfM-30k/
     dst_dir_old = os.path.join(datasets_dir, 'retrieval-SfM-120k', 'ims')

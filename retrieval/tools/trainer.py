@@ -12,6 +12,7 @@ from retrieval.models import create_retrieval
 from retrieval.utils.snapshot import resume_from_snapshot, save_snapshot
 
 from .dataloader import (
+    build_sample_dataloader,
     build_train_dataloader,
     build_val_dataloader,
 )
@@ -337,7 +338,7 @@ class ImageRetrievalTrainer(TrainerBase):
     def after_epoch(self):
 
         snapshot_last = os.path.join(
-            self.args.directory, "last_model.pth.tar".format())
+            self.args.directory, "last_model.pth.tar")
 
         logger.info(f"save snapshot:    {snapshot_last}")
 
@@ -356,7 +357,7 @@ class ImageRetrievalTrainer(TrainerBase):
         # save model ema
         if self.model_ema is not None:
             snapshot_ema = os.path.join(
-                self.args.directory, "ema_model.pth.tar".format())
+                self.args.directory, "ema_model.pth.tar")
 
             logger.info(f"save ema snapshot:    {snapshot_ema}")
 
@@ -414,16 +415,14 @@ class ImageRetrievalTrainer(TrainerBase):
             logger.info(f"save best snapshot:   {best_snapshot_path}")
 
     def init_model(self):
-        # FIXME: init model
-        pass
-        # if hasattr(self.model, '_init_model'):
-        #     #
-        #     logger.info("init model layers")
-        #     sample_dl = build_sample_dataloader(self.train_dl, cfg=self.cfg)
+        if hasattr(self.model, '_init_model'):
+            #
+            logger.info("init model layers")
+            sample_dl = build_sample_dataloader(self.train_dl, cfg=self.cfg)
 
-        #     #
-        #     self.model._init_model(self.args, self.cfg,  self.model, sample_dl)
-        #     logger.info("init model done")
+            #
+            self.model._init_model(self.args, self.cfg,  self.model, sample_dl)
+            logger.info("init model done")
 
     def before_train(self):
 

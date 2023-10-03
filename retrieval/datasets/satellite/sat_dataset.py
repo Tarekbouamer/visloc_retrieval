@@ -77,7 +77,7 @@ class SatDataset(data.Dataset):
 
             for city in self.cities:
 
-                print("=====> {}".format(city))
+                print(f"=====> {city}")
 
                 q_offset = len(self.qImages)
                 db_offset = len(self.images)
@@ -151,7 +151,7 @@ class SatDataset(data.Dataset):
         elif path.exists(img_desc):
             img_file = img_desc
         else:
-            raise IOError("Cannot find any image for id {} ".format(img_desc))
+            raise IOError(f"Cannot find any image for id {img_desc} ")
 
         return Image.open(img_file).convert(mode="RGB")
 

@@ -3,13 +3,14 @@ from copy import deepcopy
 from typing import List
 
 import numpy as np
-from omegaconf import OmegaConf
 import timm
 import torch
 import torch.nn.functional as functional
-from core.registry.factory import load_pretrained, load_state_dict
+from core.device import get_device
+from core.registry.factory import load_state_dict
 from core.registry.register import get_pretrained_cfg
 from loguru import logger
+from omegaconf import OmegaConf
 from timm.utils.model import freeze
 from tqdm import tqdm
 
@@ -96,7 +97,7 @@ def _init_model(args, cfg, model, sample_dl):
         model.eval()
 
     # options
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    device = get_device()
 
     #
     model_head = model.head
@@ -204,7 +205,7 @@ def _create_retrieval(variant, body_name, head_name, cfg=None, pretrained=True, 
 
     #
     if pretrained:
-        save_path   = "hub" + "/" + variant + ".pth"
+        save_path = "hub" + "/" + variant + ".pth"
         state_dict = load_state_dict(save_path)["state_dict"]
         model.body.load_state_dict(state_dict["body"])
         model.head.load_state_dict(state_dict["head"])

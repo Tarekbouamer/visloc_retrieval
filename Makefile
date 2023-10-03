@@ -19,13 +19,12 @@ lint:
 	ruff check ./retrieval/ --ignore E501 --quiet 
 
 asmk:
-	export PYTHONPATH=${PYTHONPATH}:$(realpath thirdparty/asmk/) \
-
+	echo ${PYTHONPATH}
+	
 build_asmk:
 	pip3 install pyaml numpy faiss-gpu && \
 	cd thirdparty/asmk/ && \
 	python3 setup.py build_ext --inplace && \
 	rm -r build && \
 	cd ../../
-
 

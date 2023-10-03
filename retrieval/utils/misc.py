@@ -6,17 +6,17 @@ import torch.distributed as dist
 from . import scheduler as lr_scheduler
 
 
-def scheduler_from_config(scheduler_config, optimizer, epoch_length):
-    assert scheduler_config["type"] in (
+def scheduler_from_config(cfg, optimizer, epoch_length):
+    assert cfg.scheduler.type in (
         "linear", "step", "exp", "poly", "multistep")
 
-    params = scheduler_config.params
+    params = cfg.scheduler.params
 
-    if scheduler_config["type"] == "linear":
-        if scheduler_config["update_mode"] == "batch":
-            count = epoch_length * scheduler_config.epochs
+    if cfg.scheduler.type == "linear":
+        if cfg.scheduler["update_mode"] == "batch":
+            count = epoch_length * cfg.scheduler.epochs
         else:
-            count = scheduler_config.epochs
+            count = cfg.scheduler.epochs
 
         beta = float(params["from"])
         alpha = float(params["to"] - beta) / count
@@ -24,35 +24,35 @@ def scheduler_from_config(scheduler_config, optimizer, epoch_length):
         scheduler = lr_scheduler.LambdaLR(optimizer,
                                           lambda it: it * alpha + beta)
 
-    elif scheduler_config["type"] == "step":
+    elif cfg.scheduler.type == "step":
         scheduler = lr_scheduler.StepLR(optimizer,
                                         params["step_size"],
                                         params["gamma"])
 
-    elif scheduler_config["type"] == "exp":
+    elif cfg.scheduler.type == "exp":
         scheduler = lr_scheduler.ExponentialLR(optimizer,
                                                gamma=params["gamma"])
-    elif scheduler_config["type"] == "poly":
-        if scheduler_config["update_mode"] == "batch":
-            count = epoch_length * scheduler_config.epochs
+    elif cfg.scheduler.type == "poly":
+        if cfg.scheduler["update_mode"] == "batch":
+            count = epoch_length * cfg.scheduler.epochs
         else:
-            count = scheduler_config.epochs
+            count = cfg.scheduler.epochs
         scheduler = lr_scheduler.LambdaLR(optimizer,
                                           lambda it: (1 - float(it) / count) ** params["gamma"])
 
-    elif scheduler_config["type"] == "multistep":
+    elif cfg.scheduler.type == "multistep":
         scheduler = lr_scheduler.MultiStepLR(optimizer,
                                              params["milestones"],
                                              params["gamma"])
 
     else:
-        raise ValueError("Unrecognized scheduler type {}, valid options: 'linear', 'step', 'poly', 'multistep'"
-                         .format(scheduler_config["type"]))
+        raise ValueError(f"Unrecognized scheduler type {cfg.scheduler.type}, \
+                          valid options: 'linear', 'step', 'poly', 'multistep'")
 
-    if scheduler_config.burn_in_steps != 0:
+    if cfg.scheduler.burn_in_steps != 0:
         scheduler = lr_scheduler.BurnInLR(scheduler,
-                                          scheduler_config.burn_in_steps,
-                                          scheduler_config.burn_in_start)
+                                          cfg.scheduler.burn_in_steps,
+                                          cfg.scheduler.burn_in_start)
 
     return scheduler
 

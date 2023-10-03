@@ -23,19 +23,16 @@ def create_experiment_file_from_cfg(cfg, directory, logger=None):
     # Create export dir name if it doesnt exist in your experiment folder
     extension = "{}".format(cfg.dataloader.dataset)
     extension += "_{}".format(cfg.body.arch)
-
     extension += "_{}_m{:.2f}".format(cfg.loss.type,
                                       cfg.loss.margin)
-
     extension += "_{}_lr{:.1e}_wd{:.1e}".format(cfg.optimizer.type,
                                                 cfg.optimizer.lr,
                                                 cfg.optimizer.weight_decay)
-
     extension += "_nnum{}".format(cfg.dataloader.neg_num)
-
     extension += "_bsize{}_imsize{}".format(cfg.dataloader.batch_size,
                                             cfg.dataloader.max_size)
 
+    # Create export dir
     create_experiment_file(directory, extension)
 
     return directory

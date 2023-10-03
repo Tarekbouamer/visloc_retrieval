@@ -23,7 +23,7 @@ def load_sfm_images(root_dir, name, mode):
     ims_root = path.join(db_root, 'ims')
 
     # loading db
-    db_fn = path.join(db_root, '{}.pkl'.format(name))
+    db_fn = path.join(db_root, f'{name}.pkl')
 
     with open(db_fn, 'rb') as f:
         db = pickle.load(f)[mode]
@@ -43,7 +43,7 @@ def load_gl_images(root_dir, name, mode):
     ims_root = path.join(root_dir, 'train')
 
     # loading db
-    db_fn = path.join(root_dir, '{}.pkl'.format(name))
+    db_fn = path.join(root_dir, f'{name}.pkl')
 
     if not path.exists(db_fn):
         return [], {}

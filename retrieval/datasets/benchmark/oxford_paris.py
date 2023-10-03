@@ -20,7 +20,7 @@ def ParisOxfordTestDataset(root_dir, name=None):
     """
 
     if name not in TEST_DATASETS:
-        raise ValueError('Unknown dataset: {}!'.format(name))
+        raise ValueError(f'Unknown dataset: {name}!')
 
     meta = {}
 
@@ -51,7 +51,7 @@ def ParisOxfordTestDataset(root_dir, name=None):
 
     else:
         db_root = path.join(root_dir, 'test', name)
-        pkl_path = path.join(db_root, 'gnd_{}.pkl'.format(name))
+        pkl_path = path.join(db_root, f'gnd_{name}.pkl')
 
         print
 

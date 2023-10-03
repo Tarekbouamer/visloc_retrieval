@@ -36,7 +36,7 @@ def pre_train_from_snapshots(model, snapshots, modules):
                     getattr(model, module_name), state_dict[module_name])
             else:
                 raise ValueError(
-                    "Unrecognized network module {}".format(module_name))
+                    f"Unrecognized network module {module_name}")
 
 
 def resume_from_snapshot(model, snapshot, modules):
@@ -49,7 +49,7 @@ def resume_from_snapshot(model, snapshot, modules):
             _load_pretraining_dict(getattr(model, module), state_dict[module])
         else:
             raise KeyError(
-                "The given snapshot does not contain a state_dict for module '{}'".format(module))
+                "The given snapshot does not contain a state_dict for module '{module}'")
 
     return snapshot
 

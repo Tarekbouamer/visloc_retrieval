@@ -6,6 +6,7 @@ from math import log10
 import tensorboardX as tensorboard
 import torch
 import torchvision.transforms as transforms
+from core.device import max_cuda_memory_allocated
 
 # logger
 from loguru import logger
@@ -42,8 +43,8 @@ class Meter:
             if k in self._states:
                 self._states[k].copy_(v)
             else:
-                raise KeyError("Unexpected key {} in state dict when loading {} from state dict"
-                               .format(k, self.__class__.__name__))
+                raise KeyError("Unexpected key {k} in state dict when loading \
+                                {self.__class__.__name__} from state dict")
 
 
 class ConstantMeter(Meter):
@@ -187,13 +188,12 @@ class EventWriter(Writer):
         # metrics
         for k, v in self.history.items():
             if isinstance(v, AverageMeter):
-                msg += "\t{}={:.3f} ({:.3f})".format(k,
+                msg += "\t{}={:.2f} ({:.2f})".format(k,
                                                      v.value.item(), v.mean.item())
-
         # memory usage megabites
         if torch.cuda.is_available():
-            max_mem_mb = torch.cuda.max_memory_allocated() / 1024.0 / 1024.0
-            msg += "\t mem={:.2f}".format(max_mem_mb)
+            max_mem_mb = max_cuda_memory_allocated()
+            msg += f"\t mem={max_mem_mb:.2f}"
 
         # log
         logger.info(msg)

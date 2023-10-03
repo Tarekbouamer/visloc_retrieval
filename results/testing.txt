@@ -1601,3 +1601,242 @@ test:
 2023-10-03 16:55:09.661 | INFO     | retrieval.test.mean_ap:compute_map_revisited:177 - mP@k5   E: 93.5294  M: 92.0952   H: 64.1429
 2023-10-03 16:55:09.661 | INFO     | retrieval.test.mean_ap:compute_map_revisited:177 - mP@k10   E: 88.0882  M: 85.0952   H: 53.7143
 2023-10-03 16:55:09.662 | INFO     | __main__:main:73 - extraction scales [1.0]
+2023-10-03 21:58:15.590 | SUCCESS  | core.logging.loguru:init_loguru:30 - init logger
+2023-10-03 21:58:15.596 | INFO     | core.config:load_cfg:16 - general:
+  seed: 0
+  gpu_id: 0
+  log_interval: 40
+  val_interval: 1
+  test_interval: 1
+  cudnn_benchmark: false
+body:
+  arch: gl20_resnet50_gem_2048
+  pretrained: false
+  pca: true
+  ema_decay: 0.9998
+  out_dim: 2048
+pca:
+  num_samples: 3000
+  update: false
+loss:
+  type: triplet
+  margin: 0.5
+optimizer:
+  type: Adam
+  lr: 1.0e-06
+  weight_decay: 0.0001
+  weight_decay_norm: true
+  momentum: 0.9
+  nesterov: true
+scheduler:
+  epochs: 101
+  type: exp
+  params:
+    gamma: 0.99
+  burn_in_start: 0.01
+  burn_in_steps: 0
+dataloader:
+  dataset: retrieval-SfM-120k
+  neg_num: 5
+  query_size: 200
+  pool_size: 2000
+  max_size: 640
+  num_workers: 6
+  batch_size: 5
+augmentaion:
+  auto_augment: rand-m9-mstd0.5-inc1
+test:
+  datasets:
+  - roxford5k
+  batch_size: 1
+  max_size: 640
+  num_workers: 6
+  num_samples: 20000
+  mode: global
+  multi_scale: true
+  scales:
+  - 1
+  - 1/2**(1/2)
+  - 1/2
+
+2023-10-03 21:58:15.596 | INFO     | retrieval.tools.dataloader:build_train_dataloader:81 - build train dataloader
+2023-10-03 21:59:11.500 | SUCCESS  | core.logging.loguru:init_loguru:30 - init logger
+2023-10-03 21:59:11.507 | INFO     | core.config:load_cfg:16 - general:
+  seed: 0
+  gpu_id: 0
+  log_interval: 40
+  val_interval: 1
+  test_interval: 1
+  cudnn_benchmark: false
+body:
+  arch: gl20_resnet50_gem_2048
+  pretrained: false
+  pca: true
+  ema_decay: 0.9998
+  out_dim: 2048
+pca:
+  num_samples: 3000
+  update: false
+loss:
+  type: triplet
+  margin: 0.5
+optimizer:
+  type: Adam
+  lr: 1.0e-06
+  weight_decay: 0.0001
+  weight_decay_norm: true
+  momentum: 0.9
+  nesterov: true
+scheduler:
+  epochs: 101
+  type: exp
+  params:
+    gamma: 0.99
+  burn_in_start: 0.01
+  burn_in_steps: 0
+dataloader:
+  dataset: retrieval-SfM-120k
+  neg_num: 5
+  query_size: 200
+  pool_size: 2000
+  max_size: 640
+  num_workers: 6
+  batch_size: 5
+augmentaion:
+  auto_augment: rand-m9-mstd0.5-inc1
+test:
+  datasets:
+  - roxford5k
+  batch_size: 1
+  max_size: 640
+  num_workers: 6
+  num_samples: 20000
+  mode: global
+  multi_scale: true
+  scales:
+  - 1
+  - 1/2**(1/2)
+  - 1/2
+
+2023-10-03 21:59:11.508 | INFO     | retrieval.tools.dataloader:build_train_dataloader:81 - build train dataloader
+2023-10-03 22:00:19.770 | ERROR    | core.registry.factory:load_state_dict:21 - No checkpoint found at hub/sfm_resnet50_gem_2048.pth
+2023-10-03 22:01:42.504 | SUCCESS  | core.logging.loguru:init_loguru:30 - init logger
+2023-10-03 22:01:42.511 | INFO     | core.config:load_cfg:16 - general:
+  seed: 0
+  gpu_id: 0
+  log_interval: 40
+  val_interval: 1
+  test_interval: 1
+  cudnn_benchmark: false
+body:
+  arch: resnet50
+  pretrained: false
+  pca: true
+  ema_decay: 0.9998
+  out_dim: 2048
+pca:
+  num_samples: 3000
+  update: false
+loss:
+  type: triplet
+  margin: 0.5
+optimizer:
+  type: Adam
+  lr: 1.0e-06
+  weight_decay: 0.0001
+  weight_decay_norm: true
+  momentum: 0.9
+  nesterov: true
+scheduler:
+  epochs: 101
+  type: exp
+  params:
+    gamma: 0.99
+  burn_in_start: 0.01
+  burn_in_steps: 0
+dataloader:
+  dataset: retrieval-SfM-120k
+  neg_num: 5
+  query_size: 200
+  pool_size: 2000
+  max_size: 640
+  num_workers: 6
+  batch_size: 5
+augmentaion:
+  auto_augment: rand-m9-mstd0.5-inc1
+test:
+  datasets:
+  - roxford5k
+  batch_size: 1
+  max_size: 640
+  num_workers: 6
+  num_samples: 20000
+  mode: global
+  multi_scale: true
+  scales:
+  - 1
+  - 1/2**(1/2)
+  - 1/2
+
+2023-10-03 22:01:42.511 | INFO     | retrieval.tools.dataloader:build_train_dataloader:81 - build train dataloader
+2023-10-03 22:01:42.849 | ERROR    | core.registry.factory:load_state_dict:21 - No checkpoint found at hub/sfm_resnet50_gem_2048.pth
+2023-10-03 22:02:42.244 | SUCCESS  | core.logging.loguru:init_loguru:30 - init logger
+2023-10-03 22:02:42.251 | INFO     | core.config:load_cfg:16 - general:
+  seed: 0
+  gpu_id: 0
+  log_interval: 40
+  val_interval: 1
+  test_interval: 1
+  cudnn_benchmark: false
+body:
+  arch: resnet50
+  pretrained: false
+  pca: true
+  ema_decay: 0.9998
+  out_dim: 2048
+pca:
+  num_samples: 3000
+  update: false
+loss:
+  type: triplet
+  margin: 0.5
+optimizer:
+  type: Adam
+  lr: 1.0e-06
+  weight_decay: 0.0001
+  weight_decay_norm: true
+  momentum: 0.9
+  nesterov: true
+scheduler:
+  epochs: 101
+  type: exp
+  params:
+    gamma: 0.99
+  burn_in_start: 0.01
+  burn_in_steps: 0
+dataloader:
+  dataset: retrieval-SfM-120k
+  neg_num: 5
+  query_size: 200
+  pool_size: 2000
+  max_size: 640
+  num_workers: 6
+  batch_size: 5
+augmentaion:
+  auto_augment: rand-m9-mstd0.5-inc1
+test:
+  datasets:
+  - roxford5k
+  batch_size: 1
+  max_size: 640
+  num_workers: 6
+  num_samples: 20000
+  mode: global
+  multi_scale: true
+  scales:
+  - 1
+  - 1/2**(1/2)
+  - 1/2
+
+2023-10-03 22:02:42.251 | INFO     | retrieval.tools.dataloader:build_train_dataloader:81 - build train dataloader
+2023-10-03 22:02:42.600 | ERROR    | core.registry.factory:load_state_dict:21 - No checkpoint found at hub/sfm_resnet50_gem_2048.pth
