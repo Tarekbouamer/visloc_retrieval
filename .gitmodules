@@ -1,0 +1,3 @@
+[submodule "thirdparty/asmk"]
+	path = thirdparty/asmk
+	url = https://github.com/jenicek/asmk
