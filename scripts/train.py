@@ -74,7 +74,7 @@ def main(args):
 
     # init retrieval logger
     logger = init_loguru(
-        name="retrieval", log_file=args.directory, file_name="training")
+        name="Retrieval", log_file=args.directory, file_name="training")
 
     # train
     trainer = ImageRetrievalTrainer(args=args, cfg=cfg)

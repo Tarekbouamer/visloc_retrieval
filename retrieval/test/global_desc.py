@@ -4,29 +4,17 @@ import numpy as np
 from retrieval.test.mean_ap import compute_map, compute_map_revisited
 
 
-def test_global_descriptor(dataset, query_dl, db_dl, extractor, ground_truth, scales=[1.0]):
-    """ test global mode 
+def test_global(dataset, query_dl, db_dl, extractor, ground_truth, scales=[1.0]):
+    """ test global descriptor """
 
-        dataset:                str                         name of test dataset
-        query_dl:               data.Dataloader             query dataloader
-        db_dl:                  data.Dataloader             database dataloader
-        extractor:              FeatureExtractor            feature extractor
-        ground_truth:           List                        ground truth 
-        scales:                 List                        extraction scales
-    """
-
-    #
+    # revisited dataset
     revisited = True if dataset in ["roxford5k", "rparis6k"] else False
 
     # extract query
-    q_out = extractor.extract_global(query_dl, save_path=None, scales=scales)
+    q_vecs = extractor.extract(query_dl)
 
     # extract database
-    db_out = extractor.extract_global(db_dl, save_path=None, scales=scales)
-
-    #
-    q_vecs = q_out['features']
-    db_vecs = db_out['features']
+    db_vecs = extractor.extract(db_dl)
 
     # rank
     scores = np.dot(db_vecs, q_vecs.T)

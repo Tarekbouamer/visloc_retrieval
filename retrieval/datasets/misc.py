@@ -1,5 +1,6 @@
 from os import path
 
+
 def collate_tuples(batch):
     if len(batch) == 1:
         return [batch[0][0]], [batch[0][1]]

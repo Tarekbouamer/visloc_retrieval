@@ -49,7 +49,7 @@ def make_parser():
 def main(args):
     
     # init retrieval logger
-    logger = init_loguru(name="retrieval", log_file=".", file_name="testing")    
+    logger = init_loguru(name="Retrieval", log_file=".", file_name="testing")    
     
     args.save_path = path.join(args.save_path, args.name + '.h5')
 
@@ -63,7 +63,7 @@ def main(args):
     logger.info(f"#images {len(dataset)} img_size {args.max_size}")
 
     # extractor
-    feature_extractor = retrieval.FeatureExtractor(args.model)
+    feature_extractor = retrieval.GlobalExtractor(args.model)
     
     # run
     if args.mode == 'global':

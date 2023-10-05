@@ -17,12 +17,10 @@ NETWORK_INPUTS = ["q", "p", "ns"]
 All_INPUTS = ["q", "p", "ns"]
 
 
-def load_sfm_images(root_dir, name, mode):
+def load_sfm_db_images(root_dir, name, mode):
     # setting up paths
     db_root = path.join(root_dir, 'train', name)
     ims_root = path.join(db_root, 'ims')
-
-    # loading db
     db_fn = path.join(db_root, f'{name}.pkl')
 
     with open(db_fn, 'rb') as f:
@@ -35,14 +33,10 @@ def load_sfm_images(root_dir, name, mode):
     return images, db
 
 
-def load_gl_images(root_dir, name, mode):
+def load_gl_db_images(root_dir, name, mode):
     # root
     root_dir = path.join(root_dir, name)
-
-    # setting up paths
     ims_root = path.join(root_dir, 'train')
-
-    # loading db
     db_fn = path.join(root_dir, f'{name}.pkl')
 
     if not path.exists(db_fn):
@@ -73,9 +67,9 @@ class TuplesDataset(data.Dataset):
             "Mode should be either train or val, passed as string")
 
         if name.startswith('retrieval-SfM'):
-            self.images, db = load_sfm_images(root_dir, name, mode)
+            self.images, db = load_sfm_db_images(root_dir, name, mode)
         elif name.startswith('gl'):
-            self.images, db = load_gl_images(root_dir, name, mode)
+            self.images, db = load_gl_db_images(root_dir, name, mode)
         else:
             raise (RuntimeError("Unkno wn dataset name!"))
 

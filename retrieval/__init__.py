@@ -1,7 +1,7 @@
 
-from .feature_extractor import FeatureExtractor
+from .extractors import GlobalExtractor
 
-__all__ = ['FeatureExtractor']
+__all__ = ['GlobalExtractor']
 
 __version__ = '0.0'
 

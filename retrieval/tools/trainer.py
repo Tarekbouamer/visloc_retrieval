@@ -585,7 +585,7 @@ class ImageRetrievalTrainer(TrainerBase):
 
         meta = {}
 
-        if cfg['test'].get('mode') == 'asmk':
+        if cfg.test.mode == 'asmk':
             meta['train_dataset'] = self.get_dataset()
 
         return build_evaluator(args, cfg, self.model, self.model_ema, self.writer, **meta)

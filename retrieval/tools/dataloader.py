@@ -38,7 +38,7 @@ def build_dataset(args, cfg, transform, mode='train'):
                               transform=transform,
                               neg_num=cfg.dataloader.neg_num)
     else:
-        raise ValueError(f"dataset {cfg.dataloader.get('dataset')} not supported, \
+        raise ValueError(f"dataset {cfg.dataloader.dataset} not supported, \
                          available datasets: {DATASETS}")
 
     return train_db
@@ -126,8 +126,6 @@ def build_val_dataloader(args, cfg):
 
 
 def build_transforms(cfg):
-    
-    aug_cfg = cfg.augmentaion
 
     tfs = {}
 
@@ -148,8 +146,7 @@ def build_transforms(cfg):
     # train augment
     tf_pre, tf_aug, tf_post = create_transform(input_size=cfg.dataloader.max_size,
                                                is_training=True,
-                                               auto_augment=aug_cfg.get(
-                                                   "auto_augment"),
+                                               auto_augment=cfg.augmentaion.auto_augment,
                                                interpolation="random",
                                                re_prob=0.25,
                                                re_mode="pixel",

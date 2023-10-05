@@ -3,24 +3,21 @@ from os import path
 
 from retrieval.datasets.misc import cid2filename
 
-TEST_DATASETS = ["val_eccv20",
-                 'oxford5k', 'paris6k',
-                 'roxford5k', 'rparis6k']
-
-_EXTENSIONS = ["*.jpg", "*.jpeg", "*.png"]
+TEST_DATASETS = ["val_eccv20", 'oxford5k', 'paris6k', 'roxford5k', 'rparis6k']
 
 
 def ParisOxfordTestDataset(root_dir, name=None):
-    """
-        Paris Oxford dataset
+    """Paris Oxford dataset
 
-        source:     https://www.robots.ox.ac.uk/~vgg/data/parisbuildings/
-                    http://cmp.felk.cvut.cz/revisitop/
-                    https://github.com/gtolias/how/
+    https://www.robots.ox.ac.uk/~vgg/data/parisbuildings/
+    http://cmp.felk.cvut.cz/revisitop/
+    https://github.com/gtolias/how/
     """
 
+    #
     if name not in TEST_DATASETS:
-        raise ValueError(f'Unknown dataset: {name}!')
+        raise ValueError(
+            f'Unknown dataset: {name}!, must be one of {TEST_DATASETS}')
 
     meta = {}
 
@@ -31,6 +28,7 @@ def ParisOxfordTestDataset(root_dir, name=None):
         db_root = path.join(root_dir, 'train', 'retrieval-SfM-120k')
         pkl_path = path.join(db_root, "retrieval-SfM-120k-val-eccv2020.pkl")
 
+        # load pickle
         with open(pkl_path, 'rb') as f:
             db = pickle.load(f)
 
@@ -53,8 +51,7 @@ def ParisOxfordTestDataset(root_dir, name=None):
         db_root = path.join(root_dir, 'test', name)
         pkl_path = path.join(db_root, f'gnd_{name}.pkl')
 
-        print
-
+        # load pickle
         with open(pkl_path, 'rb') as f:
             db = pickle.load(f)
 
@@ -71,6 +68,7 @@ def ParisOxfordTestDataset(root_dir, name=None):
         meta['query_bbx'] = [db['gnd'][item]['bbx']
                              for item in range(meta['n_query'])]
 
+    # add pickle path
     meta['pkl_path'] = pkl_path
 
     return meta

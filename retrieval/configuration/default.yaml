@@ -49,7 +49,7 @@ augmentaion:
   auto_augment: rand-m9-mstd0.5-inc1
 
 test:
-  datasets: ["roxford5k"]
+  datasets: ["roxford5k", "rparis6k"]
   batch_size: 1
   max_size: 640
   num_workers: 6
