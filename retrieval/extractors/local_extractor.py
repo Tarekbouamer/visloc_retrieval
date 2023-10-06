@@ -2,55 +2,18 @@ import time
 
 import numpy as np
 import torch
-from core.device import get_device, to_cuda, to_numpy
+from core.device import to_cuda, to_numpy
 from core.progress import tqdm_progress
 from loguru import logger
-from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from torchvision import transforms
 
-from retrieval.models import create_retrieval
+from retrieval.extractors.base import BaseExtractor
 
 
-class LocalExtractor():
+class LocalExtractor(BaseExtractor):
     """ Local feature extractor """
 
-    # device
-    device = get_device()
-
-    def __init__(self, model_name=None, model=None, cfg=None):
-        super().__init__()
-        #
-        self.cfg = cfg
-
-        # model
-        if model is None:
-            assert model_name is not None, "model name or model must be provided"
-            model = create_retrieval(model_name, pretrained=True)
-
-        # eval mode
-        self.model = model.eval().to(self.device)
-
-        # TODO: remove this and add it to base model
-        # transform
-        self.transform = transforms.Compose([
-            transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN,
-                                 std=IMAGENET_DEFAULT_STD),
-        ])
-
-    def transform_inputs(self, x, **kwargs):
-
-        #
-        normalize = kwargs.pop('normalize', False)
-
-        # normalize
-        if normalize:
-            x = self.transform(x)
-
-        # BCHW
-        if len(x.shape) < 4:
-            x = x.unsqueeze(0)
-
-        return x
+    def __init__(self, cfg, model_name=None, model=None):
+        super().__init__(cfg, model_name, model)
 
     @torch.no_grad()
     def extract(self, dataset, num_features=1000, scales=[1.0], save_path=None, **kwargs):
@@ -75,10 +38,10 @@ class LocalExtractor():
             to_cuda(data)
 
             # prepare inputs
-            img = self.transform_inputs(data['img'], **kwargs)
+            image = self.transform_inputs(data["image"], **kwargs)
 
             # extract locals
-            preds = self.model.extract_locals(img, num_features=num_features)
+            preds = self.model.extract_locals(image, num_features=num_features)
             desc = preds['features']
 
             # numpy

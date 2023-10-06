@@ -6,8 +6,10 @@ import timm
 import torch.nn as nn
 from core.registry.factory import load_state_dict
 from core.registry.register import get_pretrained_cfg
+from core.transforms import tfn_image_net
 from omegaconf import OmegaConf
 
+from retrieval.models.base import RetrievalBase
 from retrieval.models.modules.pools import GeM
 
 from .misc import _cfg, register_retrieval
@@ -111,7 +113,7 @@ from .misc import _cfg, register_retrieval
 #     return params
 
 
-# def __forward__(self, img, scales=[1], do_whitening=True):
+# def __forward__(self, image, scales=[1], do_whitening=True):
 
 #     #
 #     features = []
@@ -120,7 +122,7 @@ from .misc import _cfg, register_retrieval
 #     for scale in scales:
 
 #         # resize
-#         img_s = self.__resize__(img, scale=scale)
+#         img_s = self.__resize__(image, scale=scale)
 
 #         # assert size within boundaries
 #         if self.__check_size__(img_s):
@@ -236,14 +238,10 @@ class GemHead(nn.Module):
         return {'features': x}
 
 
-class GemNet(nn.Module):
+class GemNet(RetrievalBase):
 
     def __init__(self, cfg):
-        super(GemNet, self).__init__()
-
-        # cfg
-        self.cfg = OmegaConf.create(cfg)
-
+        super(GemNet, self).__init__(cfg=cfg)
 
         # create backbone FIXME: add pretrained correctly
         self.body = timm.create_model(self.cfg.backbone,
@@ -259,16 +257,32 @@ class GemNet(nn.Module):
                             out_dim=self.cfg.out_dim,
                             p=self.cfg.p)
 
-    def forward(self, img, do_whitening=True):
+    def transform_inputs(self, data: dict) -> dict:
+        """Transform inputs to the model"""
+
+        # add batch dim
+        if data["image"].dim() == 3:
+            data["image"] = data["image"].unsqueeze(0)
+
+        # normalize image net
+        data["image"] = tfn_image_net(data["image"])
+
+        return data
+
+    def forward(self, data, do_whitening=True):
+
+        # transform inputs
+        data = self.transform_inputs(data)
+
         # body
-        x = self.body(img)
+        x = self.body(data["image"])
         x = x[-1]
 
         # head
         return self.head(x, do_whitening)
 
-    def extract(self, img):
-        return self.forward(img, do_whitening=True)
+    def extract(self, image):
+        return self.forward(image, do_whitening=True)
 
 
 default_cfgs = {
@@ -313,7 +327,6 @@ def load_from_drive(variant, pretrained_drive):
 def _create_model(variant, cfg: dict = {}, pretrained: bool = True, **kwargs: dict) -> nn.Module:
     """Creates a model from a given configuration.
     """
-
     # default cfg
     model_cfg = get_pretrained_cfg(variant)
     cfg = {**model_cfg, **cfg}

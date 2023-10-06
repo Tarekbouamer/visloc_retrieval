@@ -51,7 +51,7 @@ augmentaion:
 test:
   datasets: ["roxford5k", "rparis6k"]
   batch_size: 1
-  max_size: 640
+  max_size: 224
   num_workers: 6
   num_samples: 20000
   mode: global

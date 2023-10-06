@@ -291,14 +291,14 @@
 
 #         return preds
 
-#     def __forward__(self, img, scales=[1], do_whitening=True):
+#     def __forward__(self, image, scales=[1], do_whitening=True):
 
 #         features_list, attns_list = [], []
 
 #         for s in scales:
 #             #
 #             imgs = functional.interpolate(
-#                 img, scale_factor=s, mode='bilinear', align_corners=False)
+#                 image, scale_factor=s, mode='bilinear', align_corners=False)
 
 #             x = self.body(imgs)
 #             if isinstance(x, List):
@@ -318,18 +318,18 @@
 #         #
 #         return features_list, attns_list
 
-#     def extract_global(self, img, scales=[1], do_whitening=True):
+#     def extract_global(self, image, scales=[1], do_whitening=True):
 #         feat_list, attns_list = self.__forward__(
-#             img, scales=scales, do_whitening=do_whitening)
+#             image, scales=scales, do_whitening=do_whitening)
 #         return self.weighted_spoc(feat_list, attns_list)
 
-#     def extract_locals(self, img, scales=[1], num_features=1000, do_whitening=True):
+#     def extract_locals(self, image, scales=[1], num_features=1000, do_whitening=True):
 #         feat_list, attns_list = self.__forward__(
-#             img, scales=scales, do_whitening=do_whitening)
+#             image, scales=scales, do_whitening=do_whitening)
 #         return self.how_select_local(feat_list, attns_list, scales=scales, num_features=num_features)
 
-#     def forward(self, img, do_whitening=True):
-#         return self.extract_global(img, do_whitening=do_whitening)
+#     def forward(self, image, do_whitening=True):
+#         return self.extract_global(image, do_whitening=do_whitening)
 
 
 # # models

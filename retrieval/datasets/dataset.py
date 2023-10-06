@@ -4,7 +4,7 @@ from  torch.utils.data import Dataset
 from PIL        import Image, ImageFile
 from pathlib    import Path
 
-INPUTS = ["img"]
+INPUTS = ["image"]
 
 
 _EXT = ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']
@@ -44,9 +44,9 @@ class ImagesFromList(Dataset):
         ImageFile.LOAD_TRUNCATED_IMAGES = True     
         
         with open(img_path, 'rb') as f:
-            img = Image.open(f).convert('RGB')
+            image = Image.open(f).convert('RGB')
           
-        return img
+        return image
     
     def get_name(self,  _path):
         return os.path.basename(_path)
@@ -58,15 +58,15 @@ class ImagesFromList(Dataset):
         img_name    = self.get_name(img_path)
         
         # load image
-        img = self.load_img(img_path)
+        image = self.load_img(img_path)
         
         # crop image if box exsists 
         if self.bbxs is not None:
-            img = img.crop(self.bbxs[item])
+            image = image.crop(self.bbxs[item])
 
         # transform
         if self.transform is not None:
-            out = self.transform(img)
+            out = self.transform(image)
 
         #
         out['name'] = img_name

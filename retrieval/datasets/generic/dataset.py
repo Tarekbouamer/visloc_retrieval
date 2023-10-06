@@ -36,9 +36,9 @@ class ImagesListDataset(Dataset):
     def __len__(self):
         return len(self.images_fn)
 
-    def resize_image(self, img, size):
-        img = cv2.resize(img, size, interpolation=cv2.INTER_LINEAR)
-        return img
+    def resize_image(self, image, size):
+        image = cv2.resize(image, size, interpolation=cv2.INTER_LINEAR)
+        return image
 
     def get_names(self):
         return [self.split + "/" + str(p.relative_to(self.images_path)) for p in self.images_fn]
@@ -52,13 +52,13 @@ class ImagesListDataset(Dataset):
             raise KeyError(f'mode {mode} not found!')
 
         # read
-        img = cv2.imread(str(img_path), mode)
-        img = img.astype(np.float32)
+        image = cv2.imread(str(img_path), mode)
+        image = image.astype(np.float32)
 
         # HxWxC to CxHxW
-        img = img.transpose((2, 0, 1))
-        img = img / 255.
-        return img
+        image = image.transpose((2, 0, 1))
+        image = image / 255.
+        return image
 
     def get_cameras(self,):
         if hasattr(self, "cameras"):
@@ -72,11 +72,11 @@ class ImagesListDataset(Dataset):
 
         # load
         item_path = self.images_fn[item]
-        img = self.load_img(item_path)
-        ori_size = np.array(img.shape[1:])
+        image = self.load_img(item_path)
+        ori_size = np.array(image.shape[1:])
 
         # dict
-        out["img"] = img
+        out["image"] = image
         out["img_name"] = str(item_path.relative_to(
             self.images_path)).split('.')[0]
         out["original_size"] = ori_size

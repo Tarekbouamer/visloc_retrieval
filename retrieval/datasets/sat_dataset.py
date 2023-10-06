@@ -163,7 +163,7 @@ class SatDataset(data.Dataset):
         rec = self.transform(query_img)
         query_img.close()
 
-        return rec["img"]
+        return rec["image"]
 
     def _load_positive(self, item):
 
@@ -173,7 +173,7 @@ class SatDataset(data.Dataset):
         rec = self.transform(positive_img)
         positive_img.close()
 
-        return rec["img"]
+        return rec["image"]
 
     def _load_negative(self, item):
 
@@ -187,7 +187,7 @@ class SatDataset(data.Dataset):
             negative_img.close()
 
             # Append
-            negatives.append(rec["img"])
+            negatives.append(rec["image"])
 
         return negatives
 

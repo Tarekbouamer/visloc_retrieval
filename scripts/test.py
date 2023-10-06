@@ -57,6 +57,7 @@ def run_test_global():
     extractor.eval()
 
     for dataset in cfg.test.datasets:
+        
         # build dataset
         query_dl, db_dl, gt = build_paris_oxford_dataset(args.data,
                                                          dataset,

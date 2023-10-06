@@ -2,11 +2,9 @@ import time
 
 import numpy as np
 import torch
-from core.device import get_device, to_cuda, to_numpy
+from core.device import to_cuda, to_numpy
 from core.progress import tqdm_progress
 from loguru import logger
-from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
-from torchvision import transforms
 
 from .base import BaseExtractor
 
@@ -14,34 +12,8 @@ from .base import BaseExtractor
 class GlobalExtractor(BaseExtractor):
     """ Global feature extractor """
 
-    # device
-    device = get_device()
-
     def __init__(self, cfg, model_name=None, model=None):
         super().__init__(cfg, model_name, model)
-        #
-        self.cfg = cfg
-
-        # transform
-        self.transform = transforms.Compose([
-            transforms.Normalize(mean=IMAGENET_DEFAULT_MEAN,
-                                 std=IMAGENET_DEFAULT_STD),
-        ])
-
-    def transform_inputs(self, x, **kwargs):
-
-        #
-        normalize = kwargs.pop('normalize', False)
-
-        # normalize
-        if normalize:
-            x = self.transform(x)
-
-        # BCHW
-        if len(x.shape) < 4:
-            x = x.unsqueeze(0)
-
-        return x
 
     @torch.no_grad()
     def extract(self, dataset, save_path=None, **kwargs):
@@ -65,11 +37,8 @@ class GlobalExtractor(BaseExtractor):
             # to cuda
             to_cuda(data)
 
-            # prepare inputs
-            img = self.transform_inputs(data['img'], **kwargs)
-
             # extract
-            desc = self.model.extract(img)
+            desc = self.model.extract(data)
             desc = desc['features'][0]
 
             # numpy

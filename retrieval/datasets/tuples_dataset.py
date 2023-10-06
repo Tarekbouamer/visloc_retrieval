@@ -114,7 +114,7 @@ class TuplesDataset(data.Dataset):
 
         rec = self.transform(query_img)
 
-        return rec["img"]
+        return rec["image"]
 
     def _load_positive(self, item):
 
@@ -128,7 +128,7 @@ class TuplesDataset(data.Dataset):
 
         rec = self.transform(positive_img)
 
-        return rec["img"]
+        return rec["image"]
 
     def _load_negative(self, item):
 
@@ -142,7 +142,7 @@ class TuplesDataset(data.Dataset):
             rec = self.transform(negative_img)
 
             # Append
-            negatives.append(rec["img"])
+            negatives.append(rec["image"])
 
         return negatives
 

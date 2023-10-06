@@ -1,12 +1,16 @@
-
-
+from core.device import get_device
 from torch.utils.data import DataLoader
 
 from retrieval.models import create_retrieval
 
 
 class BaseExtractor:
+    # device
+    device = get_device()
+
     def __init__(self, cfg, model_name=None, model=None):
+
+        # cfg
         self.cfg = cfg
 
         # model
@@ -26,7 +30,7 @@ class BaseExtractor:
         """ make dataloader"""
         if isinstance(iterable, DataLoader):
             return iterable
-        return DataLoader(iterable, num_workers=1, shuffle=False)
+        return DataLoader(iterable, num_workers=8, shuffle=False)
 
     def extract(self, **kwargs):
         raise NotImplementedError
