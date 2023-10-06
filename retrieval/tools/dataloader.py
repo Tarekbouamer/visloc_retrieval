@@ -1,7 +1,6 @@
 import numpy as np
 from loguru import logger
 from timm.data import create_transform
-from timm.data.constants import IMAGENET_DEFAULT_MEAN, IMAGENET_DEFAULT_STD
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
 from retrieval.datasets import (
@@ -76,8 +75,7 @@ def build_sample_dataloader(train_dl, num_samples=None, cfg=None):
 
 def build_train_dataloader(args, cfg):
     
-    cfg.test
-
+    # logger
     logger.info("build train dataloader")
 
     # Options
@@ -92,10 +90,8 @@ def build_train_dataloader(args, cfg):
     # dataset
     train_db = build_dataset(args, cfg, transform, mode='train')
 
-    # loader
-    train_dl = DataLoader(train_db, **dl_opt)
-
-    return train_dl
+    # dl
+    return DataLoader(train_db, **dl_opt)
 
 
 def build_val_dataloader(args, cfg):
@@ -119,10 +115,8 @@ def build_val_dataloader(args, cfg):
     # dataset
     val_db = build_dataset(args, cfg, transform, mode='val')
 
-    # loader
-    val_dl = DataLoader(val_db, **dl_opt)
-
-    return val_dl
+    # dl
+    return DataLoader(val_db, **dl_opt)
 
 
 def build_transforms(cfg):
@@ -130,21 +124,14 @@ def build_transforms(cfg):
     tfs = {}
 
     # test
-    tfs["test"] = ImagesTransform(max_size=cfg.dataloader.max_size,
-                                  mean=IMAGENET_DEFAULT_MEAN,
-                                  std=IMAGENET_DEFAULT_STD)
+    tfs["test"] = ImagesTransform(max_size=cfg.dataloader.max_size)  
+    
 
-    # train
-    tf_post = create_transform(input_size=cfg.dataloader.max_size,
-                               is_training=True,
-                               no_aug=True,
-                               interpolation="bilinear")
 
-    tfs["train"] = ImagesTransform(max_size=cfg.dataloader.max_size,
-                                   postprocessing=tf_post)
+    tfs["train"] = ImagesTransform(max_size=cfg.dataloader.max_size)
 
     # train augment
-    tf_pre, tf_aug, tf_post = create_transform(input_size=cfg.dataloader.max_size,
+    tf_pre, tf_aug, _ = create_transform(input_size=cfg.dataloader.max_size,
                                                is_training=True,
                                                auto_augment=cfg.augmentaion.auto_augment,
                                                interpolation="random",
@@ -156,7 +143,6 @@ def build_transforms(cfg):
 
     tfs["train_aug"] = ImagesTransform(max_size=cfg.dataloader.max_size,
                                        preprocessing=tf_pre,
-                                       augmentation=tf_aug,
-                                       postprocessing=tf_post)
+                                       augmentation=tf_aug)
 
     return tfs

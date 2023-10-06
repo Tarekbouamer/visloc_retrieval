@@ -6,7 +6,7 @@ import torch
 from core.config import load_cfg
 from core.logging import init_loguru
 
-from retrieval.tools import ImageRetrievalTrainer
+from retrieval.trainer import ImageRetrievalTrainer
 
 
 def make_parser():
@@ -33,7 +33,7 @@ def make_parser():
 def make_dir(cfg, directory):
 
     extension = "{}".format(cfg.dataloader.dataset)
-    extension += "_{}".format(cfg.body.arch)
+    extension += "_{}".format(cfg.body.name)
     extension += "_{}_m{:.2f}".format(cfg.loss.type,
                                       cfg.loss.margin)
 

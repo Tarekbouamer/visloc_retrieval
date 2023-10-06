@@ -6,10 +6,7 @@ from loguru import logger
 from retrieval.utils.io import create_withen_file_from_cfg
 
 
-def set_batchnorm_eval(m):
-    classname = m.__class__.__name__
-    if classname.find('BatchNorm') != -1:
-        m.eval()
+
 
 
 def compute_pca(args, cfg, model, sample_dl,  **varargs):

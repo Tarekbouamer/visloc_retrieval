@@ -198,13 +198,13 @@ class TuplesDataset(data.Dataset):
 
             # Extract query vectors
             qvecs = torch.zeros(len(self.query_indices),
-                                cfg.body.out_dim).cuda()
+                                model.dim).cuda()
 
             for it, batch in tqdm(enumerate(query_dl), total=len(query_dl)):
                 batch = {k: batch[k].cuda(
                     device="cuda", non_blocking=True) for k in INPUTS}
 
-                pred = model(**batch, do_whitening=True)
+                pred = model(batch, do_whitening=True)
                 qvecs[it] = pred["features"]
 
                 del pred
@@ -217,14 +217,13 @@ class TuplesDataset(data.Dataset):
             pool_dl = torch.utils.data.DataLoader(pool_data, **dl)
 
             # Extract negative pool vectors
-            poolvecs = torch.zeros(
-                len(idxs2images), cfg.body.out_dim).cuda()
+            poolvecs = torch.zeros(len(idxs2images), model.dim).cuda()
 
             for it, batch in tqdm(enumerate(pool_dl), total=len(pool_dl)):
                 batch = {k: batch[k].cuda(
                     device="cuda", non_blocking=True) for k in INPUTS}
 
-                pred = model(**batch, do_whitening=True)
+                pred = model(batch, do_whitening=True)
                 poolvecs[it] = pred["features"]
 
                 del pred
@@ -267,7 +266,8 @@ class TuplesDataset(data.Dataset):
 
             avg_negative_l2 = (average_negative_distance /
                                negative_distance).item()
-            logger.info('average negative l2-distance = %f', avg_negative_l2)
+            logger.info(
+                f'average negative l2-distance = {avg_negative_l2:.3}', )
 
         # stats
         stats = {

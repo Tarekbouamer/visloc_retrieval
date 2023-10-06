@@ -7,7 +7,7 @@ from core.logging import init_loguru
 from retrieval.extractors import GlobalExtractor
 from retrieval.models.misc import create_retrieval
 from retrieval.test import build_paris_oxford_dataset
-from retrieval.test.global_desc import test_global
+from retrieval.test.global_descriptor import test_global_descriptor
 from retrieval.utils.io import csv_float
 
 
@@ -57,17 +57,17 @@ def run_test_global():
     extractor.eval()
 
     for dataset in cfg.test.datasets:
-        
+
         # build dataset
         query_dl, db_dl, gt = build_paris_oxford_dataset(args.data,
                                                          dataset,
                                                          cfg)
         # test
-        test_global(dataset,
-                    query_dl,
-                    db_dl,
-                    extractor,
-                    ground_truth=gt)
+        test_global_descriptor(dataset,
+                               query_dl,
+                               db_dl,
+                               extractor,
+                               ground_truth=gt)
 
     #
     logger.success("done")

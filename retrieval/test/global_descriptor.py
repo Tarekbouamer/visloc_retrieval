@@ -4,7 +4,7 @@ import numpy as np
 from retrieval.test.mean_ap import compute_map, compute_map_revisited
 
 
-def test_global(dataset, query_dl, db_dl, extractor, ground_truth, scales=[1.0]):
+def test_global_descriptor(dataset, query_dl, db_dl, extractor, ground_truth, scales=[1.0]):
     """ test global descriptor """
 
     # revisited dataset

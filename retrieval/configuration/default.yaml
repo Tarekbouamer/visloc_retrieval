@@ -1,17 +1,17 @@
 general:
   seed: 0
   gpu_id: 0
-  log_interval: 20
+  log_interval: 5
   val_interval: 2
   test_interval: 2
   cudnn_benchmark: False
 
 body:
-  arch: gl20_resnet50_gem_2048
+  name: sfm_resnet50_c4_gem_1024
   pretrained: False
   pca: True
   ema_decay: 0.9998
-  out_dim: 2048
+  out_dim: 1024
 
 pca:
   num_samples: 3000
@@ -50,9 +50,7 @@ augmentaion:
 
 test:
   datasets: ["roxford5k", "rparis6k"]
-  batch_size: 1
   max_size: 224
-  num_workers: 6
   num_samples: 20000
   mode: global
   multi_scale: True

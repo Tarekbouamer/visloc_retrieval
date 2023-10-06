@@ -6,8 +6,9 @@ from torch.optim.lr_scheduler import ExponentialLR, LambdaLR
 
 
 def build_optimizer(cfg, model):
+    
     # params groups
-    params = model.parameter_groups(cfg)
+    params = model.parameter_groups()
 
     all_params = []
     for x in params:

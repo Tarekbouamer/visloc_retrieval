@@ -13,7 +13,7 @@ class GlobalExtractor(BaseExtractor):
     """ Global feature extractor """
 
     def __init__(self, cfg, model_name=None, model=None):
-        super().__init__(cfg, model_name, model)
+        super(GlobalExtractor, self).__init__(cfg, model_name, model)
 
     @torch.no_grad()
     def extract(self, dataset, save_path=None, **kwargs):

@@ -22,7 +22,7 @@ def create_experiment_file_from_cfg(cfg, directory, logger=None):
 
     # Create export dir name if it doesnt exist in your experiment folder
     extension = "{}".format(cfg.dataloader.dataset)
-    extension += "_{}".format(cfg.body.arch)
+    extension += "_{}".format(cfg.body.name)
     extension += "_{}_m{:.2f}".format(cfg.loss.type,
                                       cfg.loss.margin)
     extension += "_{}_lr{:.1e}_wd{:.1e}".format(cfg.optimizer.type,
@@ -41,7 +41,7 @@ def create_experiment_file_from_cfg(cfg, directory, logger=None):
 def create_withen_file_from_cfg(cfg, directory, logger=None):
 
     DATASET = cfg.dataloader.dataset
-    ARCH = cfg.body.arch
+    ARCH = cfg.body.name
     LEVELS = str(len(cfg.body.features_scales))
     DIM = str(cfg.body.out_dim)
     IM_SIZE = str(cfg.dataloader.max_size)

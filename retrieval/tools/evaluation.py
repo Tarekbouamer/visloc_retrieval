@@ -55,27 +55,21 @@ class GlobalEvaluator(DatasetEvaluator):
     def evaluate(self, dataset, query_dl, database_dl, ground_truth=None):
         """ evaluate """
 
-        # result
-        results = OrderedDict()
-
         # writer on test mode
         if self.writer is not None:
             self.writer.test()
 
-        # test
+        # test global descriptor
         metrics = test_global_descriptor(dataset,
                                          query_dl,
                                          database_dl,
                                          self.extractor,
                                          ground_truth=ground_truth)
 
-        # write
+        # write metrics
         self.write_metrics(metrics, dataset, scale=100)
 
-        # map
-        results[dataset] = metrics["map"]
-
-        return results
+        return metrics["map"]
 
 
 class ASMKEvaluator(DatasetEvaluator):
@@ -170,7 +164,7 @@ class ASMKEvaluator(DatasetEvaluator):
         return results
 
 
-def build_evaluator(cfg, extractor, writer, **meta):
+def build_evaluator(cfg, extractor, writer=None, **meta):
 
     if cfg.test.mode == 'global':
         return GlobalEvaluator(cfg, extractor, writer, **meta)

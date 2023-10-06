@@ -11,32 +11,31 @@ from retrieval.datasets import (
 
 
 def build_paris_oxford_dataset(data_path, name_dataset, cfg):
-    """ Build paris oxford dataset & dataloader """
+    """ Build paris oxford dataset """
 
     assert path.exists(data_path), logger.error(
         "path: {data_path} does not exsists !!")
 
     logger.info(f'[{name_dataset}]: loading test dataset from {data_path}')
 
+    # dataset
     db = ParisOxfordTestDataset(root_dir=data_path, name=name_dataset)
 
     # options
     trans_opt = {"max_size":     cfg.test.max_size}
 
-    dl_opt = {"batch_size":   1,
-              "shuffle":      False,
-              "num_workers":  cfg.test.num_workers,
-              "pin_memory":   True}
+    # transform
+    tfn = ImagesTransform(**trans_opt)
 
     # query loader
-    query_dl = ImagesFromList(root='', images=db['query_names'], bbxs=db['query_bbx'],
-                                transform=ImagesTransform(**trans_opt))
-    # query_dl = DataLoader(query_data, **dl_opt)
+    query_data = ImagesFromList(root='', images=db['query_names'], bbxs=db['query_bbx'],
+                                transform=tfn)
+    query_dl = DataLoader(query_data, num_workers=4)
 
     # database loader
-    db_dl = ImagesFromList(root='', images=db['img_names'],
-                             transform=ImagesTransform(**trans_opt))
-    # db_dl = DataLoader(db_data,  **dl_opt)
+    db_data = ImagesFromList(root='', images=db['img_names'], 
+                             transform=tfn)
+    db_dl = DataLoader(db_data, num_workers=4)
 
     # ground
     ground_truth = db['gnd']

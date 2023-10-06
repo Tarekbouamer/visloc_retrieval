@@ -15,11 +15,15 @@ class BaseExtractor:
 
         # model
         if model is None:
-            assert model_name is not None, "model name or model must be provided"
-            model = create_retrieval(model_name, pretrained=True)
+            self.model = create_retrieval(cfg, model_name)
+        else:
+            self.model = model
 
         # eval mode
-        self.model = model.eval().to(self.device)
+        self.model.eval()
+
+        # to device
+        self.model = self.model.to(self.device)
 
     def eval(self):
         """ eval mode """
