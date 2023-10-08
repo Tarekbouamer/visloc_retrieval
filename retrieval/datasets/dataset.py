@@ -1,4 +1,4 @@
-import os
+from os import path
 from  torch.utils.data import Dataset
 
 from PIL        import Image, ImageFile
@@ -17,7 +17,7 @@ class ImagesFromList(Dataset):
     def __init__(self, root, images=None, bbxs=None, transform=None):
         
         if images is not None:
-            images_fn = [os.path.join(root, images[i]) for i in range(len(images))]
+            images_fn = [path.join(root, images[i]) for i in range(len(images))]
         else:
             # Load images
             images_fn = []
@@ -49,7 +49,7 @@ class ImagesFromList(Dataset):
         return image
     
     def get_name(self,  _path):
-        return os.path.basename(_path)
+        return path.basename(_path)
     
     def __getitem__(self, item):
 

@@ -15,8 +15,9 @@ clean:
 	rm -rf build dist *.egg-info
 	pip uninstall -y retrieval
 
-lint:
-	ruff check ./retrieval/ --ignore E501 --quiet 
+lint:	
+	ruff check ./scripts --ignore E501 --quiet  && \
+	ruff check ./retrieval --ignore E501 --quiet
 
 asmk:
 	echo ${PYTHONPATH}

@@ -13,9 +13,11 @@ from retrieval.datasets.misc import collate_tuples
 
 DATASETS = ["retrieval-SfM-120k", "gl18", "gl20", "SAT"]
 
-def build_dataset(args, cfg, transform, mode='train'):
 
-    
+def build_dataset(args, cfg, transform, mode='train'):
+    """ build dataset  """
+
+    # FIXME: make for each dataset a separate class, return dataset
 
     # sfm
     if cfg.dataloader.dataset in ["retrieval-SfM-120k", "gl18", "gl20"]:
@@ -28,7 +30,6 @@ def build_dataset(args, cfg, transform, mode='train'):
                                  transform=transform,
                                  neg_num=cfg.dataloader.neg_num)
     elif cfg.dataloader.dataset == "SAT":
-
         train_db = SatDataset(root_dir=args.data,
                               name=cfg.dataloader.dataset,
                               mode=mode,
@@ -44,6 +45,7 @@ def build_dataset(args, cfg, transform, mode='train'):
 
 
 def build_sample_dataloader(train_dl, num_samples=None, cfg=None):
+    """ build sample dataloader from train dataloader """
 
     #
     images = train_dl.dataset.images
@@ -66,7 +68,7 @@ def build_sample_dataloader(train_dl, num_samples=None, cfg=None):
 
     # loader
     sample_dl = DataLoader(dataset=ImagesFromList("", images, transform=transform),
-                           num_workers=cfg.dataloader.num_workers,
+                           num_workers=1,
                            pin_memory=True,
                            sampler=sampler)
 
@@ -74,7 +76,8 @@ def build_sample_dataloader(train_dl, num_samples=None, cfg=None):
 
 
 def build_train_dataloader(args, cfg):
-    
+    """ build train dataloader """
+
     # logger
     logger.info("build train dataloader")
 
@@ -95,7 +98,7 @@ def build_train_dataloader(args, cfg):
 
 
 def build_val_dataloader(args, cfg):
-    
+    """ build val dataloader """
 
     logger.info("build val dataloader")
 
@@ -120,26 +123,25 @@ def build_val_dataloader(args, cfg):
 
 
 def build_transforms(cfg):
+    """ build transforms """
 
     tfs = {}
 
     # test
-    tfs["test"] = ImagesTransform(max_size=cfg.dataloader.max_size)  
-    
-
+    tfs["test"] = ImagesTransform(max_size=cfg.dataloader.max_size)
 
     tfs["train"] = ImagesTransform(max_size=cfg.dataloader.max_size)
 
     # train augment
     tf_pre, tf_aug, _ = create_transform(input_size=cfg.dataloader.max_size,
-                                               is_training=True,
-                                               auto_augment=cfg.augmentaion.auto_augment,
-                                               interpolation="random",
-                                               re_prob=0.25,
-                                               re_mode="pixel",
-                                               re_count=2,
-                                               re_num_splits=0,
-                                               separate=True)
+                                         is_training=True,
+                                         auto_augment=cfg.augmentaion.auto_augment,
+                                         interpolation="random",
+                                         re_prob=0.25,
+                                         re_mode="pixel",
+                                         re_count=2,
+                                         re_num_splits=0,
+                                         separate=True)
 
     tfs["train_aug"] = ImagesTransform(max_size=cfg.dataloader.max_size,
                                        preprocessing=tf_pre,

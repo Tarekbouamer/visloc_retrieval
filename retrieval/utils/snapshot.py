@@ -1,49 +1,53 @@
 import torch
 
 
-def save_snapshot(file, config, epoch, last_score, best_score, global_step, **kwargs):
+def save_snapshot(save_path,
+                  epoch: int,
+                  last_score: float,
+                  best_score: float,
+                  global_step: int,
+                  config: dict = None,
+                  **kwargs) -> bool:
+    """Save a snapshot of the current training state
+
+        Args:
+            save_path (str): path to save the snapshot
+            epoch (int): current epoch
+            last_score (float): last score
+            best_score (float): best score
+            global_step (int): current global step
+            config (dict, optional): config dictionary. Defaults to None.
+
+        Returns:
+            bool: True if the snapshot is saved successfully
+    """
+    # create data dictionary
     data = {
         "config": config,
-        "state_dict": dict(kwargs),
-        "training_meta": {
-            "epoch": epoch,
-            "last_score": last_score,
-            "best_score": best_score,
-            "global_step": global_step
-        }
-    }
-    torch.save(data, file)
+        "epoch": epoch,
+        "last_score": last_score,
+        "best_score": best_score,
+        "global_step": global_step,
+        **dict(kwargs)}
+    
+    try:
+        # save snapshot
+        torch.save(data, save_path)
+    except Exception:
+        return False
 
-
-def pre_train_from_snapshots(model, snapshots, modules):
-    for snapshot in snapshots:
-        if ":" in snapshot:
-            module_name, snapshot = snapshot.split(":")
-        else:
-            module_name = None
-
-        snapshot = torch.load(snapshot, map_location="cpu")
-        state_dict = snapshot["state_dict"]
-
-        if module_name is None:
-            for module_name in modules:
-                if module_name in state_dict:
-                    _load_pretraining_dict(
-                        getattr(model, module_name), state_dict[module_name])
-        else:
-            if module_name in modules:
-                _load_pretraining_dict(
-                    getattr(model, module_name), state_dict[module_name])
-            else:
-                raise ValueError(
-                    f"Unrecognized network module {module_name}")
+    return True
 
 
 def resume_from_snapshot(model, snapshot, modules):
+
+    # load snapshot
     snapshot = torch.load(snapshot, map_location="cpu")
 
+    # state_dict
     state_dict = snapshot["state_dict"]
 
+    # load state_dict
     for module in modules:
         if module in state_dict:
             _load_pretraining_dict(getattr(model, module), state_dict[module])
@@ -56,17 +60,6 @@ def resume_from_snapshot(model, snapshot, modules):
 
 def _load_pretraining_dict(model, state_dict):
     """Load state dictionary from a pre-training snapshot
-
-    This is an even less strict version of `model.load_state_dict(..., False)`, which also ignores parameters from
-    `state_dict` that don't have the same shapes as the corresponding ones in `model`. This is useful when loading
-    from pre-trained models that are trained on different datasets.
-
-    Parameters
-    ----------
-    model : torch.nn.Model
-        Target model
-    state_dict : dict
-        Dictionary of model parameters
     """
     model_sd = model.state_dict()
 
@@ -76,3 +69,26 @@ def _load_pretraining_dict(model, state_dict):
                 del state_dict[k]
 
     model.load_state_dict(state_dict, False)
+
+# def pre_train_from_snapshots(model, snapshots, modules):
+#     for snapshot in snapshots:
+#         if ":" in snapshot:
+#             module_name, snapshot = snapshot.split(":")
+#         else:
+#             module_name = None
+
+#         snapshot = torch.load(snapshot, map_location="cpu")
+#         state_dict = snapshot["state_dict"]
+
+#         if module_name is None:
+#             for module_name in modules:
+#                 if module_name in state_dict:
+#                     _load_pretraining_dict(
+#                         getattr(model, module_name), state_dict[module_name])
+#         else:
+#             if module_name in modules:
+#                 _load_pretraining_dict(
+#                     getattr(model, module_name), state_dict[module_name])
+#             else:
+#                 raise ValueError(
+#                     f"Unrecognized network module {module_name}")

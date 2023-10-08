@@ -1,5 +1,3 @@
-
-
 from collections import OrderedDict, defaultdict
 from math import log10
 

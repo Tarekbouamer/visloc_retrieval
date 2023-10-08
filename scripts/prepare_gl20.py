@@ -1,7 +1,7 @@
 import argparse
 import glob as glob
-import os
 import pickle
+from os import path
 from pathlib import Path
 
 import numpy as np
@@ -40,7 +40,7 @@ def main(args):
     print(" Prepare Google Landmark 2020 : ", args.data)
 
     # train
-    train_csv = os.path.join(args.data,   'train.csv')
+    train_csv = path.join(args.data,   'train.csv')
     train_db = pd.read_csv(train_csv)
 
     # find all train images
@@ -65,13 +65,13 @@ def main(args):
     db_dict['train']['cluster'] = []
     db_dict['train']['bbxs'] = []
 
-    # train_db_pkl_path = os.path.join(args.data, "train.pkl")
+    # train_db_pkl_path = path.join(args.data, "train.pkl")
     # train_db.to_pickle(train_db_pkl_path)
     # print(f"save train {train_db_pkl_path}")
 
     # # class frequency
     # class_freq = train_db.landmark_id.value_counts()
-    # np.savetxt(os.path.join(args.data, 'class_freq.txt'), class_freq.values, fmt='%d')
+    # np.savetxt(path.join(args.data, 'class_freq.txt'), class_freq.values, fmt='%d')
 
     # # topk
     # class_topk=1000
@@ -105,15 +105,15 @@ def main(args):
 
     # #
     # class_freq = train_filtered.landmark_id.value_counts()
-    # np.savetxt(os.path.join(args.data, 'filtred_class_freq.txt'), class_freq.values, fmt='%d')
+    # np.savetxt(path.join(args.data, 'filtred_class_freq.txt'), class_freq.values, fmt='%d')
 
     # # save filtred
-    # train_filtered_pkl_path = os.path.join(args.data, "train_filtred.pkl")
+    # train_filtered_pkl_path = path.join(args.data, "train_filtred.pkl")
     # train_filtered.to_pickle(train_filtered_pkl_path)
     # print(f"save filtred {train_filtered_pkl_path}")
 
     # train clean
-    train_clean_csv = os.path.join(args.data,   'train_clean.csv')
+    train_clean_csv = path.join(args.data,   'train_clean.csv')
     train_clean_db = pd.read_csv(train_clean_csv)
 
     print(train_clean_db)
@@ -186,7 +186,7 @@ def main(args):
             pos_ids.append(name_to_id[pos_name])
 
         #
-        rel_cid = os.path.relpath(cid, os.path.join(
+        rel_cid = path.relpath(cid, path.join(
             args.data, "train")).split(".")[0]
 
         #
@@ -198,7 +198,7 @@ def main(args):
 
     print(len(db_dict['train']['cids']))
     # save
-    pkl_path = os.path.join(args.data,  'gl20.pkl')
+    pkl_path = path.join(args.data,  'gl20.pkl')
     pickle.dump(db_dict, open(pkl_path, 'wb'))
 
     print("Done")

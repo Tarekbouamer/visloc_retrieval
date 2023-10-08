@@ -7,6 +7,7 @@ LOSSES = ["triplet", "contrastive"]
 
 
 def build_loss(cfg):
+    """ Build loss function """
 
     # Create Loss
     logger.debug(f"creating Loss function {cfg.loss.type}")

@@ -7,14 +7,14 @@ general:
   cudnn_benchmark: False
 
 body:
-  name: sfm_resnet50_c4_gem_1024
+  name: sfm_resnet50_gem_2048
   pretrained: False
   pca: True
   ema_decay: 0.9998
-  out_dim: 1024
+  out_dim: 2048
 
 pca:
-  num_samples: 3000
+  num_samples: 5000
   update: True
 
 loss:
@@ -43,14 +43,14 @@ dataloader:
   pool_size: 20000
   max_size: 640
   num_workers: 6
-  batch_size: 5
+  batch_size: 3
 
 augmentaion:
   auto_augment: rand-m9-mstd0.5-inc1
 
 test:
   datasets: ["roxford5k", "rparis6k"]
-  max_size: 224
+  max_size: 640
   num_samples: 20000
   mode: global
   multi_scale: True

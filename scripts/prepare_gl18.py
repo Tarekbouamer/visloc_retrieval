@@ -1,6 +1,6 @@
 import argparse
 import csv
-import os
+from os import path
 import pickle
 
 import numpy as np
@@ -39,10 +39,10 @@ def main(args):
 
     print(" Prepare Google Landmark 2018 : ", args.data)
 
-    db_csv = os.path.join(args.data, 'train.csv')
+    db_csv = path.join(args.data, 'train.csv')
 
-    train_split_csv = os.path.join(args.data, 'boxes_split1.csv')
-    val_split_csv = os.path.join(args.data, 'boxes_split2.csv')
+    train_split_csv = path.join(args.data, 'boxes_split1.csv')
+    val_split_csv = path.join(args.data, 'boxes_split2.csv')
 
     # Read database
     db_file = open(db_csv, 'r')
@@ -88,7 +88,7 @@ def main(args):
     # Search for exsisting training images
     print(" Finding all train images that succesfully downloaded")
     for cid in tqdm(train_list_all):
-        if os.path.exists(os.path.join(args.data, 'train', cid + '.jpg')):
+        if path.exists(path.join(args.data, 'train', cid + '.jpg')):
             train_list.append(cid)
             landmark_ids['train'].append(key_landmark_dict[cid])
 
@@ -99,7 +99,7 @@ def main(args):
     # Search for exsisting validation  images
     print("Finding all val images that succesfully downloaded")
     for cid in tqdm(val_list_all):
-        if os.path.exists(os.path.join(args.data, 'train', cid + '.jpg')):
+        if path.exists(path.join(args.data, 'train', cid + '.jpg')):
             val_list.append(cid)
             landmark_ids['val'].append(key_landmark_dict[cid])
 
@@ -108,10 +108,10 @@ def main(args):
     train_and_val_list['val'] = val_list
 
     # extra
-    train_list = [cid for cid in train_list_all if os.path.exists(
-        os.path.join(args.data, 'train', cid + '.jpg'))]
-    val_list = [cid for cid in val_list_all if os.path.exists(
-        os.path.join(args.data, 'train', cid + '.jpg'))]
+    train_list = [cid for cid in train_list_all if path.exists(
+        path.join(args.data, 'train', cid + '.jpg'))]
+    val_list = [cid for cid in val_list_all if path.exists(
+        path.join(args.data, 'train', cid + '.jpg'))]
 
     key_landmark_list = key_landmark_list[1:]  # Chop off header
 
@@ -209,7 +209,7 @@ def main(args):
             db_dict[mode]['pidxs'].append(pidxs[0])
 
     print('Save pkl file')
-    pkl_path = os.path.join(args.data,  'gl18.pkl')
+    pkl_path = path.join(args.data,  'gl18.pkl')
     pickle.dump(db_dict, open(pkl_path, 'wb'))
 
 

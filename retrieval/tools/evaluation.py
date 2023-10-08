@@ -1,4 +1,4 @@
-import os
+from os import path
 from collections import OrderedDict
 
 import torch
@@ -11,6 +11,7 @@ from .dataloader import build_sample_dataloader
 
 
 class DatasetEvaluator:
+    """ Base class for evaluators """
 
     def __init__(self, cfg, extractor, writer=None):
 
@@ -41,11 +42,12 @@ class DatasetEvaluator:
         self.writer.write(step)
 
     def evaluate(self):
-        """ evaluate """
+        """ evaluate , main function """
         raise NotImplementedError
 
 
 class GlobalEvaluator(DatasetEvaluator):
+    """ Global descriptor evaluator """
     def __init__(self, cfg, extractor, writer=None, **kwargs):
         super().__init__(cfg, extractor, writer)
 
@@ -73,6 +75,8 @@ class GlobalEvaluator(DatasetEvaluator):
 
 
 class ASMKEvaluator(DatasetEvaluator):
+    """ ASMK Evaluator """
+    # FIXME: Not tested
 
     def __init__(self, args, cfg, extractor, writer=None, **kwargs):
         super().__init__(args, cfg, extractor, writer)
@@ -95,7 +99,7 @@ class ASMKEvaluator(DatasetEvaluator):
         asmk, params = eval_asmk.asmk_init()
 
         # train codebook
-        save_path = os.path.join(
+        save_path = path.join(
             args.directory, self.cfg.dataloader.dataset + "_codebook.pkl")
 
         # sample loader
@@ -134,7 +138,7 @@ class ASMKEvaluator(DatasetEvaluator):
             self.writer.test()
 
         # check data path
-        if not os.path.exists(args.data):
+        if not path.exists(args.data):
             logger.error("path not found: {args.data}")
 
         # build and save asmk codebook

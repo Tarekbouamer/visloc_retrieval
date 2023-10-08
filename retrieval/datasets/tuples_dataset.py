@@ -3,9 +3,9 @@ import random
 from os import path
 
 import torch
-import torch.utils.data as data
 from loguru import logger
 from PIL import Image
+from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
 from retrieval.datasets.misc import cid2filename
@@ -52,7 +52,7 @@ def load_gl_db_images(root_dir, name, mode):
     return images, db
 
 
-class TuplesDataset(data.Dataset):
+class TuplesDataset(Dataset):
     """ TuplesDataset
             mode:           train or val 
             neg_num:        number of negative examples
@@ -192,9 +192,9 @@ class TuplesDataset(data.Dataset):
             # Prepare data loader
             logger.debug('extracting descriptors for query images :')
 
-            query_data = ImagesFromList(
-                root='', images=[self.images[i] for i in self.query_indices], transform=tf)
-            query_dl = torch.utils.data.DataLoader(query_data, **dl)
+            query_data = ImagesFromList(root='', images=[self.images[i] for i in self.query_indices],
+                                        transform=tf)
+            query_dl = DataLoader(query_data, **dl)
 
             # Extract query vectors
             qvecs = torch.zeros(len(self.query_indices),
@@ -214,7 +214,7 @@ class TuplesDataset(data.Dataset):
 
             pool_data = ImagesFromList(
                 root='', images=[self.images[i] for i in idxs2images], transform=tf)
-            pool_dl = torch.utils.data.DataLoader(pool_data, **dl)
+            pool_dl = DataLoader(pool_data, **dl)
 
             # Extract negative pool vectors
             poolvecs = torch.zeros(len(idxs2images), model.dim).cuda()

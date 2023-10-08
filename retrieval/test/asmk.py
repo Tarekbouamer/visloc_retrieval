@@ -1,13 +1,13 @@
-import os
 import pickle
 import time
+from os import path, remove
 
 from asmk import asmk_method, io_helpers
 from core.meter import htime
 from loguru import logger
 
 import retrieval.utils.evaluation.asmk as eval_asmk
-from retrieval.test.mean_ap import compute_map, compute_map_revisited
+from retrieval.test.ap import compute_map, compute_map_revisited
 
 PARAM_PATH = "./retrieval/configuration/defaults/asmk.yml"
 
@@ -32,8 +32,8 @@ def train_codebook(cfg, sample_dl, extractor, asmk, scales=[1.0], save_path=None
     """
 
     # remove old book
-    if os.path.exists(save_path):
-        os.remove(save_path)
+    if path.exists(save_path):
+        remove(save_path)
     #
     train_out = extractor.extract_locals(
         sample_dl, scales=scales, save_path=None)

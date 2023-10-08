@@ -1,4 +1,4 @@
-import os
+from os import path, mkdir
 
 import gdown
 from loguru import logger
@@ -39,16 +39,16 @@ def ask_yesno(question):
 def download_all_models(ask_for_permission=False):
 
     logger.debug("download all pretarined models")
-    if not os.path.exists(pretrained_models_path):
-        os.mkdir(pretrained_models_path)
+    if not path.exists(pretrained_models_path):
+        mkdir(pretrained_models_path)
 
     if not ask_for_permission or ask_yesno(f"Auto-download pretrained models into {pretrained_models_path} ? Yes/no."):
 
         for model_name, model_url in models.items():
-            output = os.path.join(os.path.join(
+            output = path.join(path.join(
                 pretrained_models_path, model_name))
 
-            if not os.path.exists(output):
+            if not path.exists(output):
                 print(f'Downloading {model_name}')
                 gdown.download_folder(model_url, output=output,
                                       quiet=False, use_cookies=False)

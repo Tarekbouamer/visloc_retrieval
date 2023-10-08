@@ -98,7 +98,7 @@
 #     layer.bias.data = projected_shift[:num_d]
 
 #     # save layer to layer_path
-#     layer_path = os.path.join(args.directory, "whiten.pth")
+#     layer_path = path.join(args.directory, "whiten.pth")
 #     torch.save(layer.state_dict(), layer_path)
 
 #     logger.info(f"save whiten layer: {layer_path}")

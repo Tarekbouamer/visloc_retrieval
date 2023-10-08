@@ -1,6 +1,4 @@
-import time
 
-import torch
 from loguru import logger
 from omegaconf import OmegaConf
 
@@ -12,6 +10,9 @@ class TrainerBase:
 
         # cfg
         self.cfg = cfg if isinstance(cfg, OmegaConf) else OmegaConf.create(cfg)
+
+        # workspace
+        self._workspace = None
 
         # epoch
         self._epoch = 0
@@ -32,7 +33,14 @@ class TrainerBase:
         self._ema_model = None  # ema model
 
     def train(self, start_epoch, max_epochs):
-        """ train the model pipeline """
+        """ train the model pipeline 
+                1. before train
+                2. train loop
+                    2.1 train epoch
+                    2.2 val epoch
+                    2.3 test epoch
+                3. after train
+        """
 
         self._epoch = start_epoch
         self._start_epoch = start_epoch
@@ -45,14 +53,8 @@ class TrainerBase:
             # train loop
             for self._epoch in range(start_epoch, max_epochs):
 
-                # before epoch
-                self.before_epoch()
-
                 # train epoch
                 self.train_epoch()
-
-                # after epoch
-                self.after_epoch()
 
                 # val step
                 if self.val_dl:
@@ -65,164 +67,30 @@ class TrainerBase:
         #
         except Exception:
             logger.exception("Exception during train the model")
-            raise
-        #
+            raise Exception
         finally:
             # after train
             self.after_train()
 
     def before_train(self):
         """ called before the training loop """
-        pass
-
-    def before_epoch(self):
-        """ called before each epoch """
-        pass
+        raise NotImplementedError
 
     def train_epoch(self):
         """ called for each epoch """
-        # timer
-        data_time = time.time()
-
-        #
-        for step, (tuples, target) in enumerate(self.train_dl):
-
-            # global step
-            self._global_step += 1
-
-            # data_time
-            data_time = torch.as_tensor(time.time() - data_time)
-
-            #
-            num_imgs = len(tuples[0])
-
-            # batch time
-            batch_time = time.time()
-
-            # run
-            for tuple_i, target_i in zip(tuples, target):
-
-                vecs = torch.zeros(num_imgs, self._model.dim).cuda()
-
-                # extract vectors
-                for n in range(len(tuple_i)):
-                    data = {"image": tuple_i[n].cuda()}
-                    pred = self._model(data, do_whitening=True)
-                    vecs[n, :] = pred['features']
-
-                # compute loss
-                loss = self.loss(vecs, target_i.cuda())
-
-                # backward
-                loss.backward()
-
-            # optimize
-            self.optimizer.step()
-
-            # ema update
-            if self._ema_model is not None:
-                self._ema_model.update(self._model)
-
-            # zero grads
-            self.optimizer.zero_grad()
-
-            # batch time
-            batch_time = torch.as_tensor(time.time() - batch_time)
-
-            # metrics
-            with torch.no_grad():
-                if isinstance(loss, torch.Tensor):
-                    metrics = {
-                        "loss":         loss,
-                        "total_loss":   loss,
-                        "data_time":    data_time,
-                        "batch_time":   batch_time
-                    }
-
-                # write
-                self.write_metrics(metrics, step, len(
-                    self.train_dl), global_step=self._global_step)
-
-                #
-                self.writer.add_images(tuple_i, step)
-                # self.writer.add_graph(self._model, tuple_i)
-
-            #
-            data_time = time.time()
-
-    def after_epoch(self):
-        """ called after each epoch """
-        pass
+        raise NotImplementedError
 
     def after_train(self):
         """ called after the training loop """
-        pass
+        raise NotImplementedError
 
     def val_epoch(self):
         """ called for each epoch """
-
-        # set to eval
-        if self._model.training:
-            self._model.eval()
-
-        # eval
-        self.writer.eval()
-
-        # hard mine
-        self.refresh_val_data()
-
-        # timer
-        data_time = time.time()
-
-        #
-        for step, (tuples, target) in enumerate(self.val_dl):
-
-            with torch.no_grad():
-
-                # data_time
-                data_time = torch.as_tensor(time.time() - data_time)
-
-                #
-                num_imgs = len(tuples[0])
-
-                # batch time
-                batch_time = time.time()
-
-                # run
-                for tuple_i, target_i in zip(tuples, target):
-
-                    vecs = torch.zeros(num_imgs, self._model.dim).cuda()
-
-                    # extract vectors
-                    for n in range(len(tuple_i)):
-                        data = {"image": tuple_i[n].cuda()}
-                        pred = self._model(data, do_whitening=True)
-                        vecs[n, :] = pred['features']
-
-                    # compute loss
-                    loss = self.loss(vecs, target_i.cuda())
-
-                # batch time
-                batch_time = torch.as_tensor(time.time() - batch_time)
-
-                # metrics
-                with torch.no_grad():
-                    if isinstance(loss, torch.Tensor):
-                        metrics = {
-                            "loss":         loss,
-                            "total_loss":   loss,
-                            "data_time":    data_time,
-                            "batch_time":   batch_time
-                        }
-
-                    # write
-                    self.write_metrics(metrics, step, len(self.val_dl))
-
-                #
-                data_time = time.time()
+        raise NotImplementedError
 
     def test_epoch(self):
-        pass
+        """ called for each epoch """
+        raise NotImplementedError
 
     # def load_state_dict(self, state_dict):
     #     logger = logging.getLogger(__name__)
