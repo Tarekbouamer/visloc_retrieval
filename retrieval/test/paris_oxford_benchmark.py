@@ -13,8 +13,8 @@ from retrieval.datasets import (
 def build_paris_oxford_dataset(data_path, name_dataset, cfg):
     """ Build paris oxford dataset """
 
-    assert path.exists(data_path), logger.error(
-        "path: {data_path} does not exsists !!")
+    assert path.exists(data_path), \
+        logger.error(f"{data_path} does not exsists !!")
 
     logger.info(f'[{name_dataset}]: loading test dataset from {data_path}')
 

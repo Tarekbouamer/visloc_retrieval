@@ -1,14 +1,12 @@
-
 from copy import deepcopy
-from os import mkdir, path
+from os import path
 
-import gdown
 import numpy as np
 import timm
 import torch
 import torch.nn as nn
 from core.progress import tqdm_progress
-from core.registry.factory import load_state_dict, load_pretrained
+from core.registry.factory import load_pretrained
 from core.registry.register import get_pretrained_cfg
 from core.transforms import tfn_image_net
 from loguru import logger
@@ -16,7 +14,6 @@ from loguru import logger
 from retrieval.models.base import RetrievalBase
 from retrieval.models.modules.pools import GeM
 from retrieval.utils.pca import PCA
-from retrieval.utils.snapshot import save_snapshot
 
 from .misc import _cfg, register_retrieval
 
@@ -143,7 +140,6 @@ class GemNet(RetrievalBase):
 
             # append
             vecs.append(pred['features'].cpu().numpy())
-
             del pred
 
         # stack
@@ -212,48 +208,28 @@ class GemNet(RetrievalBase):
 
 default_cfgs = {
     'sfm_resnet50_gem_2048':
-        _cfg(drive='https://drive.google.com/uc?id=1gFRNJPILkInkuCZiCHqjQH_Xa2CUiAb5',
+        _cfg(drive='https://drive.google.com/uc?id=16yYw1VCYREpl7G7hF-IiWSKrdN-cMdQu',
              backbone="resnet50", feature_scales=[1, 2, 3, 4], out_dim=2048, p=3.0),
     'sfm_resnet50_c4_gem_1024':
-        _cfg(drive='https://drive.google.com/uc?id=1ber3PbTF4ZWAmnBuJu5AEp2myVJFNM7F',
+        _cfg(drive='https://drive.google.com/uc?id=1K0bBM_LNApY3dg3CVWExi2taDE0Bw5SL',
              backbone="resnet50", feature_scales=[1, 2, 3], out_dim=1024, p=3.0),
     'sfm_resnet101_gem_2048':
-        _cfg(drive='https://drive.google.com/uc?id=10CqmzZE_XwRCyoiYlZh03tfYk1jzeziz',
+        _cfg(drive='https://drive.google.com/uc?id=1vfINgK8spooVW_pIEUv054VvU6KE1XWV',
              backbone="resnet101", feature_scales=[1, 2, 3, 4], out_dim=2048, p=3.0),
     'sfm_resnet101_c4_gem_1024':
-        _cfg(drive='https://drive.google.com/uc?id=1uYYuLqqE9TNgtmQtY7Mg2YEIF9VkqAYz',
+        _cfg(drive='https://drive.google.com/uc?id=1tRMxWNxR261-Yrx6iNAc1GNjxwfi8Tzq',
              backbone="resnet101", feature_scales=[1, 2, 3], out_dim=1024, p=3.0),
     'gl18_resnet50_gem_2048':
-        _cfg(drive='https://drive.google.com/uc?id=1AaS4aXe2FYyi-iiLetF4JAo0iRqKHQ2Z',
+        _cfg(drive='https://drive.google.com/uc?id=1YYjv2uIX11-9wFF6TGovNhz4yLFgp_T9',
              backbone="resnet50", feature_scales=[1, 2, 3, 4], out_dim=2048, p=3.0),
 }
 
 
-def load_from_drive(variant, pretrained_drive):
-    # name hub folder
-    save_folder = "hub"
-    save_path = save_folder + "/" + variant + ".pth"
-
-    # create fodler
-    if not path.exists(save_folder):
-        mkdir(save_folder)
-
-    # download from gdrive if weights not found
-    if not path.exists(save_path):
-        save_path = gdown.download(
-            pretrained_drive, save_path, quiet=False, use_cookies=False)
-
-    #  load from drive
-    state_dict = load_state_dict(save_path)
-
-    return state_dict
-
-
-def _create_model(variant, cfg: dict = {}, pretrained: bool = True, **kwargs: dict) -> nn.Module:
+def _create_model(name, cfg: dict = {}, pretrained: bool = True, **kwargs: dict) -> nn.Module:
     """ create a model """
 
     # default cfg
-    model_cfg = get_pretrained_cfg(variant)
+    model_cfg = get_pretrained_cfg(name)
     cfg = {**model_cfg, **cfg}
 
     # create model
@@ -261,89 +237,36 @@ def _create_model(variant, cfg: dict = {}, pretrained: bool = True, **kwargs: di
 
     # load pretrained weights
     if pretrained:
+        load_pretrained(model, name, cfg, state_key="model")
 
-        # load_pretrained(model, variant, cfg)
-        state_dict = load_from_drive(variant, cfg["drive"])["state_dict"]
-        model.body.load_state_dict(state_dict["body"])
-        model.head.load_state_dict(state_dict["head"])
-    
-    # TODO: we need to delete this, just to fix save_snapshot bug
-    
-    # load snapshot
-    snapshot_path = f"hub/{variant}.pth"
-
-    # check if snapshot exists
-    if not path.exists(snapshot_path):
-        logger.info(f"snapshot not found: {snapshot_path}")
-        exit(0)
-    snapshot = torch.load(snapshot_path, map_location="cpu")
-
-    # save snapshot
-    snapshot_path_new = f"hub/{variant}_new.pth"
-    print(snapshot_path_new)
-    config = snapshot["config"]
-
-    # from training_meta
-    epoch = snapshot["training_meta"]["epoch"]
-    last_score = snapshot["training_meta"]["last_score"]
-    best_score = snapshot["training_meta"]["best_score"]
-    global_step = snapshot["training_meta"]["global_step"]
-
-    # from state_dict
-    optimizer = snapshot["state_dict"]["optimizer"]
-    loss = snapshot["state_dict"]["loss"]
-    total_loss = snapshot["state_dict"]["total_loss"]
-    data_time = snapshot["state_dict"]["data_time"]
-    batch_time = snapshot["state_dict"]["batch_time"]
-
-    #
-    save_snapshot(snapshot_path_new, config, epoch,
-                  last_score, best_score, global_step,
-                  model=model.state_dict(),
-                  optimizer=optimizer,
-                  loss=loss,
-                  total_loss=total_loss,
-                  data_time=data_time,
-                  batch_time=batch_time)
-    exit(0)
     return model
 
 
 @register_retrieval
 def sfm_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k ResNet-50 with GeM model.
-    """
-    model_args = dict(**kwargs)
-    return _create_model('sfm_resnet50_gem_2048', cfg, pretrained, **model_args)
+    """Constructs a SfM-120k ResNet-50 with GeM model"""
+    return _create_model('sfm_resnet50_gem_2048', cfg, pretrained, **kwargs)
 
 
 @register_retrieval
 def sfm_resnet50_c4_gem_1024(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales
-    """
-    model_args = dict(**kwargs)
-    return _create_model('sfm_resnet50_c4_gem_1024', cfg, pretrained, **model_args)
+    """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales"""
+    return _create_model('sfm_resnet50_c4_gem_1024', cfg, pretrained, **kwargs)
 
 
 @register_retrieval
 def sfm_resnet101_gem_2048(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k ResNet-101 with GeM model.
-    """
-    model_args = dict(**kwargs)
-    return _create_model('sfm_resnet101_gem_2048', cfg, pretrained, **model_args)
+    """Constructs a SfM-120k ResNet-101 with GeM model."""
+    return _create_model('sfm_resnet101_gem_2048', cfg, pretrained, **kwargs)
 
 
 @register_retrieval
 def sfm_resnet101_c4_gem_1024(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k ResNet-101 with GeM model, only 4 features scales
-    """
-    model_args = dict(**kwargs)
-    return _create_model('sfm_resnet101_c4_gem_1024', cfg, pretrained, **model_args)
+    """Constructs a SfM-120k ResNet-101 with GeM model, only 4 features scales"""
+    return _create_model('sfm_resnet101_c4_gem_1024', cfg, pretrained, **kwargs)
 
 
 @register_retrieval
 def gl18_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
-    """Constructs a gl18 ResNet-50 with GeM model.
-    """
-    model_args = dict(**kwargs)
-    return _create_model('gl18_resnet50_gem_2048', cfg, pretrained, **model_args)
+    """Constructs a gl18 ResNet-50 with GeM model."""
+    return _create_model('gl18_resnet50_gem_2048', cfg, pretrained, **kwargs)

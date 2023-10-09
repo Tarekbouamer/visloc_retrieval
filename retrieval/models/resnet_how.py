@@ -20,17 +20,6 @@
 # from .misc import create_retrieval, register_retrieval
 
 
-# # default cfg
-# def _cfg(url='', drive='', out_dim=128, **kwargs):
-#     return {
-#         'url': url,
-#         'drive': drive,
-#         'reduction': False,
-#         'input_size': (3, 1024, 1024),
-#         'out_dim': out_dim,
-#         **kwargs
-#     }
-
 
 # default_cfgs = {
 #     'sfm_resnet18_how_128':         _cfg(drive='https://drive.google.com/uc?id=1w7sb1yP3_Y-I64aWg57NR10fDhiAOtg4'),

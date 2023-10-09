@@ -100,7 +100,7 @@ class ASMKEvaluator(DatasetEvaluator):
 
         # train codebook
         save_path = path.join(
-            args.directory, self.cfg.dataloader.dataset + "_codebook.pkl")
+            args.directory, self.cfg.data.dataset + "_codebook.pkl")
 
         # sample loader
         sample_dl = build_sample_dataloader(self.train_dl,

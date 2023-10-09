@@ -245,7 +245,7 @@ class SatDataset(data.Dataset):
         }
 
         # Transform
-        tf = ImagesTransform(max_size=cfg.dataloader.max_size)
+        tf = ImagesTransform(max_size=cfg.data.max_size)
 
         # Dataloaders
         q_dl = data.DataLoader(ImagesFromList(root='',  images=[

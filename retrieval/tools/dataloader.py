@@ -10,6 +10,7 @@ from retrieval.datasets import (
     TuplesDataset,
 )
 from retrieval.datasets.misc import collate_tuples
+from retrieval.datasets.sfm import SfMDataset
 
 DATASETS = ["retrieval-SfM-120k", "gl18", "gl20", "SAT"]
 
@@ -17,31 +18,36 @@ DATASETS = ["retrieval-SfM-120k", "gl18", "gl20", "SAT"]
 def build_dataset(args, cfg, transform, mode='train'):
     """ build dataset  """
 
-    # FIXME: make for each dataset a separate class, return dataset
+    name = cfg.data.dataset
+
+    if name == "retrieval-SfM-120k":
+        return SfMDataset(data_path=args.data, 
+                          name=name, 
+                          cfg=cfg, 
+                          mode=mode,  
+                          transform=transform)
 
     # sfm
-    if cfg.dataloader.dataset in ["retrieval-SfM-120k", "gl18", "gl20"]:
-
-        train_db = TuplesDataset(root_dir=args.data,
-                                 name=cfg.dataloader.dataset,
+    if name in ["gl18", "gl20"]:
+        return TuplesDataset(root_dir=args.data,
+                                 name=name,
                                  mode=mode,
-                                 query_size=cfg.dataloader.query_size,
-                                 pool_size=cfg.dataloader.pool_size,
+                                 query_size=cfg.data.query_size,
+                                 pool_size=cfg.data.pool_size,
                                  transform=transform,
-                                 neg_num=cfg.dataloader.neg_num)
-    elif cfg.dataloader.dataset == "SAT":
-        train_db = SatDataset(root_dir=args.data,
-                              name=cfg.dataloader.dataset,
+                                 neg_num=cfg.data.neg_num)
+    elif name == "SAT":
+        return SatDataset(root_dir=args.data,
+                              name=name,
                               mode=mode,
-                              query_size=cfg.dataloader.query_size,
-                              pool_size=cfg.dataloader.pool_size,
+                              query_size=cfg.data.query_size,
+                              pool_size=cfg.data.pool_size,
                               transform=transform,
-                              neg_num=cfg.dataloader.neg_num)
+                              neg_num=cfg.data.neg_num)
     else:
-        raise ValueError(f"dataset {cfg.dataloader.dataset} not supported, \
+        raise ValueError(f"dataset {name} not supported, \
                          available datasets: {DATASETS}")
 
-    return train_db
 
 
 def build_sample_dataloader(train_dl, num_samples=None, cfg=None):
@@ -82,9 +88,9 @@ def build_train_dataloader(args, cfg):
     logger.info("build train dataloader")
 
     # Options
-    dl_opt = {"batch_sampler": None,          "batch_size": cfg.dataloader.batch_size,
+    dl_opt = {"batch_sampler": None,          "batch_size": cfg.data.batch_size,
               "collate_fn": collate_tuples,    "pin_memory": True,
-              "num_workers": cfg.dataloader.num_workers, "shuffle": True, "drop_last": True}
+              "num_workers": cfg.data.num_workers, "shuffle": True, "drop_last": True}
 
     # transforms
     # transform = build_transforms(cfg)["train_aug"]
@@ -103,14 +109,14 @@ def build_val_dataloader(args, cfg):
     logger.info("build val dataloader")
 
     # Options
-    {"neg_num": cfg.dataloader.neg_num,
-     "batch_size": cfg.dataloader.batch_size,
-     "num_workers": cfg.dataloader.num_workers
+    {"neg_num": cfg.data.neg_num,
+     "batch_size": cfg.data.batch_size,
+     "num_workers": cfg.data.num_workers
      }
 
-    dl_opt = {"batch_sampler": None,          "batch_size": cfg.dataloader.batch_size,
+    dl_opt = {"batch_sampler": None,          "batch_size": cfg.data.batch_size,
               "collate_fn": collate_tuples,    "pin_memory": True,
-              "num_workers": cfg.dataloader.num_workers, "shuffle": True, "drop_last": True}
+              "num_workers": cfg.data.num_workers, "shuffle": True, "drop_last": True}
 
     # transform
     transform = build_transforms(cfg)["test"]
@@ -128,12 +134,12 @@ def build_transforms(cfg):
     tfs = {}
 
     # test
-    tfs["test"] = ImagesTransform(max_size=cfg.dataloader.max_size)
+    tfs["test"] = ImagesTransform(max_size=cfg.data.max_size)
 
-    tfs["train"] = ImagesTransform(max_size=cfg.dataloader.max_size)
+    tfs["train"] = ImagesTransform(max_size=cfg.data.max_size)
 
     # train augment
-    tf_pre, tf_aug, _ = create_transform(input_size=cfg.dataloader.max_size,
+    tf_pre, tf_aug, _ = create_transform(input_size=cfg.data.max_size,
                                          is_training=True,
                                          auto_augment=cfg.augmentaion.auto_augment,
                                          interpolation="random",
@@ -143,7 +149,7 @@ def build_transforms(cfg):
                                          re_num_splits=0,
                                          separate=True)
 
-    tfs["train_aug"] = ImagesTransform(max_size=cfg.dataloader.max_size,
+    tfs["train_aug"] = ImagesTransform(max_size=cfg.data.max_size,
                                        preprocessing=tf_pre,
                                        augmentation=tf_aug)
 

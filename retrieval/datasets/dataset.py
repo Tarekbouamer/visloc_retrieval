@@ -11,9 +11,7 @@ _EXT = ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']
 
 
 class ImagesFromList(Dataset):
-    """ImagesFromList
-        generic dataset from list of images
-    """
+    """A generic dataset from a list of images"""
     def __init__(self, root, images=None, bbxs=None, transform=None):
         
         if images is not None:

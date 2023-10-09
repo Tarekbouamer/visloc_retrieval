@@ -32,7 +32,7 @@ def make_parser():
 
 def make_dir(cfg, directory):
 
-    extension = "{}".format(cfg.dataloader.dataset)
+    extension = "{}".format(cfg.data.dataset)
     extension += "_{}".format(cfg.body.name)
     extension += "_{}_m{:.2f}".format(cfg.loss.type,
                                       cfg.loss.margin)
@@ -41,10 +41,10 @@ def make_dir(cfg, directory):
                                                 cfg.optimizer.lr,
                                                 cfg.optimizer.weight_decay)
 
-    extension += "_nnum{}".format(cfg.dataloader.neg_num)
+    extension += "_nnum{}".format(cfg.data.neg_num)
 
-    extension += "_bsize{}_imsize{}".format(cfg.dataloader.batch_size,
-                                            cfg.dataloader.max_size)
+    extension += "_bsize{}_imsize{}".format(cfg.data.batch_size,
+                                            cfg.data.max_size)
 
     # make directory
     directory = path.join(directory, extension)

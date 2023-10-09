@@ -6,7 +6,7 @@ from asmk import asmk_method, io_helpers
 from core.meter import htime
 from loguru import logger
 
-import retrieval.utils.evaluation.asmk as eval_asmk
+import retrieval.test.asmk as eval_asmk
 from retrieval.test.ap import compute_map, compute_map_revisited
 
 PARAM_PATH = "./retrieval/configuration/defaults/asmk.yml"

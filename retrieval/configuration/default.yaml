@@ -23,7 +23,7 @@ loss:
 
 optimizer:
   type: Adam
-  lr: 1.e-6
+  lr: 5.e-6
   weight_decay: 1.e-4
   weight_decay_norm: True
   momentum: 0.9
@@ -36,21 +36,21 @@ scheduler:
   burn_in_start: 0.01
   burn_in_steps: 0
 
-dataloader:
+data:
   dataset: retrieval-SfM-120k
   neg_num: 5
   query_size: 2000
   pool_size: 20000
-  max_size: 640
+  max_size: 1024
   num_workers: 6
-  batch_size: 3
+  batch_size: 5
 
 augmentaion:
   auto_augment: rand-m9-mstd0.5-inc1
 
 test:
   datasets: ["roxford5k", "rparis6k"]
-  max_size: 640
+  max_size: 1024
   num_samples: 20000
   mode: global
   multi_scale: True

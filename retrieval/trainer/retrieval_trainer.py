@@ -4,6 +4,7 @@ from os import path
 
 import torch
 from core.logging import _log_api_usage
+from core.model import resume_from_snapshot, save_snapshot
 from loguru import logger
 from timm.utils import ModelEmaV2
 
@@ -22,7 +23,6 @@ from retrieval.tools import (
     build_train_dataloader,
     build_val_dataloader,
 )
-from retrieval.utils.snapshot import resume_from_snapshot, save_snapshot
 
 from .base import TrainerBase
 
