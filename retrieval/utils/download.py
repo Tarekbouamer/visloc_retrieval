@@ -65,12 +65,12 @@ def download_oxford_paris(data_dir):
 
                     # download
                     logger.info(
-                        f'downloading dataset {dataset} archive {dl_file}')
+                        f'Downloading dataset {dataset} archive {dl_file}')
                     system(f'wget {src_file} -O {dst_file}')
 
                     # extract
                     logger.info(
-                        f'extracting dataset {dataset} archive {dl_file}')
+                        f'Extracting dataset {dataset} archive {dl_file}')
 
                     # create tmp folder
                     dst_dir_tmp = path.join(dst_dir, 'tmp')
@@ -93,7 +93,7 @@ def download_oxford_paris(data_dir):
             # symbol links
             elif dataset == 'roxford5k' or dataset == 'rparis6k':
                 logger.info(
-                    f'dataset {dataset} directory does not exist. Creating: {dst_dir}')
+                    f'Dataset {dataset} directory does not exist. Creating: {dst_dir}')
 
                 dataset_old = dataset[1:]
                 dst_dir_old = path.join(datasets_dir, dataset_old, 'jpg')
@@ -101,7 +101,7 @@ def download_oxford_paris(data_dir):
 
                 system(f'ln -s {dst_dir_old} {dst_dir}')
                 logger.info(
-                    'created symbolic link from {dataset_old} jpg to {dataset} jpg')
+                    'Created symbolic link from {dataset_old} jpg to {dataset} jpg')
 
         gnd_src_dir = path.join(
             'https://cmp.felk.cvut.cz/cnnimageretrieval/data', 'test', dataset)
@@ -147,13 +147,13 @@ def download_sfm120(data_dir):
         makedirs(dst_dir)
 
         # download
-        logger.info(f'downloading {dst_dir}')
+        logger.info(f'Downloading {dst_dir}')
         system('wget {} -O {}'.format(src_file, dst_file))
 
-        logger.info(f'extracting {dst_file}')
+        logger.info(f'Extracting {dst_file}')
         system(f'tar -zxf {dst_file} -C {dst_dir}')
 
-        logger.info(f'extraction done, deleting {dst_file}')
+        logger.info(f'Extraction done, deleting {dst_file}')
         system(f'rm {dst_file}')
 
     # symlink for train/retrieval-SfM-30k/
@@ -163,7 +163,7 @@ def download_sfm120(data_dir):
     if not path.isdir(dst_dir):
         makedirs(path.join(datasets_dir, 'retrieval-SfM-30k'))
         system('ln -s {} {}'.format(dst_dir_old, dst_dir))
-        logger.info('created symbolic link to retrieval-SfM-30k/ims')
+        logger.info('Created symbolic link to retrieval-SfM-30k/ims')
 
     # download db files
     src_dir = path.join(
@@ -185,7 +185,7 @@ def download_sfm120(data_dir):
             dst_file = path.join(dst_dir, dl_files[i])
 
             if not path.isfile(dst_file):
-                logger.info(f'downloading db file {dl_files[i]}')
+                logger.info(f'Downloading db file {dl_files[i]}')
                 system('wget {} -O {}'.format(src_file, dst_file))
 
 
@@ -216,7 +216,7 @@ def download_revisited1m(data_dir):
     dst_dir_tmp = path.join(datasets_dir, 'jpg_tmp')
 
     if not path.isdir(dst_dir):
-        logger.info(f'creating dataset {dataset} in : {dst_dir}')
+        logger.info(f'Creating dataset {dataset} in : {dst_dir}')
 
         create_dir(dst_dir_tmp)
 
@@ -238,8 +238,8 @@ def download_revisited1m(data_dir):
                         break
                     except Exception as e:
                         logger.warning(
-                            f'download failed. try this one again. Error: {e}')
-                        logger.warning('download failed. try this one again')
+                            f'Download failed. try this one again. Error: {e}')
+                        logger.warning('Download failed. try this one again')
 
         for dfi in range(nfiles):
             dl_file = dl_files.format(dfi+1)
@@ -266,7 +266,7 @@ def download_revisited1m(data_dir):
         gnd_src_file = path.join(gnd_src_dir, gnd_dl_file)
         gnd_dst_file = path.join(gnd_dst_dir, gnd_dl_file)
         if not path.exists(gnd_dst_file):
-            logger.info(f'downloading dataset {dataset} image list file')
+            logger.info(f'Downloading dataset {dataset} image list file')
             urllib.request.urlretrieve(gnd_src_file, gnd_dst_file)
 
 

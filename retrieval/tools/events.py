@@ -82,10 +82,7 @@ class AverageMeter(ConstantMeter):
 
 
 class Writer:
-    """
-        Base class for writers that obtain events from :class:`EventStorage` and process them.
-    """
-
+    """ Base class for writers """
     def write(self):
         raise NotImplementedError
 
@@ -94,25 +91,25 @@ class Writer:
 
 
 class EventWriter(Writer):
-    """
-    """
+    """ Event writer """
 
     def __init__(self, directory, print_freq=10):
+        
+        # summary board
+        self.summray = tensorboard.SummaryWriter(directory, max_queue=5, flush_secs=10)
 
-        self.summray = tensorboard.SummaryWriter(
-            directory, max_queue=5, flush_secs=10)
-
-        #
+        # print frequency
         self.print_freq = print_freq
-        self.histories = OrderedDict()
 
-        #
+        # histories
+        self.histories = OrderedDict()
         for mode in ["train", "eval", "test"]:
             self.histories[mode] = defaultdict(AverageMeter)
 
-        #
+        # mode
         self.is_training = True
 
+        # transforms
         self.inv_transform = transforms.Normalize(
             mean=[-0.485/0.229, -0.456/0.224, -0.406/0.225],
             std=[1/0.229,       1/0.224,       1/0.225])
@@ -120,19 +117,16 @@ class EventWriter(Writer):
     def train(self):
         self.mode = "train"
         self.is_training = True
-
         self.history = self.histories["train"]
 
     def eval(self):
         self.mode = "eval"
         self.is_training = False
-
         self.history = self.histories["eval"]
 
     def test(self):
         self.mode = "test"
         self.is_training = False
-
         self.history = self.histories["test"]
 
     def add_scalar(self, name, value, iter):
@@ -176,22 +170,22 @@ class EventWriter(Writer):
                     self.mode + "/" + k, v.value.item(), global_step)
 
     def log(self, epoch, num_epochs, step, num_steps):
-        """
-            Print metrics and stats to terminal
-        """
+        """ Log current status """
+
         # epoch and steps
-        msg = _current_total_formatter(
-            epoch, num_epochs) + " " + _current_total_formatter(step, num_steps)
+        msg = _current_total_formatter(epoch, num_epochs) \
+                + " " + _current_total_formatter(step, num_steps)
 
         # metrics
         for k, v in self.history.items():
             if isinstance(v, AverageMeter):
-                msg += "\t{}={:.2f} ({:.2f})".format(k,
-                                                     v.value.item(), v.mean.item())
+                msg += "  {}={:.2f} ({:.2f})".format(k,
+                                                   v.value.item(),
+                                                   v.mean.item())
         # memory usage megabites
         if torch.cuda.is_available():
             max_mem_mb = max_cuda_memory_allocated()
-            msg += f"\t mem={max_mem_mb:.2f}"
+            msg += f"  mem={max_mem_mb:.2f}"
 
         # log
         logger.info(msg)

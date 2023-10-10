@@ -7,6 +7,9 @@ from .tuples_dataset import TuplesDataset
 
 
 class GoogleLandmarkDataset(TuplesDataset):
+    """ GoogleLandmarkDataset
+        for google landmark dataset 2018 and 2020 challenges
+    """
     def __init__(self, data_path, name, cfg={}, mode="train", transform=None):
         super().__init__(data_path, name, cfg=cfg, mode=mode, transform=transform)
 
@@ -14,7 +17,7 @@ class GoogleLandmarkDataset(TuplesDataset):
         self.build_dataset(data_path, name, mode)
 
         logger.info(
-            f'SfMDataset "{name}" on {mode} mode with {len(self)} tuples')
+            f'GoogleLandmarkDataset "{name}" on {mode} mode with {len(self)} tuples')
 
     def build_dataset(self, data_path, name, mode):
         """Builds the dataset"""

@@ -1,4 +1,5 @@
 from core.device import get_device
+from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 
 from retrieval.models import create_retrieval
@@ -11,8 +12,8 @@ class BaseExtractor:
     def __init__(self, cfg, model_name=None, model=None):
 
         # cfg
-        self.cfg = cfg
-
+        self.cfg = cfg if isinstance(cfg, OmegaConf) else OmegaConf.create(cfg)
+        
         # model
         if model is None:
             self.model = create_retrieval(cfg, model_name)

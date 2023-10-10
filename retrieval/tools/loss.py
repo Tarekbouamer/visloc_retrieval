@@ -10,7 +10,7 @@ def build_loss(cfg):
     """ Build loss function """
 
     # Create Loss
-    logger.debug(f"creating Loss function {cfg.loss.type}")
+    logger.debug(f"Creating Loss function {cfg.loss.type}")
 
     loss_name = cfg.loss.type
     loss_margin = cfg.loss.margin

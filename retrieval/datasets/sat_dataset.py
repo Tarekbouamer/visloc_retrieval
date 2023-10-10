@@ -3,10 +3,12 @@ from os import path
 
 import numpy as np
 import torch
-import torch.utils.data as data
+from torch.utils.data import DataLoader, Dataset
 from loguru import logger
 from PIL import Image
 from tqdm import tqdm
+
+from . import ImagesTransform, ImagesFromList
 
 NETWORK_INPUTS = ["q", "p", "ns"]
 All_INPUTS = ["q", "p", "ns"]
@@ -248,11 +250,11 @@ class SatDataset(data.Dataset):
         tf = ImagesTransform(max_size=cfg.data.max_size)
 
         # Dataloaders
-        q_dl = data.DataLoader(ImagesFromList(root='',  images=[
+        q_dl = DataLoader(ImagesFromList(root='',  images=[
                                self.qImages[i] for i in q_indices],   transform=tf), **dl_opt)
-        p_dl = data.DataLoader(ImagesFromList(root='',  images=[
+        p_dl = DataLoader(ImagesFromList(root='',  images=[
                                self.images[i] for i in p_indices],   transform=tf), **dl_opt)
-        n_dl = data.DataLoader(ImagesFromList(root='',  images=[
+        n_dl = DataLoader(ImagesFromList(root='',  images=[
                                self.images[i] for i in n_indices],   transform=tf), **dl_opt)
 
         #

@@ -1,5 +1,5 @@
 opencv-contrib-python==4.6.0.66
 opencv-python==4.6.0.66
 pandas
-tensorboard
+tensorboard >= 2.2.0
 tensorboardX

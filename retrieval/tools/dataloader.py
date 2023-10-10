@@ -4,13 +4,13 @@ from timm.data import create_transform
 from torch.utils.data import DataLoader, SubsetRandomSampler
 
 from retrieval.datasets import (
+    GoogleLandmarkDataset,
     ImagesFromList,
     ImagesTransform,
     SatDataset,
-    TuplesDataset,
+    SfMDataset,
+    collate_tuples,
 )
-from retrieval.datasets.misc import collate_tuples
-from retrieval.datasets.sfm import SfMDataset
 
 DATASETS = ["retrieval-SfM-120k", "gl18", "gl20", "SAT"]
 
@@ -21,33 +21,30 @@ def build_dataset(args, cfg, transform, mode='train'):
     name = cfg.data.dataset
 
     if name == "retrieval-SfM-120k":
-        return SfMDataset(data_path=args.data, 
-                          name=name, 
-                          cfg=cfg, 
-                          mode=mode,  
+        return SfMDataset(data_path=args.data,
+                          name=name,
+                          cfg=cfg,
+                          mode=mode,
                           transform=transform)
 
     # sfm
     if name in ["gl18", "gl20"]:
-        return TuplesDataset(root_dir=args.data,
-                                 name=name,
-                                 mode=mode,
-                                 query_size=cfg.data.query_size,
-                                 pool_size=cfg.data.pool_size,
-                                 transform=transform,
-                                 neg_num=cfg.data.neg_num)
+        return GoogleLandmarkDataset(data_path=args.data,
+                                     name=name,
+                                     cfg=cfg,
+                                     mode=mode,
+                                     transform=transform)
     elif name == "SAT":
         return SatDataset(root_dir=args.data,
-                              name=name,
-                              mode=mode,
-                              query_size=cfg.data.query_size,
-                              pool_size=cfg.data.pool_size,
-                              transform=transform,
-                              neg_num=cfg.data.neg_num)
+                          name=name,
+                          mode=mode,
+                          query_size=cfg.data.query_size,
+                          pool_size=cfg.data.pool_size,
+                          transform=transform,
+                          neg_num=cfg.data.neg_num)
     else:
         raise ValueError(f"dataset {name} not supported, \
                          available datasets: {DATASETS}")
-
 
 
 def build_sample_dataloader(train_dl, num_samples=None, cfg=None):
@@ -63,7 +60,7 @@ def build_sample_dataloader(train_dl, num_samples=None, cfg=None):
     if num_samples > len(images):
         num_samples = len(images)
 
-    logger.debug(f"sample dataset:  {num_samples}")
+    logger.debug(f"Sample dataset:  {num_samples}")
 
     #
     sampler = SubsetRandomSampler(np.random.choice(
@@ -85,7 +82,7 @@ def build_train_dataloader(args, cfg):
     """ build train dataloader """
 
     # logger
-    logger.info("build train dataloader")
+    logger.info("Build train dataloader")
 
     # Options
     dl_opt = {"batch_sampler": None,          "batch_size": cfg.data.batch_size,
@@ -106,7 +103,7 @@ def build_train_dataloader(args, cfg):
 def build_val_dataloader(args, cfg):
     """ build val dataloader """
 
-    logger.info("build val dataloader")
+    logger.info("Build val dataloader")
 
     # Options
     {"neg_num": cfg.data.neg_num,

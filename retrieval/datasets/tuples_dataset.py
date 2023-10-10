@@ -1,5 +1,6 @@
 import random
 from os import path
+from omegaconf import OmegaConf
 
 import torch
 from loguru import logger
@@ -19,10 +20,13 @@ _Ext = ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']
 class TuplesDataset(Dataset):
     """ TuplesDataset"""
 
-    def __init__(self, data_path, name, cfg={}, mode="train", transform=None):
+    def __init__(self, data_path, name="tuples", cfg={}, mode="train", transform=None):
 
         # cfg
-        self.cfg = cfg
+        self.cfg = cfg if isinstance(cfg, OmegaConf) else OmegaConf.create(cfg)
+
+        # name
+        self.name = name
 
         # mode
         assert mode in ['train', 'val'], "mode must be either train or val"
@@ -65,13 +69,13 @@ class TuplesDataset(Dataset):
 
         # use
         for ext in _Ext:
-            img_file = path.join(self.data_path, img_path + ext)
+            img_file = path.join(self.data_path, img_path)
             if path.exists(img_file):
                 break
         try:
             image = Image.open(img_file).convert('RGB')
         except:
-            logger.error(f'error loading image: {img_file}')
+            logger.error(f'Error loading image: {img_file}')
             raise
 
         return image
@@ -148,9 +152,9 @@ class TuplesDataset(Dataset):
     def create_epoch_tuples(self, cfg, model):
         """ Create epoch tuples, Hard negative mining """
 
-        logger.debug(f'creating tuples ({self.name}) for mode ({self.mode})')
+        logger.debug(f'Creating tuples ({self.name}) for mode ({self.mode})')
 
-        # set model to eval mode
+        # eval mode
         if model.training:
             model.eval()
 
@@ -169,7 +173,7 @@ class TuplesDataset(Dataset):
         tf = ImagesTransform(max_size=cfg.data.max_size)
 
         # Prepare data loader
-        logger.debug('extracting descriptors for query images :')
+        logger.debug('Extracting descriptors for query images :')
 
         query_data = ImagesFromList(root='', images=[self.images[i] for i in self.query_indices],
                                     transform=tf)
@@ -189,7 +193,7 @@ class TuplesDataset(Dataset):
             del pred
 
         # Prepare negative pool data loader
-        logger.debug('extracting descriptors for negative pool :')
+        logger.debug('Extracting descriptors for negative pool :')
 
         pool_data = ImagesFromList(
             root='', images=[self.images[i] for i in idxs2images], transform=tf)
@@ -207,7 +211,7 @@ class TuplesDataset(Dataset):
 
             del pred
 
-        logger.debug('searching for hard negatives :')
+        logger.debug('Searching for hard negatives :')
 
         scores = torch.mm(poolvecs, qvecs.t())
         scores, scores_indices = torch.sort(scores, dim=0, descending=True)
@@ -246,7 +250,7 @@ class TuplesDataset(Dataset):
         avg_negative_l2 = (average_negative_distance /
                            negative_distance).item()
         logger.info(
-            f'average negative l2-distance = {avg_negative_l2:.3}', )
+            f'Average negative l2-distance = {avg_negative_l2:.3}', )
 
         # stats
         stats = {

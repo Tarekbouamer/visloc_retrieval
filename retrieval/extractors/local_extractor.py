@@ -57,7 +57,7 @@ class LocalExtractor(BaseExtractor):
 
         #
         logger.info(
-            f'extraction done {(time.time() - start_time):.4} seconds saved to {save_path}')
+            f'Extraction done {(time.time() - start_time):.4} seconds saved to {save_path}')
 
         return features, ids
 

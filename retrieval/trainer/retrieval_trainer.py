@@ -28,6 +28,8 @@ from .base import TrainerBase
 
 
 class ImageRetrievalTrainer(TrainerBase):
+    """ Image retrieval trainer"""
+
     def __init__(self, args, cfg):
         super().__init__(cfg)
 
@@ -71,7 +73,7 @@ class ImageRetrievalTrainer(TrainerBase):
         else:
             self.evaluator = None
 
-        logger.info("init image retrieval trainer")
+        logger.info("Init image retrieval trainer")
 
     def resume_or_load(self, resume=True):
         """ resume or load snapshot """
@@ -79,7 +81,7 @@ class ImageRetrievalTrainer(TrainerBase):
         # model
         snapshot_last_path = path.join(
             self._workspace, "last_model.pth.tar")
-        logger.info(f"resume load model {snapshot_last_path}")
+        logger.info(f"Resume load model {snapshot_last_path}")
 
         # load
         snapshot_last = resume_from_snapshot(
@@ -89,22 +91,22 @@ class ImageRetrievalTrainer(TrainerBase):
         self.optimizer.load_state_dict(
             snapshot_last["state_dict"]["optimizer"])
 
-        self._start_epoch = self._epoch = snapshot_last["training_meta"]["epoch"] + 1
-        self._best_score = snapshot_last["training_meta"]["best_score"]
-        self._global_step = snapshot_last["training_meta"]["global_step"]
+        self._start_epoch = self._epoch = snapshot_last["epoch"] + 1
+        self._best_score = snapshot_last["best_score"]
+        self._global_step = snapshot_last["global_step"]
 
         # set metrics
         self.writer.set(snapshot_last["state_dict"])
 
         del snapshot_last
 
-    def before_train(self, test=True):
+    def before_train(self, test=False):
         """ before train 
                 1. set model to train
                 2. init model layers
                 3. test model (optional)
         """
-        logger.info("initilize model layers, using pca")
+        logger.info("Initilize model layers, using pca")
 
         # sample data
         sample_dl = build_sample_dataloader(self.train_dl, cfg=self.cfg)
@@ -130,13 +132,13 @@ class ImageRetrievalTrainer(TrainerBase):
                 6. update learning rate
         """
         # learning rate
-        logger.info(f"learning rates {self.scheduler.get_lr()}")
+        logger.info(f"Learning rates {self.scheduler.get_lr()[0]}")
 
         for it, lr_i in enumerate(self.scheduler.get_lr()):
             self.writer.add_scalar(f'lr/{it}', lr_i, self._epoch)
 
         # refresh train data
-        logger.info("refresh train dataset")
+        logger.info("Refresh train dataset")
         self.refresh_train_data()
 
         # set model to train
@@ -148,7 +150,7 @@ class ImageRetrievalTrainer(TrainerBase):
 
         # set writer to train
         self.writer.train()
-        logger.info(f"train epoch {self._epoch}")
+        logger.info(f"Train epoch {self._epoch}")
 
         # timer
         data_time = time.time()
@@ -224,7 +226,7 @@ class ImageRetrievalTrainer(TrainerBase):
 
         # snapshot path
         snapshot_last = path.join(self._workspace, "last_model.pth.tar")
-        logger.info(f"save snapshot: {snapshot_last}")
+        logger.info(f"Save snapshot: {snapshot_last}")
 
         # save model
         save_snapshot(snapshot_last, self.cfg, self._epoch, self._last_score,
@@ -239,7 +241,7 @@ class ImageRetrievalTrainer(TrainerBase):
 
             # ema snapshot path
             snapshot_ema = path.join(self._workspace, "ema_model.pth.tar")
-            logger.info(f"save ema snapshot: {snapshot_ema}")
+            logger.info(f"Save ema snapshot: {snapshot_ema}")
 
             # save ema model
             save_snapshot(snapshot_ema, self.cfg, self._epoch, self._last_score,
@@ -262,10 +264,10 @@ class ImageRetrievalTrainer(TrainerBase):
         """
 
         # skip if not val interval
-        if (self._epoch % self.cfg["general"].val_interval) != 0:
+        if ((self._epoch + 1) % self.cfg["general"].val_interval) != 0:
             return
 
-        logger.info(f"val epoch {self._epoch}")
+        logger.info(f"Val epoch {self._epoch}")
 
         # set to eval
         if self._model.training:
@@ -330,10 +332,10 @@ class ImageRetrievalTrainer(TrainerBase):
         """
 
         # skip if not test interval
-        if (self._epoch % self.cfg["general"].test_interval) != 0:
+        if ((self._epoch + 1) % self.cfg["general"].test_interval) != 0:
             return
 
-        logger.info(f"test epoch {self._epoch}")
+        logger.info(f"Test epoch {self._epoch}")
 
         # run test -> evaluate
         self._last_score = self.test()
@@ -347,7 +349,7 @@ class ImageRetrievalTrainer(TrainerBase):
             snapshot = torch.load(snapshot_path, map_location="cpu")
 
         # update score
-        snapshot["training_meta"]["last_score"] = self._last_score
+        snapshot["last_score"] = self._last_score
         torch.save(snapshot, snapshot_path)
 
         # save best
@@ -360,7 +362,7 @@ class ImageRetrievalTrainer(TrainerBase):
                 self._workspace, "best_model.pth.tar")
 
             shutil.copy(snapshot_path, best_snapshot_path)
-            logger.info(f"save best snapshot: {best_snapshot_path}")
+            logger.info(f"Save best snapshot: {best_snapshot_path}")
 
     def after_train(self):
         """ called after the training loop """
@@ -382,7 +384,7 @@ class ImageRetrievalTrainer(TrainerBase):
     def refresh_train_data(self):
         """ refresh train data """
 
-        logger.info("refresh train dataset")
+        logger.info("Refresh train dataset")
 
         stats = self.train_dl.dataset.create_epoch_tuples(
             self.cfg, self._model)
@@ -397,7 +399,7 @@ class ImageRetrievalTrainer(TrainerBase):
     def refresh_val_data(self):
         """ refresh val data """
 
-        logger.info("refresh val dataset")
+        logger.info("Refresh val dataset")
 
         stats = self.val_dl.dataset.create_epoch_tuples(
             self.cfg, self._model)
@@ -454,13 +456,13 @@ class ImageRetrievalTrainer(TrainerBase):
             # model
             snapshot_ema_path = path.join(
                 self._workspace, "ema_model.pth.tar")
-            logger.info(f"resume load ema model {snapshot_ema_path}")
+            logger.info(f"Resume load ema model {snapshot_ema_path}")
 
             # load
             snapshot_last = resume_from_snapshot(
                 ema_model.module, snapshot_ema_path, ["body", "head"])
 
-            self._best_score = snapshot_last["training_meta"]["best_score"]
+            self._best_score = snapshot_last["best_score"]
 
             del snapshot_last
 
@@ -515,7 +517,7 @@ class ImageRetrievalTrainer(TrainerBase):
     def test(self):
         """ test the model pipeline  """
 
-        logger.info(f"test {self._epoch}")
+        logger.info(f"Test {self._epoch}")
         results_dict = {}
 
         # for each dataset
@@ -533,7 +535,7 @@ class ImageRetrievalTrainer(TrainerBase):
         scores = [v for k, v in results_dict.items()]
         score = sum(scores)/len(scores)
 
-        logger.info(f"score: {score}")
+        logger.info(f"Score: {score}")
         return score
 
     def train(self):

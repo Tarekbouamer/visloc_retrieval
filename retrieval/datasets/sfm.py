@@ -9,6 +9,10 @@ from .tuples_dataset import TuplesDataset
 
 
 class SfMDataset(TuplesDataset):
+    """ SfMDataset
+        for retrieval-SfM-120k and SfM30k datasets  
+        http://cmp.felk.cvut.cz/cnnimageretrieval/
+    """
     def __init__(self, data_path, name, cfg={}, mode="train", transform=None):
         super().__init__(data_path, name, cfg=cfg, mode=mode, transform=transform)
 

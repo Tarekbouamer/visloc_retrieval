@@ -6,8 +6,7 @@ from core.logging import init_loguru
 
 from retrieval.extractors import GlobalExtractor
 from retrieval.models.misc import create_retrieval
-from retrieval.test import build_paris_oxford_dataset
-from retrieval.test.asmk import test_asmk
+from retrieval.test import build_paris_oxford_dataset, test_asmk
 from retrieval.utils.io import csv_float
 
 
@@ -57,17 +56,17 @@ def run_test_asmk():
     extractor.eval()
 
     for dataset in cfg.test.datasets:
-        
+
         # build dataset
         query_dl, db_dl, gt = build_paris_oxford_dataset(args.data,
                                                          dataset,
                                                          cfg)
         # test
         test_asmk(dataset,
-                    query_dl,
-                    db_dl,
-                    extractor,
-                    ground_truth=gt)
+                  query_dl,
+                  db_dl,
+                  extractor,
+                  ground_truth=gt)
 
     #
     logger.success("done")

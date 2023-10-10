@@ -16,6 +16,6 @@ except ImportError:
 
 try:
     import core
-    logger.info(f"visloc core version {core.__version__}")
+    logger.info(f"Visloc core version {core.__version__}")
 except ImportError:
     logger.warning("Could not import visloc_core")

@@ -12,10 +12,10 @@ from core.transforms import tfn_image_net
 from loguru import logger
 
 from retrieval.models.base import RetrievalBase
-from retrieval.models.modules.pools import GeM
 from retrieval.utils.pca import PCA
 
 from .misc import _cfg, register_retrieval
+from .modules.pools import GeM
 
 
 def set_batchnorm_eval(m):
@@ -145,7 +145,7 @@ class GemNet(RetrievalBase):
         # stack
         vecs = np.vstack(vecs)
 
-        logger.info('compute PCA, this may take a while')
+        logger.info('Compute PCA, this may take a while')
 
         m, P = PCA(vecs)
         m, P = m.T, P.T
@@ -168,12 +168,12 @@ class GemNet(RetrievalBase):
         if save_path is not None:
             save_path = path.join(save_path, "whiten.pth")
             torch.save(layer.state_dict(), save_path)
-            logger.info(f"save whiten layer: {save_path}")
+            logger.info(f"Save whiten layer: {save_path}")
 
         # load layer if exsis already
-        logger.info("load whiten layer")
+        logger.info("Load whiten layer")
         self.head.whiten.load_state_dict(layer.state_dict())
-        logger.info("pca done")
+        logger.success("PCA done")
 
     def transform_inputs(self, data: dict) -> dict:
         """Transform inputs"""
@@ -201,9 +201,9 @@ class GemNet(RetrievalBase):
         return self.head(x, do_whitening)
 
     @torch.no_grad()
-    def extract(self, image):
+    def extract(self, data):
         """Extract features from an image"""
-        return self.forward(image, do_whitening=True)
+        return self.forward(data, do_whitening=True)
 
 
 default_cfgs = {

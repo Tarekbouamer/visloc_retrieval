@@ -6,8 +6,7 @@ from core.logging import init_loguru
 
 from retrieval.extractors import GlobalExtractor
 from retrieval.models.misc import create_retrieval
-from retrieval.test import build_paris_oxford_dataset
-from retrieval.test.global_descriptor import test_global_descriptor
+from retrieval.test import build_paris_oxford_dataset, test_global_descriptor
 from retrieval.utils.io import csv_float
 
 

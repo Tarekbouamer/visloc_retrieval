@@ -1,5 +1,6 @@
 from os import path
 from collections import OrderedDict
+from omegaconf import OmegaConf
 
 import torch
 from loguru import logger
@@ -16,7 +17,7 @@ class DatasetEvaluator:
     def __init__(self, cfg, extractor, writer=None):
 
         # cfg
-        self.cfg = cfg
+        self.cfg = cfg if isinstance(cfg, OmegaConf) else OmegaConf.create(cfg)
 
         # feature extractor
         self.extractor = extractor
@@ -52,7 +53,7 @@ class GlobalEvaluator(DatasetEvaluator):
         super().__init__(cfg, extractor, writer)
 
         # logger
-        logger.info(f"set evaluator on ({self.cfg.test.mode}) mode")
+        logger.info(f"Set evaluator on ({self.cfg.test.mode}) mode")
 
     def evaluate(self, dataset, query_dl, database_dl, ground_truth=None):
         """ evaluate """
@@ -88,14 +89,14 @@ class ASMKEvaluator(DatasetEvaluator):
         self.num_samples = cfg.test.num_samples
 
         #
-        logger.info(f"set evaluator on ({self.cfg.test.mode}) mode")
+        logger.info(f"Set evaluator on ({self.cfg.test.mode}) mode")
 
     def build_codebook(self, args):
 
         # eval mode
         self.extractor.eval()
 
-        logger.info('init asmk')
+        logger.info('Init asmk')
         asmk, params = eval_asmk.asmk_init()
 
         # train codebook
@@ -107,7 +108,7 @@ class ASMKEvaluator(DatasetEvaluator):
                                             num_samples=self.num_samples,
                                             cfg=self.cfg)
 
-        logger.info(f'train codebook {len(sample_dl)} :   {save_path}')
+        logger.info(f'Train codebook {len(sample_dl)} :   {save_path}')
 
         # train_codebook
         self.asmk = eval_asmk.train_codebook(self.cfg, sample_dl, self.extractor, asmk,
@@ -139,7 +140,7 @@ class ASMKEvaluator(DatasetEvaluator):
 
         # check data path
         if not path.exists(args.data):
-            logger.error("path not found: {args.data}")
+            logger.error("Path not found: {args.data}")
 
         # build and save asmk codebook
         self.build_codebook(args.scales)

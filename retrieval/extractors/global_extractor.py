@@ -51,7 +51,7 @@ class GlobalExtractor(BaseExtractor):
         features = np.vstack(features)
 
         logger.success(
-            f'extraction done {(time.time() - start_time):.4} seconds saved to {save_path}')
+            f'Extraction done {(time.time() - start_time):.4} seconds saved to {save_path}')
 
         return features
 

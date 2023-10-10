@@ -12,14 +12,11 @@ def build_lr_scheduler(cfg, optimizer):
     params = scheduler_cfg.params
     num_epochs = scheduler_cfg.epochs
 
-    # linear
     if scheduler_cfg["type"] == "linear":
         beta = float(params["from"])
         alpha = float(params["to"] - beta) / num_epochs
-
         scheduler = LambdaLR(optimizer, lambda it: it * alpha + beta)
-
-    # exponential
+    
     elif scheduler_cfg["type"] == "exp":
         scheduler = ExponentialLR(optimizer,
                                   gamma=params["gamma"])

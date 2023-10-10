@@ -1,64 +1,71 @@
 from os import path
-from  torch.utils.data import Dataset
+from pathlib import Path
 
-from PIL        import Image, ImageFile
-from pathlib    import Path
+from PIL import Image, ImageFile
+from torch.utils.data import Dataset
 
 INPUTS = ["image"]
 
 
 _EXT = ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']
 
+ImageFile.LOAD_TRUNCATED_IMAGES = True
+
 
 class ImagesFromList(Dataset):
     """A generic dataset from a list of images"""
-    def __init__(self, root, images=None, bbxs=None, transform=None):
-        
-        if images is not None:
-            images_fn = [path.join(root, images[i]) for i in range(len(images))]
+
+    def __init__(self, data_path, images_names=None, bbxs=None, transform=None):
+
+        images = []
+
+        if images_names is not None:
+            images = [path.join(data_path, images_names[i])
+                      for i in range(len(images_names))]
         else:
-            # Load images
-            images_fn = []
             for ext in _EXT:
-                images_fn += list(Path(root).glob('**/'+ ext)) 
+                images += list(Path(data_path).glob('**/' + ext))
 
-        if len(images_fn) == 0:
-            raise(RuntimeError("Dataset contains 0 images!"))
+        # check if images are present
+        assert len(images) > 0, f'No images found in {data_path}'
 
-        self.root = root
+        # data path
+        self.data_path = data_path
+
+        # images
         self.images = images
-        
-        self.images_fn = images_fn
-        
+
+        # bbxs
         self.bbxs = bbxs
+
+        # transform
         self.transform = transform
 
     def __len__(self):
-        return len(self.images_fn)
+        """Return the number of images"""
+        return len(self.images)
 
     def load_img(self, img_path):
-        
-        # for truncated images
-        ImageFile.LOAD_TRUNCATED_IMAGES = True     
-        
-        with open(img_path, 'rb') as f:
-            image = Image.open(f).convert('RGB')
-          
+        """Load image"""
+
+        try:
+            image = Image.open(img_path).convert('RGB')
+        except Exception as e:
+            print(f"Cannot load image {img_path}")
+            raise e
+
         return image
-    
-    def get_name(self,  _path):
-        return path.basename(_path)
-    
+
     def __getitem__(self, item):
 
         # image path and image name
-        img_path    = self.images_fn[item]
-        img_name    = self.get_name(img_path)
-        
+        img_path = self.images[item]
+        img_name = path.basename(img_path)
+
         # load image
         image = self.load_img(img_path)
-        
-        # crop image if box exsists 
+
+        # crop image if box exsists
         if self.bbxs is not None:
             image = image.crop(self.bbxs[item])
 
@@ -66,8 +73,8 @@ class ImagesFromList(Dataset):
         if self.transform is not None:
             out = self.transform(image)
 
-        #
+        # output
         out['name'] = img_name
-        
+
         #
         return out

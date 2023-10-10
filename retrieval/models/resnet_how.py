@@ -1,359 +1,410 @@
-# import os
-# from copy import deepcopy
-# from typing import List
+from copy import deepcopy
+from os import path
+from typing import List
 
-# import numpy as np
-# import timm
-# import torch
-# import torch.nn.functional as functional
-# from core.registry.factory import load_pretrained
-# from core.registry.register import get_pretrained_cfg
-# from loguru import logger
-# from timm.utils.model import freeze
-# from tqdm import tqdm
+import numpy as np
+import timm
+import torch
+import torch.nn as nn
+import torch.nn.functional as functional
+from core.progress import tqdm_progress
+from core.registry.factory import load_pretrained
+from core.registry.register import get_pretrained_cfg
+from loguru import logger
 
-# from retrieval.datasets import INPUTS
-# from retrieval.models.base import BaseNet
-# from retrieval.modules.heads import create_head
-# from retrieval.utils.pca import PCA
+from retrieval.models.base import RetrievalBase
+from retrieval.utils.pca import PCA
 
-# from .misc import create_retrieval, register_retrieval
+from .misc import _cfg, register_retrieval
 
 
+def l2n(x, eps=1e-6):
+    """L2-normalize columns of x"""
+    return x / (torch.norm(x, p=2, dim=1, keepdim=True) + eps).expand_as(x)
 
-# default_cfgs = {
-#     'sfm_resnet18_how_128':         _cfg(drive='https://drive.google.com/uc?id=1w7sb1yP3_Y-I64aWg57NR10fDhiAOtg4'),
-#     'sfm_resnet18_c4_how_128':      _cfg(),
-#     'sfm_resnet50_c4_how_128':      _cfg(drive='https://drive.google.com/uc?id=16elpsWQGOLq_Xmd8od6k5DpCy3ou0a9S'),
-#     'sfm_resnet101_c4_how_128':     _cfg(),
-# }
 
+class L2Attention(nn.Module):
+    """ L2 attention """
 
-# # init model function
+    def forward(self, x):
+        return (x.pow(2.0).sum(1) + 1e-10).sqrt().squeeze(0)
 
-# @torch.no_grad()
-# def _init_model(args, cfg, model, sample_dl):
 
-#     # eval
-#     if model.training:
-#         model.eval()
+class SmoothingAvgPooling(nn.Module):
+    """ Smoothing average pooling"""
 
-#     # options
-#     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    def __init__(self, kernel_size):
+        super().__init__()
+        self.kernel_size = kernel_size
 
-#     #
-#     model_head = model.head
-#     inp_dim = model_head.inp_dim
-#     out_dim = model_head.out_dim
+    def forward(self, x):
+        pad = self.kernel_size // 2
+        return functional.avg_pool2d(x, self.kernel_size, stride=1, padding=pad,
+                                     count_include_pad=False)
 
-#     # prepare query loader
-#     logger.info(
-#         f'extracting descriptors for PCA {inp_dim}--{out_dim} for {len(sample_dl)}')
+    def __repr__(self):
+        return f'{self.__class__.__name__}(kernel_size={self.kernel_size})'
 
-#     # extract vectors
-#     vecs = []
-#     for _, batch in tqdm(enumerate(sample_dl), total=len(sample_dl)):
 
-#         # upload batch
-#         batch = {k: batch[k].cuda(device=device, non_blocking=True)
-#                  for k in INPUTS}
-#         pred = model.extract_locals(
-#             **batch, do_whitening=False, num_features=400)
+class ConvDimReduction(nn.Conv2d):
+    """ Convolutional dimension reduction"""
 
-#         vecs.append(pred['features'].cpu().numpy())
+    def __init__(self, inp_dim, out_dim):
+        super().__init__(inp_dim, out_dim, (1, 1), padding=0, bias=True)
 
-#         del pred
 
-#     # stack
-#     vecs = np.vstack(vecs)
+class HowHead(nn.Module):
+    """ How head"""
 
-#     logger.info('compute PCA')
+    def __init__(self, inp_dim, out_dim=128, kernel_size=3):
+        super().__init__()
 
-#     #
-#     m, P = PCA(vecs)
-#     m, P = m.T, P.T
+        self.inp_dim = inp_dim
+        self.out_dim = out_dim
 
-#     # create layer
-#     layer = deepcopy(model_head.whiten)
-#     num_d = layer.weight.shape[0]
+        # attention
+        self.attention = L2Attention()
 
-#     #
-#     projection = torch.Tensor(P[: num_d, :]).unsqueeze(-1).unsqueeze(-1)
-#     projected_shift = - \
-#         torch.mm(torch.FloatTensor(P), torch.FloatTensor(m)).squeeze()
+        # pool
+        self.pool = SmoothingAvgPooling(kernel_size=kernel_size)
 
-#     #
-#     layer.weight.data = projection
-#     layer.bias.data = projected_shift[:num_d]
+        # whiten
+        self.whiten = nn.Conv2d(
+            inp_dim, out_dim, kernel_size=(1, 1), padding=0, bias=True)
 
-#     # save layer to layer_path
-#     layer_path = path.join(args.directory, "whiten.pth")
-#     torch.save(layer.state_dict(), layer_path)
+        # reset parameters
+        self.reset_parameters()
 
-#     logger.info(f"save whiten layer: {layer_path}")
+        # not trainable
+        for param in self.whiten.parameters():
+            param.requires_grad = False
 
-#     # load
-#     model.head.whiten.load_state_dict(layer.state_dict())
+    def reset_parameters(self):
 
-#     # not trainable
-#     for param in model.head.whiten.parameters():
-#         param.requires_grad = False
+        for name, mod in self.named_modules():
 
-#     #
-#     logger.info("pca done")
+            if isinstance(mod,  nn.Linear):
+                nn.init.xavier_normal_(mod.weight, 1.0)
 
+            elif isinstance(mod, nn.LayerNorm):
+                nn.init.constant_(mod.weight, 0.01)
 
-# # create model function
-# def _create_retrieval(variant, body_name, head_name, cfg=None, pretrained=True, feature_scales=[1, 2, 3, 4], **kwargs):
-
-#     # assert
-#     assert body_name in timm.list_models(
-#         pretrained=True), f"model: {body_name}  not implemented timm models yet!"
+            if hasattr(mod, "bias") and mod.bias is not None:
+                nn.init.constant_(mod.bias, 0.)
 
-#     # default cfg
-#     default_cfg = get_pretrained_cfg(variant)
-#     out_dim = default_cfg.pop('out_dim', None)
-
-#     #
-#     frozen = default_cfg.pop("frozen", [])
+    def forward(self, x, do_whitening=True):
+        """ forward pass"""
 
-#     # body
-#     body = timm.create_model(body_name,
-#                                  features_only=True,
-#                                  out_indices=feature_scales,
-#                                  pretrained=True)  # always pretrained
+        # attention
+        attn = self.attention(x)
 
-#     #
-#     body_channels = body.feature_info.channels()
-#     body_reductions = body.feature_info.reduction()
-#     body_module_names = body.feature_info.module_name()
-
-#     # input dim
-#     body_dim = body_channels[-1]
+        # pool and reduction
+        x = self.pool(x)
 
-#    # freeze layers
-#     if len(frozen) > 0:
-#         frozen_layers = [body_module_names[item] for item in frozen]
-#         logger.info(f"frozen layers {frozen_layers}")
-#         freeze(body, frozen_layers)
-
-#     # assert
-#     assert out_dim <= body_dim, (
-#         f"reduction {out_dim} has to be less than or equal to input dim {body_dim}")
-
-#     # head
-#     head = create_head(head_name,
-#                        inp_dim=body_dim,
-#                        out_dim=out_dim,
-#                        **kwargs)
-
-#     # model
-#     model = HowNet(body, head, init_model=_init_model)
-
-#     #
-#     if pretrained:
-#         load_pretrained(model, variant, default_cfg)
-
-#     logger.info(
-#         f"body channels:{body_channels}  reductions:{body_reductions}   layer_names: {body_module_names}")
-
-#     #
-#     if cfg:
-#         cfg.set('global', 'global_dim', str(out_dim))
-
-#     return model
-
-
-# # HowNet
-# class HowNet(BaseNet):
-
-#     def parameter_groups(self, cfg):
-#         """
-#             Return torch parameter groups
-#         """
-
-#         # base
-#         LR = cfg.optimizer.lr
-#         WEIGHT_DECAY = cfg.optimizer.weight_decay
-
-#         # base layer
-#         layers = [self.body, self.head.attention, self.head.pool]
-
-#         # base params
-#         params = [{
-#             'params':          [p for p in x.parameters() if p.requires_grad],
-#             'lr':              LR,
-#             'weight_decay':    WEIGHT_DECAY} for x in layers]
-
-#         # freeze whiten
-#         if self.head.whiten:
-#             params.append({
-#                 'params':       [p for p in self.head.whiten.parameters() if p.requires_grad],
-#                 'lr':           0.0
-#             })
-
-#         return params
-
-#     def how_select_local(self, ms_features, ms_masks, scales, num_features):
-#         """
-#             Convert multi-scale feature maps with attentions to a list of local descriptors
-#                 :param list ms_features: A list of feature maps, each at a different scale
-#                 :param list ms_masks: A list of attentions, each at a different scale
-#                 :param list scales: A list of scales (floats)
-#                 :param int features_num: Number of features to be returned (sorted by attenions)
-#                 :return tuple: A list of descriptors, attentions, locations (x_coor, y_coor) and scales where
-#                         elements from each list correspond to each other
-#         """
-#         device = ms_features[0].device
-
-#         size = sum(x.shape[0] * x.shape[1] for x in ms_masks)
-
-#         desc = torch.zeros(
-#             size, ms_features[0].shape[1], dtype=torch.float32, device=device)
-#         atts = torch.zeros(size, dtype=torch.float32, device=device)
-#         locs = torch.zeros(size, 2, dtype=torch.int16, device=device)
-#         scls = torch.zeros(size, dtype=torch.float16, device=device)
-
-#         pointer = 0
-
-#         for sc, vs, ms in zip(scales, ms_features, ms_masks):
-
-#             #
-#             if len(ms.shape) == 0:
-#                 continue
+        # whiten
+        if do_whitening:
+            x = self.whiten(x)
 
-#             #
-#             height, width = ms.shape
-#             numel = torch.numel(ms)
-#             slc = slice(pointer, pointer+numel)
-#             pointer += numel
-
-#             #
-#             desc[slc] = vs.squeeze(0).reshape(vs.shape[1], -1).T
-#             atts[slc] = ms.reshape(-1)
-#             width_arr = torch.arange(width, dtype=torch.int16)
-#             locs[slc, 0] = width_arr.repeat(height).to(device)  # x axis
-#             height_arr = torch.arange(height, dtype=torch.int16)
-#             # y axis
-#             locs[slc, 1] = height_arr.view(-1, 1).repeat(1,
-#                                                          width).reshape(-1).to(device)
-#             scls[slc] = sc
+        return {'features': x, 'attns': attn}
 
-#         #
-#         keep_n = min(
-#             num_features, atts.shape[0]) if num_features is not None else atts.shape[0]
-#         idx = atts.sort(descending=True)[1][:keep_n]
-
-#         #
-#         preds = {
-#             'features':    desc[idx],
-#             'attns':    atts[idx],
-#             'locs':     locs[idx],
-#             'cls':      scls[idx]
-#         }
-
-#         #
-#         return preds
 
-#     def l2n(self, x, eps=1e-6):
-#         return x / (torch.norm(x, p=2, dim=1, keepdim=True) + eps).expand_as(x)
-
-#     def weighted_spoc(self, ms_features, ms_weights):
-#         """
-#             Weighted SPoC pooling, summed over scales.
-#                 :param list ms_features: A list of feature maps, each at a different scale
-#                 :param list ms_weights: A list of weights, each at a different scale
-#                 :return torch.Tensor: L2-normalized global descriptor
-#         """
-
-#         desc = torch.zeros(
-#             (1, ms_features[0].shape[1]), dtype=torch.float32, device=ms_features[0].device)
-
-#         for features, weights in zip(ms_features, ms_weights):
-#             desc += (features * weights).sum((-2, -1)).squeeze()
-
-#         desc = self.l2n(desc)
-
-#         preds = {
-#             'features': desc
-#         }
-
-#         return preds
-
-#     def __forward__(self, image, scales=[1], do_whitening=True):
-
-#         features_list, attns_list = [], []
-
-#         for s in scales:
-#             #
-#             imgs = functional.interpolate(
-#                 image, scale_factor=s, mode='bilinear', align_corners=False)
-
-#             x = self.body(imgs)
-#             if isinstance(x, List):
-#                 x = x[-1]
-
-#             # head
-#             preds = self.head(x, do_whitening=do_whitening)
-
-#             #
-#             features_list.append(preds['features'])
-#             attns_list.append(preds['attns'])
-
-#         # normalize to max weight
-#         mx = max(x.max() for x in attns_list)
-#         attns_list = [x/mx for x in attns_list]
-
-#         #
-#         return features_list, attns_list
-
-#     def extract_global(self, image, scales=[1], do_whitening=True):
-#         feat_list, attns_list = self.__forward__(
-#             image, scales=scales, do_whitening=do_whitening)
-#         return self.weighted_spoc(feat_list, attns_list)
-
-#     def extract_locals(self, image, scales=[1], num_features=1000, do_whitening=True):
-#         feat_list, attns_list = self.__forward__(
-#             image, scales=scales, do_whitening=do_whitening)
-#         return self.how_select_local(feat_list, attns_list, scales=scales, num_features=num_features)
-
-#     def forward(self, image, do_whitening=True):
-#         return self.extract_global(image, do_whitening=do_whitening)
-
-
-# # models
-# @register_retrieval
-# def sfm_resnet18_how_128(cfg=None, pretrained=True, **kwargs):
-#     """Constructs a SfM-120k ResNet-18 with GeM model.
-#     """
-#     model_args = dict(**kwargs)
-#     return _create_retrieval('sfm_resnet18_how_128', 'resnet18', 'how', cfg, pretrained, **model_args)
-
-
-# @register_retrieval
-# def sfm_resnet18_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
-#     """Constructs a SfM-120k ResNet-18 with How model, only 4 features scales
-#     """
-#     model_args = dict(**kwargs)
-#     return _create_retrieval('sfm_resnet18_c4_how_128', 'resnet18', 'how', cfg, pretrained, feature_scales, **model_args)
-
-
-# @register_retrieval
-# def sfm_resnet50_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
-#     """Constructs a SfM-120k ResNet-50 with How model, only 4 features scales
-#     """
-#     model_args = dict(**kwargs)
-#     return _create_retrieval('sfm_resnet50_c4_how_128', 'resnet50', 'how', cfg, pretrained, feature_scales, **model_args)
-
-
-# @register_retrieval
-# def sfm_resnet101_c4_how_128(cfg=None, pretrained=True, feature_scales=[1, 2, 3], **kwargs):
-#     """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales
-#     """
-#     model_args = dict(**kwargs)
-#     return _create_retrieval('sfm_resnet101_c4_how_128', 'resnet101', 'how', cfg, pretrained, feature_scales, **model_args)
-
-
-# if __name__ == '__main__':
-#     create_fn = create_retrieval("resnet50_c4_how", pretrained=True)
-#     print(create_fn)
+class HowNet(RetrievalBase):
+
+    def __init__(self, cfg):
+        super(HowNet, self).__init__(cfg=cfg)
+
+        self._out_dim = self.cfg.out_dim
+
+        # backbone
+        self.body = timm.create_model(self.cfg.backbone,
+                                      features_only=True,
+                                      out_indices=self.cfg.feature_scales,
+                                      pretrained=True)
+
+        # features dim
+        self._features_dim = self.body.feature_info.channels()[-1]
+
+        # create head
+        self.head = HowHead(inp_dim=self._features_dim,
+                            out_dim=self._out_dim,
+                            kernel_size=self.cfg.kernel_size)
+
+    @torch.no_grad()
+    def init_model(self, sample_dl, save_path=None, **kwargs):
+        """Initialize model"""
+
+        logger.info(
+            f'PCA {self._features_dim}--{self._out_dim} for {len(sample_dl)}')
+
+        # eval
+        if self.training:
+            self.eval()
+
+        # progress bar
+        progress_bar = tqdm_progress(
+            sample_dl, colour='white', desc='extract global'.rjust(15))
+
+        # extract vectors
+        vecs = []
+        for _, data in enumerate(progress_bar):
+
+            # upload data
+            data = {"image": data["image"].cuda()}
+
+            # upload batch
+            pred = self.extract_locals(
+                data, do_whitening=False, num_features=400)
+
+            # append
+            vecs.append(pred['features'].cpu().numpy())
+            del pred
+
+        # stack
+        vecs = np.vstack(vecs)
+
+        logger.info('Compute PCA, this may take a while')
+
+        m, P = PCA(vecs)
+        m, P = m.T, P.T
+
+        # create layer
+        layer = deepcopy(self.head.whiten)
+        layer.weight.data.size()
+        num_d = layer.weight.shape[0]
+
+        # project and shift
+        projection = torch.Tensor(P[: num_d, :]).unsqueeze(-1).unsqueeze(-1)
+        projected_shift = - \
+            torch.mm(torch.FloatTensor(P), torch.FloatTensor(m)).squeeze()
+
+        # set layer
+        layer.weight.data = projection
+        layer.bias.data = projected_shift[:num_d]
+
+        # save layer if needed
+        if save_path is not None:
+            layer_path = path.join(save_path, "whiten.pth")
+            torch.save(layer.state_dict(), layer_path)
+            logger.info(f"Save whiten layer: {save_path}")
+
+        # load layer if exsis already
+        logger.info("Load whiten layer")
+        self.head.whiten.load_state_dict(layer.state_dict())
+
+        # not trainable
+        logger.info("Freeze whiten layer")
+        for param in self.head.whiten.parameters():
+            param.requires_grad = False
+
+        logger.success("PCA done")
+
+    def parameter_groups(self, cfg):
+        """
+            Return torch parameter groups
+        """
+
+        # base
+        LR = cfg.optimizer.lr
+        WEIGHT_DECAY = cfg.optimizer.weight_decay
+
+        # base layer
+        layers = [self.body, self.head.attention, self.head.pool]
+
+        # base params
+        params = [{
+            'params':          [p for p in x.parameters() if p.requires_grad],
+            'lr':              LR,
+            'weight_decay':    WEIGHT_DECAY} for x in layers]
+
+        # freeze whiten
+        if self.head.whiten:
+            params.append({
+                'params':       [p for p in self.head.whiten.parameters() if p.requires_grad],
+                'lr':           0.0
+            })
+
+        return params
+
+    def how_select_local(self, ms_features, ms_masks, scales, num_features):
+        """ Convert multi-scale feature maps with attentions to a list of local descriptors
+            Args:
+                ms_features: list of feature maps at different scales
+                ms_masks: list of attention maps at different scales
+                scales: list of scales
+                num_features: number of local descriptors to keep
+            Returns:
+                dict: dictionary with the following keys:
+                    - features: local descriptors
+                    - attns: attention weights
+                    - locs: locations of local descriptors
+                    - cls: scales of local descriptors
+        """
+        device = ms_features[0].device
+
+        size = sum(x.shape[0] * x.shape[1] for x in ms_masks)
+
+        desc = torch.zeros(
+            size, ms_features[0].shape[1], dtype=torch.float32, device=device)
+        atts = torch.zeros(size, dtype=torch.float32, device=device)
+        locs = torch.zeros(size, 2, dtype=torch.int16, device=device)
+        scls = torch.zeros(size, dtype=torch.float16, device=device)
+
+        pointer = 0
+
+        for sc, vs, ms in zip(scales, ms_features, ms_masks):
+
+            #
+            if len(ms.shape) == 0:
+                continue
+
+            #
+            height, width = ms.shape
+            numel = torch.numel(ms)
+            slc = slice(pointer, pointer+numel)
+            pointer += numel
+
+            #
+            desc[slc] = vs.squeeze(0).reshape(vs.shape[1], -1).T
+            atts[slc] = ms.reshape(-1)
+            width_arr = torch.arange(width, dtype=torch.int16)
+            locs[slc, 0] = width_arr.repeat(height).to(device)  # x axis
+            height_arr = torch.arange(height, dtype=torch.int16)
+            # y axis
+            locs[slc, 1] = height_arr.view(-1, 1).repeat(1,
+                                                         width).reshape(-1).to(device)
+            scls[slc] = sc
+
+        #
+        keep_n = min(
+            num_features, atts.shape[0]) if num_features is not None else atts.shape[0]
+        idx = atts.sort(descending=True)[1][:keep_n]
+
+        #
+        preds = {
+            'features':    desc[idx],
+            'attns':    atts[idx],
+            'locs':     locs[idx],
+            'cls':      scls[idx]
+        }
+
+        #
+        return preds
+
+    def weighted_spoc(self, ms_features, ms_weights):
+        """Weighted SPoC pooling, summed over scales
+        Args:
+            ms_features: list of feature maps at different scales
+            ms_weights: list of weights at different scales
+        Returns:
+            dict: dictionary with the following keys:
+                - features: weighted SPoC pooling of the input feature maps
+        """
+
+        desc = torch.zeros(
+            (1, ms_features[0].shape[1]), dtype=torch.float32, device=ms_features[0].device)
+
+        for features, weights in zip(ms_features, ms_weights):
+            desc += (features * weights).sum((-2, -1)).squeeze()
+
+        desc = l2n(desc)
+
+        preds = {
+            'features': desc
+        }
+
+        return preds
+
+    def _forward(self, data, scales=[1], do_whitening=True):
+        features_list, attns_list = [], []
+
+        # extract features at different scales
+        for s in scales:
+            imgs = functional.interpolate(
+                data["image"], scale_factor=s, mode='bilinear', align_corners=False)
+
+            # body
+            x = self.body(imgs)
+            if isinstance(x, List):
+                x = x[-1]
+
+            # head
+            preds = self.head(x, do_whitening=do_whitening)
+
+            #
+            features_list.append(preds['features'])
+            attns_list.append(preds['attns'])
+
+        # normalize to max weight
+        mx = max(x.max() for x in attns_list)
+        attns_list = [x/mx for x in attns_list]
+
+        return features_list, attns_list
+
+    def extract_locals(self, image, scales=[1], num_features=1000, do_whitening=True):
+        """Extract local descriptors from an image"""
+        feat_list, attns_list = self._forward(image, scales, do_whitening)
+        return self.how_select_local(feat_list, attns_list, scales, num_features)
+
+    def forward(self, data, do_whitening=True):
+        """Forward pass"""
+        feat_list, attns_list = self._forward(data, do_whitening=do_whitening)
+        return self.weighted_spoc(feat_list, attns_list)
+
+    @torch.no_grad()
+    def extract(self, data, scales=[1]):
+        """Extract features from an image
+            1. extract features & attentions
+            3. weighted spoc
+        """
+        feat_list, attns_list = self._forward(data, scales, True)
+        return self.weighted_spoc(feat_list, attns_list)
+
+
+default_cfgs = {
+    'sfm_resnet18_how_128':
+        _cfg(drive='https://drive.google.com/uc?id=10o3xfP3piVoW3XDeSZLW6lErANRDZ61P',
+             backbone="resnet18", feature_scales=[1, 2, 3, 4], out_dim=128, kernel_size=3),
+    'sfm_resnet50_c4_how_128':
+        _cfg(drive='https://drive.google.com/uc?id=1wy3tMPOq-tSYBnUssWACiPNRTVjSbdzb',
+             backbone="resnet50", feature_scales=[1, 2, 3], out_dim=128, kernel_size=3)
+}
+
+
+def _create_model(name, cfg: dict = {}, pretrained: bool = True, **kwargs: dict) -> nn.Module:
+    """ create a model """
+
+    # default cfg
+    model_cfg = get_pretrained_cfg(name)
+    cfg = {**model_cfg, **cfg}
+
+    # create model
+    model = HowNet(cfg=cfg)
+
+    # load pretrained weights
+    if pretrained:
+        load_pretrained(model, name, cfg, state_key="model")
+    return model
+
+
+@register_retrieval
+def sfm_resnet18_how_128(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-18 with GeM model"""
+    return _create_model('sfm_resnet18_how_128', cfg, pretrained, **kwargs)
+
+
+@register_retrieval
+def sfm_resnet18_c4_how_128(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-18 with How model, only 4 features scales"""
+    return _create_model('sfm_resnet18_c4_how_128', cfg, pretrained, **kwargs)
+
+
+@register_retrieval
+def sfm_resnet50_c4_how_128(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-50 with How model, only 4 features scales"""
+    return _create_model('sfm_resnet50_c4_how_128', cfg, pretrained, **kwargs)
+
+
+@register_retrieval
+def sfm_resnet101_c4_how_128(cfg=None, pretrained=True, **kwargs):
+    """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales"""
+    return _create_model('sfm_resnet101_c4_how_128', cfg, pretrained, **kwargs)

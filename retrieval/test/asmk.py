@@ -2,12 +2,18 @@ import pickle
 import time
 from os import path, remove
 
-from asmk import asmk_method, io_helpers
 from core.meter import htime
 from loguru import logger
 
 import retrieval.test.asmk as eval_asmk
 from retrieval.test.ap import compute_map, compute_map_revisited
+
+try:
+    from asmk import asmk_method, io_helpers
+except ImportError:
+    logger.warning("asmk not exported from thirdparty, try \
+                    export PYTHONPATH=${PYTHONPATH}:$(realpath thirdparty/asmk/)")
+
 
 PARAM_PATH = "./retrieval/configuration/defaults/asmk.yml"
 

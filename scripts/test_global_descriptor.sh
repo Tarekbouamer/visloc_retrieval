@@ -2,7 +2,7 @@ DATA_DIR='/media/dl/Data/datasets/'
 DATA_DIR='/media/loc/ssd_512/tmp/how/how_data/'
 # DATA_DIR='/media/torres/ssd_2tb/sfm'
 
-MODEL='gl18_resnet50_gem_2048'
+MODEL='sfm_resnet18_how_128'
 
 SCALES=1.0
 

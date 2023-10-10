@@ -2,5 +2,9 @@
     "[python]": {
         "editor.defaultFormatter": "ms-python.autopep8"
     },
-    "python.formatting.provider": "none"
+    "python.formatting.provider": "none",
+    "todo-tree.tree.scanMode": "workspace only",
+    "todo-tree.tree.showCountsInTree": false,
+    "todo-tree.tree.showBadges": true,
+    "todo-tree.tree.disableCompactFolders": false
 }
