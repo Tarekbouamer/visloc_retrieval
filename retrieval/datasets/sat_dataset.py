@@ -3,61 +3,31 @@ from os import path
 
 import numpy as np
 import torch
-from torch.utils.data import DataLoader, Dataset
 from loguru import logger
 from PIL import Image
+from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-from . import ImagesTransform, ImagesFromList
+from .dataset import ImagesFromList
+from .transform import ImagesTransform
 
 NETWORK_INPUTS = ["q", "p", "ns"]
-All_INPUTS = ["q", "p", "ns"]
 
 default_cities = {
-    'train': [
-        "01",
-        "02",
-        "03",
-        "04",
-        "05",
-        "06",
-        "07",
-        "08",
-        "09",
-        "10",
-        "11",
-        "12",
-        "13",
-        "14",
-        "15",
-        "16",
-        "17",
-        "18",
-        "19",
-        "20",
-        "21",
-        "22",
-        "23",
-    ],
+    'train': ["01", "02", "03", "04", "05",
+              "06", "07", "08", "09", "10",
+              "11", "12", "13", "14", "15",
+              "16", "17", "18", "19", "20",
+              "21", "22", "23"],
 
-    'val': [
-        "03",
-        "09",
-        "16",
-    ],
+    'val': ["03", "09", "16"],
 
-    'test': [
-        "03",
-        "09",
-        "16",
-    ]
+    'test': ["03", "09", "16"]
 }
 
 
-class SatDataset(data.Dataset):
-    """
-
-    """
+class SatDataset(Dataset):
+    """ Dataset for training on satellite dataset"""
 
     def __init__(self, root_dir, name, mode, batch_size=1, num_workers=1, neg_num=5, query_size=2000, pool_size=20000, transform=None, margin=0.5):
 
@@ -250,12 +220,12 @@ class SatDataset(data.Dataset):
         tf = ImagesTransform(max_size=cfg.data.max_size)
 
         # Dataloaders
-        q_dl = DataLoader(ImagesFromList(root='',  images=[
-                               self.qImages[i] for i in q_indices],   transform=tf), **dl_opt)
-        p_dl = DataLoader(ImagesFromList(root='',  images=[
-                               self.images[i] for i in p_indices],   transform=tf), **dl_opt)
-        n_dl = DataLoader(ImagesFromList(root='',  images=[
-                               self.images[i] for i in n_indices],   transform=tf), **dl_opt)
+        q_dl = DataLoader(ImagesFromList(data_path='',  images_names=[
+            self.qImages[i] for i in q_indices],   transform=tf), **dl_opt)
+        p_dl = DataLoader(ImagesFromList(data_path='',  images_names=[
+            self.images[i] for i in p_indices],   transform=tf), **dl_opt)
+        n_dl = DataLoader(ImagesFromList(data_path='',  images_names=[
+            self.images[i] for i in n_indices],   transform=tf), **dl_opt)
 
         #
 
@@ -272,7 +242,7 @@ class SatDataset(data.Dataset):
 
                 # Upload batch
                 batch = {k: batch[k].cuda(
-                    device="cuda", non_blocking=True) for k in INPUTS}
+                    device="cuda", non_blocking=True) for k in NETWORK_INPUTS}
                 pred = model(**batch, do_whitening=True)
                 qvecs[it * batch_size: (it+1) * batch_size, :] = pred
                 del pred
@@ -286,7 +256,7 @@ class SatDataset(data.Dataset):
             for it, batch in tqdm(enumerate(p_dl), total=len(p_dl)):
                 # Upload batch
                 batch = {k: batch[k].cuda(
-                    device="cuda", non_blocking=True) for k in INPUTS}
+                    device="cuda", non_blocking=True) for k in NETWORK_INPUTS}
                 pred = model(**batch, do_whitening=True)
                 pvecs[it * batch_size: (it+1) * batch_size, :] = pred
                 del pred
@@ -300,7 +270,7 @@ class SatDataset(data.Dataset):
             for it, batch in tqdm(enumerate(n_dl), total=len(n_dl)):
                 # Upload batch
                 batch = {k: batch[k].cuda(
-                    device="cuda", non_blocking=True) for k in INPUTS}
+                    device="cuda", non_blocking=True) for k in NETWORK_INPUTS}
                 pred = model(**batch, do_whitening=True)
                 nvecs[it * batch_size: (it+1) * batch_size, :] = pred
                 del pred

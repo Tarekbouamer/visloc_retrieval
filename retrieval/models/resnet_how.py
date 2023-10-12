@@ -45,6 +45,8 @@ class SmoothingAvgPooling(nn.Module):
     def __repr__(self):
         return f'{self.__class__.__name__}(kernel_size={self.kernel_size})'
 
+# FIXME: this is not used
+
 
 class ConvDimReduction(nn.Conv2d):
     """ Convolutional dimension reduction"""
@@ -383,6 +385,7 @@ def _create_model(name, cfg: dict = {}, pretrained: bool = True, **kwargs: dict)
     # load pretrained weights
     if pretrained:
         load_pretrained(model, name, cfg, state_key="model")
+
     return model
 
 
@@ -393,18 +396,6 @@ def sfm_resnet18_how_128(cfg=None, pretrained=True, **kwargs):
 
 
 @register_retrieval
-def sfm_resnet18_c4_how_128(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k ResNet-18 with How model, only 4 features scales"""
-    return _create_model('sfm_resnet18_c4_how_128', cfg, pretrained, **kwargs)
-
-
-@register_retrieval
 def sfm_resnet50_c4_how_128(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-50 with How model, only 4 features scales"""
     return _create_model('sfm_resnet50_c4_how_128', cfg, pretrained, **kwargs)
-
-
-@register_retrieval
-def sfm_resnet101_c4_how_128(cfg=None, pretrained=True, **kwargs):
-    """Constructs a SfM-120k ResNet-50 with GeM model, only 4 features scales"""
-    return _create_model('sfm_resnet101_c4_how_128', cfg, pretrained, **kwargs)

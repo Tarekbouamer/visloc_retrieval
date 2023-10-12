@@ -1,0 +1,57 @@
+general:
+  seed: 0
+  gpu_id: 0
+  log_interval: 1
+  val_interval: 1
+  test_interval: 1
+  cudnn_benchmark: False
+
+body:
+  name: sfm_resnet50_c4_gem_1024
+  pretrained: False
+  pca: True
+  ema_decay: 0.9998
+  out_dim: 1024
+
+pca:
+  num_samples: 3000
+  update: True
+
+loss:
+  type: triplet
+  margin: 0.5
+
+optimizer:
+  type: Adam
+  lr: 5.e-5
+  weight_decay: 1.e-4
+  weight_decay_norm: True
+  momentum: 0.9
+  nesterov: True
+
+scheduler:
+  epochs: 100
+  type: exp # linear, exp, step
+  params: { "gamma": 0.99 }
+  burn_in_start: 0.01
+  burn_in_steps: 0
+
+data:
+  dataset: retrieval-SfM-120k
+  neg_num: 5
+  query_size: 200
+  pool_size: 200
+  max_size: 320
+  num_workers: 6
+  batch_size: 5
+
+augmentaion:
+  auto_augment: rand-m9-mstd0.5-inc1
+
+test:
+  datasets: ["roxford5k", "rparis6k"]
+  max_size: 320
+  num_samples: 20000
+  mode: global
+  multi_scale: False
+  scales: [1, 1/2**(1/2), 1/2]

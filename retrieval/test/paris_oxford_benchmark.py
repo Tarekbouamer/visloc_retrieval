@@ -21,19 +21,16 @@ def build_paris_oxford_dataset(data_path, name_dataset, cfg):
     # dataset
     db = ParisOxfordTestDataset(root_dir=data_path, name=name_dataset)
 
-    # options
-    trans_opt = {"max_size":     cfg.test.max_size}
-
     # transform
-    tfn = ImagesTransform(**trans_opt)
+    tfn = ImagesTransform(max_size=cfg.test.max_size,)
 
     # query loader
-    query_data = ImagesFromList(root='', images=db['query_names'], bbxs=db['query_bbx'],
+    query_data = ImagesFromList(data_path='', images_names=db['query_names'], bbxs=db['query_bbx'],
                                 transform=tfn)
     query_dl = DataLoader(query_data, num_workers=4)
 
     # database loader
-    db_data = ImagesFromList(root='', images=db['img_names'], 
+    db_data = ImagesFromList(data_path='', images_names=db['img_names'], 
                              transform=tfn)
     db_dl = DataLoader(db_data, num_workers=4)
 

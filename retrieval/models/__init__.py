@@ -11,7 +11,7 @@ from .resnet_gem import (
 )
 from .resnet_how import (
     sfm_resnet18_how_128,
-    sfm_resnet101_c4_how_128,
+    sfm_resnet50_c4_how_128
 )
 
 __all__ = [
@@ -23,5 +23,5 @@ __all__ = [
     'sfm_resnet50_c4_gem_1024',
     'gl18_resnet50_gem_2048',
     'sfm_resnet18_how_128',
-    'sfm_resnet101_c4_how_128',
+    'sfm_resnet50_c4_how_128',
 ]

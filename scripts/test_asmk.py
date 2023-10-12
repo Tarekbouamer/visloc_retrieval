@@ -7,8 +7,7 @@ from core.logging import init_loguru
 from retrieval.extractors import GlobalExtractor
 from retrieval.models.misc import create_retrieval
 from retrieval.test import build_paris_oxford_dataset, test_asmk
-from retrieval.utils.io import csv_float
-
+from core.parser.types import float_list
 
 def make_test_asmk_parser():
 
@@ -24,7 +23,7 @@ def make_test_asmk_parser():
     parser.add_argument("--config", metavar="CFG", type=str, default='retrieval/configuration/default.yaml',
                         help="path to config file ini")
 
-    parser.add_argument("--scales", type=csv_float, default=[1.0],
+    parser.add_argument("--scales", type=float_list, default=[1.0],
                         help="images scales ")
 
     parser.add_argument("--save_path", metavar="IMPORT_DIR", type=str,  default='.',

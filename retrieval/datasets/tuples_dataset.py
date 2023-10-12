@@ -1,9 +1,9 @@
 import random
 from os import path
-from omegaconf import OmegaConf
 
 import torch
 from loguru import logger
+from omegaconf import OmegaConf
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
@@ -12,7 +12,6 @@ from .dataset import INPUTS, ImagesFromList
 from .transform import ImagesTransform
 
 NETWORK_INPUTS = ["q", "p", "ns"]
-All_INPUTS = ["q", "p", "ns"]
 
 _Ext = ['*.jpg', '*.png', '*.jpeg', '*.JPG', '*.PNG']
 
@@ -175,13 +174,12 @@ class TuplesDataset(Dataset):
         # Prepare data loader
         logger.debug('Extracting descriptors for query images :')
 
-        query_data = ImagesFromList(root='', images=[self.images[i] for i in self.query_indices],
+        query_data = ImagesFromList(data_path='', images_names=[self.images[i] for i in self.query_indices],
                                     transform=tf)
         query_dl = DataLoader(query_data, **dl)
 
         # Extract query vectors
-        qvecs = torch.zeros(len(self.query_indices),
-                            model.dim).cuda()
+        qvecs = torch.zeros(len(self.query_indices), model.dim).cuda()
 
         for it, batch in tqdm(enumerate(query_dl), total=len(query_dl)):
             batch = {k: batch[k].cuda(
@@ -196,7 +194,7 @@ class TuplesDataset(Dataset):
         logger.debug('Extracting descriptors for negative pool :')
 
         pool_data = ImagesFromList(
-            root='', images=[self.images[i] for i in idxs2images], transform=tf)
+            data_path='', images_names=[self.images[i] for i in idxs2images], transform=tf)
         pool_dl = DataLoader(pool_data, **dl)
 
         # Extract negative pool vectors
@@ -213,6 +211,7 @@ class TuplesDataset(Dataset):
 
         logger.debug('Searching for hard negatives :')
 
+        # Compute dot product scores and ranks on GPU
         scores = torch.mm(poolvecs, qvecs.t())
         scores, scores_indices = torch.sort(scores, dim=0, descending=True)
 
