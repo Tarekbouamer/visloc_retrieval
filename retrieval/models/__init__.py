@@ -24,6 +24,9 @@ from .patch_netvlad import (
     mapillary_vgg16_patchnetvlad_4096,
 )
 
+from .delf import (
+    delf
+)
 __all__ = [
     'create_retrieval',
     'register_retrieval',
@@ -38,4 +41,5 @@ __all__ = [
     'mapillary_vgg16_patchnetvlad_128',
     'mapillary_vgg16_patchnetvlad_512',
     'mapillary_vgg16_patchnetvlad_4096'
+    'delf'
 ]
