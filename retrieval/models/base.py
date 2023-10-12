@@ -13,7 +13,7 @@ class RetrievalBase(nn.Module):
         self.cfg = cfg if isinstance(cfg, OmegaConf) else OmegaConf.create(cfg)
 
     @property
-    def dim(self):
+    def out_dim(self):
         """Return output dimension"""
         return self._out_dim
 

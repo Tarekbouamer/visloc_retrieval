@@ -1,5 +1,7 @@
+faiss-gpu
 opencv-contrib-python==4.6.0.66
 opencv-python==4.6.0.66
 pandas
+scikit-learn
 tensorboard >= 2.2.0
 tensorboardX
