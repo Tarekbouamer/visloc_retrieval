@@ -176,7 +176,7 @@ class GemNet(RetrievalBase):
         logger.success("PCA done")
 
     def transform_inputs(self, data: dict) -> dict:
-        """Transform inputs"""
+        """transform inputs"""
 
         # add data dim
         if data["image"].dim() == 3:

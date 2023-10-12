@@ -10,6 +10,7 @@ import torch.nn.functional as functional
 from core.progress import tqdm_progress
 from core.registry.factory import load_pretrained
 from core.registry.register import get_pretrained_cfg
+from core.transforms import tfn_image_net
 from loguru import logger
 
 from retrieval.models.base import RetrievalBase
@@ -316,6 +317,18 @@ class HowNet(RetrievalBase):
 
         return preds
 
+    def transform_inputs(self, data: dict) -> dict:
+        """transform inputs"""
+
+        # add data dim
+        if data["image"].dim() == 3:
+            data["image"] = data["image"].unsqueeze(0)
+
+        # normalize image net
+        data["image"] = tfn_image_net(data["image"])
+
+        return data
+    
     def _forward(self, data, scales=[1], do_whitening=True):
         features_list, attns_list = [], []
 
