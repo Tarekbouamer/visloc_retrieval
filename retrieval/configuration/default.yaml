@@ -55,3 +55,4 @@ test:
   mode: global
   multi_scale: False
   scales: [1, 1/2**(1/2), 1/2]
+

@@ -184,12 +184,7 @@ def _create_model(name, cfg: dict = {}, pretrained: bool = True, **kwargs: dict)
 
     # load pretrained weights
     if pretrained:
-
         load_pretrained(model, name, cfg, state_key="state_dict")
-
-        # load state dict
-        # state_dict = torch.load(f"hub/{name}.pth", map_location='cpu')
-        # print(state_dict.keys())
 
     return model
 

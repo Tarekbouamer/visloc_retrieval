@@ -180,21 +180,22 @@ class PatchNetVLAD(nn.Module):
 
         vlad_global = store_residual.view(N, self.num_clusters, C, -1)
         vlad_global = vlad_global.sum(dim=-1)
-        store_residual = store_residual.view(N, -1, H, W)
 
-        ivlad = get_integral_feature(store_residual)
-        vladflattened = []
-        for patch_size, stride in zip(self.patch_sizes, self.strides):
-            vladflattened.append(get_square_regions_from_integral(
-                ivlad, int(patch_size), int(stride)))
+        # store_residual = store_residual.view(N, -1, H, W)
+        # ivlad = get_integral_feature(store_residual)
+
+        # vladflattened = []
+        # for patch_size, stride in zip(self.patch_sizes, self.strides):
+        #     vladflattened.append(get_square_regions_from_integral(
+        #         ivlad, int(patch_size), int(stride)))
 
         vlad_local = []
-        for thisvlad in vladflattened:  # looped to avoid GPU memory issues with certain config combinations
-            thisvlad = thisvlad.view(N, self.num_clusters, C, -1)
-            thisvlad = F.normalize(thisvlad, p=2, dim=2)
-            thisvlad = thisvlad.view(x.size(0), -1, thisvlad.size(3))
-            thisvlad = F.normalize(thisvlad, p=2, dim=1)
-            vlad_local.append(thisvlad)
+        # for thisvlad in vladflattened:  # looped to avoid GPU memory issues with certain config combinations
+        #     thisvlad = thisvlad.view(N, self.num_clusters, C, -1)
+        #     thisvlad = F.normalize(thisvlad, p=2, dim=2)
+        #     thisvlad = thisvlad.view(x.size(0), -1, thisvlad.size(3))
+        #     thisvlad = F.normalize(thisvlad, p=2, dim=1)
+        #     vlad_local.append(thisvlad)
 
         vlad_global = F.normalize(vlad_global, p=2, dim=2)
         vlad_global = vlad_global.view(x.size(0), -1)
@@ -284,16 +285,7 @@ def _create_model(name, cfg: dict = {}, pretrained: bool = True, **kwargs: dict)
 
     # load pretrained weights
     if pretrained:
-
         load_pretrained(model, name, cfg, state_key="state_dict")
-
-        # # load state dict
-        # state_dict = torch.load(f"hub/{name}.pth", map_location='cpu')
-        # print(state_dict.keys())
-
-        # # model keys
-        # print()
-        # print(state_dict.keys())
 
     return model
 
