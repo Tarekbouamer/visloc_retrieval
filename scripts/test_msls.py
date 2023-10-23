@@ -93,12 +93,12 @@ def run_test_msls():
 
             # match
             logger.info(
-                f"matching query and database vectors pool_size {db_vecs.shape[1]}")
+                f"Matching query and database vectors pool_size {db_vecs.shape[1]}")
             faiss_index = faiss.IndexFlatL2(db_vecs.shape[1])
             faiss_index.add(db_vecs)
 
             # search
-            logger.info("searching ...")
+            logger.info("Searching ...")
             n_values = [1, 5, 10, 20, 50, 100]
             num_k = max(n_values)
             _, predictions = faiss_index.search(q_vecs, num_k)
@@ -106,7 +106,7 @@ def run_test_msls():
             predictions_new = []
             for _, pred in enumerate(predictions):
                 _, idx = np.unique(np.floor(pred).astype(
-                    np.int), return_index=True)
+                    np.int_), return_index=True)
                 pred = pred[np.sort(idx)]
                 pred = pred[:num_k]
                 predictions_new.append(pred)
@@ -137,8 +137,8 @@ def run_test_msls():
                 f_writer.write(txt)
     
     # log
-    logger.info(f"results saved {results_file}")
-    logger.success("done")
+    logger.info(f"Results saved {results_file}")
+    logger.success("Done")
 
 
 if __name__ == '__main__':

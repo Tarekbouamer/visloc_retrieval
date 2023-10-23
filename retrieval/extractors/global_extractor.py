@@ -38,14 +38,14 @@ class GlobalExtractor(BaseExtractor):
             to_cuda(data)
 
             # extract
-            desc = self.model.extract(data)
-            desc = desc['features'][0]
+            descs = self.model.extract(data)
+            descs = [v for v in descs["features"]]
 
             # numpy
-            desc = to_numpy(desc)
+            descs = to_numpy(descs)
 
             # append
-            features.append(desc)
+            features.extend(descs)
 
         # stack features
         features = np.vstack(features)

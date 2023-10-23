@@ -2,7 +2,7 @@ from core.device import get_device
 from omegaconf import OmegaConf
 from torch.utils.data import DataLoader
 
-from retrieval.models import create_retrieval
+from retrieval.models.misc import create_retrieval
 
 
 class BaseExtractor:

@@ -33,7 +33,7 @@ def build_msls_dataset(data_path, dataset, cfg):
 
     # build query dataset
     query_set = PlaceDataset(data_path, q_name_path, 
-                            #  max_size=cfg.test.max_size
+                             max_size=cfg.test.max_size
                              )
 
     query_dl = DataLoader(dataset=query_set,
@@ -43,7 +43,7 @@ def build_msls_dataset(data_path, dataset, cfg):
 
     # build db dataset
     db_set = PlaceDataset(data_path, db_name_path, 
-                        #   max_size=cfg.test.max_size
+                          max_size=cfg.test.max_size
                           )
 
     db_dl = DataLoader(dataset=db_set,

@@ -1,7 +1,8 @@
 
 DATA_DIR='/media/torres/data_5tb/datasets/'
+DATA_DIR='/media/loc/data_5tb/datasets/'
 
-MODEL='mapillary_vgg16_patchnetvlad_4096'
+MODEL='sfm_resnet50_gem_2048'
 
 SCALES=1.0
 

@@ -54,6 +54,6 @@ test:
   mode: global
   multi_scale: False
   scales: [1, 1/2**(1/2), 1/2]
-  num_workers: 8
-  batch_size: 1
-  max_size: 512
+  num_workers: 4
+  batch_size: 25
+  max_size: [480, 640]
