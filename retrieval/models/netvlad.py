@@ -123,6 +123,12 @@ class NetVLAD(nn.Module):
 
 
 class NetVLADNet(RetrievalBase):
+    # paper reference
+    paper_ref = ["https://arxiv.org/abs/1511.07247"]
+
+    # code reference
+    code_ref = ["https://github.com/Nanne/pytorch-NetVlad"]
+
     def __init__(self, cfg):
         super(NetVLADNet, self).__init__(cfg=cfg)
 

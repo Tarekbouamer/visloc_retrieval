@@ -5,6 +5,18 @@ from omegaconf import OmegaConf
 
 class RetrievalBase(nn.Module):
     """Base class for retrieval models"""
+    
+    # model required inputs
+    required_inputs = ["image"]
+
+    # model default config
+    default_cfg = {}
+
+    # paper reference
+    paper_ref = ""
+
+    # code reference
+    code_ref = ""
 
     def __init__(self, cfg):
         super(RetrievalBase, self).__init__()
@@ -21,7 +33,8 @@ class RetrievalBase(nn.Module):
     def feature_dim(self):
         """Return feature dimension"""
         return self._feature_dim
-
+    
+    @property
     def device(self):
         """Return torch device"""
         return next(self.parameters()).device

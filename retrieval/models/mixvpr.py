@@ -175,6 +175,12 @@ class ResNet(nn.Module):
 
 
 class VPRModel(RetrievalBase):
+    # paper reference
+    paper_ref = ["https://arxiv.org/abs/2303.02190"]
+
+    # code reference
+    code_ref = ["https://github.com/amaralibey/MixVPR"]
+
     def __init__(self, cfg):
         super(VPRModel, self).__init__(cfg=cfg)
 

@@ -205,6 +205,13 @@ class PatchNetVLAD(nn.Module):
 
 
 class PatchNetVLADNet(RetrievalBase):
+
+    # paper reference
+    paper_ref = ["https://openaccess.thecvf.com/content/CVPR2021/html/Hausler_Patch-NetVLAD_Multi-Scale_Fusion_of_Locally-Global_Descriptors_for_Place_Recognition_CVPR_2021_paper.html"]
+
+    # code reference
+    code_ref = ["https://github.com/QVPR/Patch-NetVLAD"]
+
     def __init__(self, cfg):
         super(PatchNetVLADNet, self).__init__(cfg=cfg)
 

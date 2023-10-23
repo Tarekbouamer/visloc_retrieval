@@ -65,6 +65,12 @@ def get_backbone(backbone: str) -> torch.nn.Module:
 
 class ImageRetrievalNet(RetrievalBase):
     """Image Retrieval Network"""
+    # reference paper
+    paper_ref = ["https://arxiv.org/abs/1711.02512",
+                 "https://arxiv.org/abs/1604.02426"]
+
+    # reference code
+    code_ref = ["https://github.com/filipradenovic/cnnimageretrieval-pytorch"]
 
     def __init__(self, cfg,):
         super(ImageRetrievalNet, self).__init__(cfg=cfg)
