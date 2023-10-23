@@ -147,6 +147,7 @@ class CosPlace(RetrievalBase):
 
 
 default_cfgs = {
+    # cosplaces
     'cosplace_vgg16_gem_512':
         _cfg(drive='https://drive.google.com/uc?id=1F6CT-rnAGTTexdpLoQYncn-ooqzJe6wf',
                 backbone="vgg16",  out_dim=512),
@@ -162,6 +163,20 @@ default_cfgs = {
     'cosplace_resnet152_gem_2048':
         _cfg(drive='https://drive.google.com/uc?id=1AlF7xPSswDLA1TdhZ9yTVBkfRnJm0Hn8',
              backbone="resnet152",  out_dim=2048),
+
+    # eigenplaces  
+    'eigenplace_vgg16_gem_512':
+        _cfg(url='https://github.com/gmberton/EigenPlaces/releases/download/v1.0/VGG16_512_eigenplaces.pth',
+             backbone="vgg16",  out_dim=512),
+    'eigenplace_resnet18_gem_2048':
+        _cfg(url='https://github.com/gmberton/EigenPlaces/releases/download/v1.0/ResNet18_512_eigenplaces.pth',
+             backbone="resnet18",  out_dim=512),
+    'eigenplace_resnet50_gem_2048':
+        _cfg(url='https://github.com/gmberton/EigenPlaces/releases/download/v1.0/ResNet50_2048_eigenplaces.pth',
+             backbone="resnet50",  out_dim=2048),
+    'eigenplace_resnet101_gem_2048':
+        _cfg(url='https://github.com/gmberton/EigenPlaces/releases/download/v1.0/ResNet101_2048_eigenplaces.pth',
+             backbone="resnet101",  out_dim=2048),
 }
 
 
@@ -206,3 +221,12 @@ def cosplace_resnet101_gem_2048(cfg=None, pretrained=True, **kwargs):
 def cosplace_resnet152_gem_2048(cfg=None, pretrained=True, **kwargs):
     """Constructs a SfM-120k ResNet-152 with GeM model"""
     return _create_model('cosplace_resnet152_gem_2048', cfg, pretrained, **kwargs)
+
+
+@register_retrieval
+def eigenplace_resnet50_gem_2048(cfg=None, pretrained=True, **kwargs):
+    return _create_model('eigenplace_resnet50_gem_2048', cfg, pretrained, **kwargs)
+
+@register_retrieval
+def eigenplace_resnet101_gem_2048(cfg=None, pretrained=True, **kwargs):
+    return _create_model('eigenplace_resnet101_gem_2048', cfg, pretrained, **kwargs)

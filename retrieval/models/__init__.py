@@ -4,6 +4,7 @@ from .cosplace import (
     cosplace_resnet101_gem_2048,
     cosplace_resnet152_gem_2048,
     cosplace_vgg16_gem_512,
+    eigenplace_resnet50_gem_2048
 )
 
 from .netvlad import vgg16_netvlad
@@ -20,6 +21,16 @@ from .resnet_gem import (
     sfm_resnet101_gem_2048,
 )
 from .resnet_how import sfm_resnet18_how_128, sfm_resnet50_c4_how_128
+
+from .pytorch_gem import (
+    sfm_resnet50_gem,
+    sfm_resnet101_gem,
+    sfm_resnet152_gem,
+    gl18_resnet50_gem,
+    gl18_resnet101_gem,
+    gl18_resnet152_gem,
+)
+
 
 __all__ = [
     "create_retrieval",
@@ -40,4 +51,12 @@ __all__ = [
     "cosplace_vgg16_gem_512",
     "cosplace_resnet18_gem_512",
     "cosplace_resnet152_gem_2048",
+    "eigenplace_resnet50_gem_2048",
+    "sfm_resnet50_gem",
+    "sfm_resnet101_gem",
+    "sfm_resnet152_gem",
+    "gl18_resnet50_gem",
+    "gl18_resnet101_gem",
+    "gl18_resnet152_gem",
+    
 ]
